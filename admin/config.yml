@@ -3,7 +3,7 @@ backend:
   repo: dlameira/dlameira.github.io
   branch: master
   auth_type: pkce
-  app_id: 0v23liTI960kTWso5L6j
+  app_id: Ov23li257MxjaDBySDSL
 
 site_url: https://dlameira.netlify.app
 
