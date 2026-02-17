@@ -1,5 +1,6 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: dlameira/dlameira.github.io
   branch: master
 
 site_url: https://dlameira.netlify.app
