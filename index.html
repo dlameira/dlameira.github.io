@@ -323,12 +323,10 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
   <span>made by hand</span>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
-const obs = new IntersectionObserver(entries => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('on'); });
-}, { threshold: 0.07, rootMargin: '0px 0px -28px 0px' });
-document.querySelectorAll('.r').forEach(el => obs.observe(el));
 
+// ── PARALLAX ──────────────────────────────────────────────────────────────
 document.addEventListener('mousemove', e => {
   const mx = (e.clientX / window.innerWidth - 0.5);
   const my = (e.clientY / window.innerHeight - 0.5);
@@ -338,9 +336,236 @@ document.addEventListener('mousemove', e => {
     img.style.marginTop  = (my * d * 0.55) + 'px';
   });
 });
+
+// ── PARSE FRONTMATTER ─────────────────────────────────────────────────────
+function parseFrontmatter(text) {
+  const match = text.match(/^---\n([\s\S]*?)\n---/);
+  if (!match) return { meta: {}, body: text };
+  const meta = {};
+  match[1].split('\n').forEach(line => {
+    const [key, ...val] = line.split(':');
+    if (key && val.length) meta[key.trim()] = val.join(':').trim().replace(/^"|"$/g, '');
+  });
+  return { meta, body: text.slice(match[0].length).trim() };
+}
+
+// ── FETCH MARKDOWN FILES ──────────────────────────────────────────────────
+async function fetchMarkdownList(files) {
+  const results = [];
+  for (const file of files) {
+    try {
+      const res = await fetch(file);
+      if (!res.ok) continue;
+      const text = await res.text();
+      const { meta, body } = parseFrontmatter(text);
+      results.push({ ...meta, body, _file: file });
+    } catch(e) {}
+  }
+  return results;
+}
+
+// ── LISTA DE ARQUIVOS ─────────────────────────────────────────────────────
+// Adicione aqui novos arquivos quando criar pelo CMS
+const POST_FILES = [
+  'content/posts/how-can-ai-change-the-books.md',
+  'content/posts/parents-need-to-deal-with-tech.md',
+  'content/posts/thoughts-about-antifragile.md',
+];
+
+const DROP_FILES = [
+  'content/drops/antifragile.md',
+  'content/drops/ok-computer.md',
+  'content/drops/lex-fridman-367.md',
+  'content/drops/steve-jobs.md',
+  'content/drops/arrival.md',
+  'content/drops/master-and-margarita.md',
+];
+
+const WORK_FILES = [
+  'content/works/projeto-001.md',
+  'content/works/projeto-002.md',
+  'content/works/projeto-003.md',
+  'content/works/projeto-004.md',
+];
+
+// ── CORES PARA POSTS ──────────────────────────────────────────────────────
+const borderColors = ['border-red', 'border-green', 'border-purple', 'border-blue', 'border-yellow'];
+const hlClasses   = ['hl-1', 'hl-2', 'hl-3', 'hl-4', 'hl-5'];
+const delays      = ['', 'd1', 'd2', 'd3', 'd4'];
+
+// ── FORMATAR DATA ─────────────────────────────────────────────────────────
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const d = new Date(dateStr);
+  return `${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// ── SLUG DO ARQUIVO ───────────────────────────────────────────────────────
+function fileToSlug(filepath) {
+  return filepath.split('/').pop().replace('.md', '');
+}
+
+// ── RENDER POSTS HERO (headlines) ─────────────────────────────────────────
+function renderHeroPosts(posts) {
+  const homeSection = document.getElementById('home');
+  // remove headlines antigas
+  homeSection.querySelectorAll('.headline').forEach(el => el.remove());
+
+  posts.filter(p => p.published !== 'false').slice(0, 5).forEach((post, i) => {
+    const slug = fileToSlug(post._file);
+    const a = document.createElement('a');
+    a.href = `post.html?slug=${slug}`;
+    a.className = `headline ${borderColors[i % borderColors.length]} ${hlClasses[i]} r ${delays[i]}`;
+    a.textContent = post.title?.toUpperCase() || 'SEM TÍTULO';
+    homeSection.appendChild(a);
+  });
+}
+
+// ── RENDER LISTA DE POSTS ─────────────────────────────────────────────────
+function renderPostList(posts) {
+  const section = document.getElementById('posts');
+  const header = section.querySelector('.section-header');
+  section.querySelectorAll('.post-row').forEach(el => el.remove());
+
+  posts.filter(p => p.published !== 'false').forEach((post, i) => {
+    const slug = fileToSlug(post._file);
+    const a = document.createElement('a');
+    a.href = `post.html?slug=${slug}`;
+    a.className = `post-row r${i > 0 ? ' d'+(i) : ''}`;
+    a.innerHTML = `
+      <span class="post-row-num">${String(i+1).padStart(2,'0')}</span>
+      <div>
+        <div class="post-row-tag">${post.category || ''} · ${formatDate(post.date)}</div>
+        <div class="post-row-title">${post.title?.toUpperCase() || ''}</div>
+        ${post.excerpt ? `<div class="post-row-excerpt">${post.excerpt}</div>` : ''}
+      </div>`;
+    section.appendChild(a);
+  });
+}
+
+// ── RENDER DROPS ──────────────────────────────────────────────────────────
+function renderDrops(drops) {
+  const grid = document.querySelector('.drops-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  drops.sort((a,b) => (a.order||99) - (b.order||99)).forEach((drop, i) => {
+    const delay = i > 0 ? ` d${(i % 4)}` : '';
+    const a = document.createElement('a');
+    a.href = drop.link || '#';
+    if (drop.link) a.target = '_blank';
+    a.className = `drop-card r${delay}`;
+    a.dataset.type = drop.type || 'book';
+    const coverHtml = drop.cover
+      ? `<img src="${drop.cover}" alt="${drop.title}" style="width:100%;height:100%;object-fit:cover;">`
+      : `<div class="drop-cover-bg">${drop.type || 'book'}</div>`;
+    a.innerHTML = `
+      <div class="drop-cover">
+        ${coverHtml}
+        <span class="drop-type-badge">${drop.type || 'book'}</span>
+        <div class="drop-cover-text">${drop.title?.toUpperCase() || ''}<br>${drop.author || ''}</div>
+      </div>
+      <div class="drop-info">
+        <div class="drop-title">${drop.title || ''}</div>
+        <div class="drop-author">${drop.author || ''}</div>
+        <div class="drop-note">${drop.note || ''}</div>
+      </div>`;
+    grid.appendChild(a);
+  });
+}
+
+// ── RENDER WORKS ──────────────────────────────────────────────────────────
+function renderWorks(works) {
+  const section = document.getElementById('worked');
+  const header = section.querySelector('.section-header');
+  section.querySelectorAll('.work-row').forEach(el => el.remove());
+
+  works.sort((a,b) => (a.order||99) - (b.order||99)).forEach((work, i) => {
+    const delay = i > 0 ? ` d${i}` : '';
+    const a = document.createElement('a');
+    a.href = work.link || '#';
+    a.className = `work-row r${delay}`;
+    a.innerHTML = `
+      <span class="work-num">${String(i+1).padStart(3,'0')}</span>
+      <span class="work-title">${work.title?.toUpperCase() || ''}</span>
+      <div class="work-meta">
+        <span class="work-type">${work.type || ''}</span>
+        <span class="work-year">${work.year || ''}</span>
+      </div>`;
+    section.appendChild(a);
+  });
+}
+
+// ── RENDER ABOUT ──────────────────────────────────────────────────────────
+async function renderAbout() {
+  try {
+    const res = await fetch('content/settings/about.json');
+    if (!res.ok) return;
+    const data = await res.json();
+    const bio = document.querySelector('.me-bio');
+    if (bio && data.bio) bio.textContent = data.bio;
+    const links = document.querySelector('.me-links');
+    if (links) {
+      links.innerHTML = '';
+      if (data.instagram) links.innerHTML += `<a href="${data.instagram}" class="me-link" target="_blank">Instagram ↗</a>`;
+      if (data.email)     links.innerHTML += `<a href="mailto:${data.email}" class="me-link">Email ↗</a>`;
+      if (data.linkedin)  links.innerHTML += `<a href="${data.linkedin}" class="me-link" target="_blank">LinkedIn ↗</a>`;
+    }
+  } catch(e) {}
+}
+
+// ── RENDER HOME COVERS ────────────────────────────────────────────────────
+async function renderHomeCovers() {
+  try {
+    const res = await fetch('content/settings/home-covers.json');
+    if (!res.ok) return;
+    const data = await res.json();
+    const homeSection = document.getElementById('home');
+    homeSection.querySelectorAll('.float-img').forEach(el => el.remove());
+    const positions = ['fi-1', 'fi-2', 'fi-3'];
+    const bgColors  = ['#1a100a', '#0e0a18', '#080e18'];
+    const fgColors  = ['rgba(0,255,65,0.2)', 'rgba(204,68,255,0.2)', 'rgba(51,85,255,0.2)'];
+
+    (data.covers || []).slice(0,3).forEach((cover, i) => {
+      const div = document.createElement('div');
+      div.className = `float-img ${positions[i]}`;
+      div.dataset.type = cover.type || 'book';
+      const imgHtml = cover.image
+        ? `<img src="${cover.image}" alt="${cover.label}" style="width:100%;height:100%;object-fit:cover;filter:contrast(1.2) brightness(0.85) saturate(0.4);">`
+        : `<div class="cover-placeholder" style="background:${bgColors[i]};color:${fgColors[i]};">capa</div>`;
+      div.innerHTML = `${imgHtml}<div class="cover-label">${(cover.label || '').replace(/\n/g,'<br>')}</div>`;
+      homeSection.insertBefore(div, homeSection.firstChild);
+    });
+  } catch(e) {}
+}
+
+// ── INTERSECTION OBSERVER ─────────────────────────────────────────────────
+function initObserver() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('on'); });
+  }, { threshold: 0.07, rootMargin: '0px 0px -28px 0px' });
+  document.querySelectorAll('.r').forEach(el => obs.observe(el));
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+async function init() {
+  const [posts, drops, works] = await Promise.all([
+    fetchMarkdownList(POST_FILES),
+    fetchMarkdownList(DROP_FILES),
+    fetchMarkdownList(WORK_FILES),
+  ]);
+
+  renderHeroPosts(posts);
+  renderPostList(posts);
+  renderDrops(drops);
+  renderWorks(works);
+  await renderAbout();
+  await renderHomeCovers();
+  initObserver();
+}
+
+init();
 </script>
 </body>
 </html>
-
-
-Continuando projeto de website com Git - Claude

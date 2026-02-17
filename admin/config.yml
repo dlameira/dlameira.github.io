@@ -1,0 +1,114 @@
+backend:
+  name: github
+  repo: dlameira/dlameira.github.io
+  branch: master
+
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+
+locale: 'pt'
+
+collections:
+
+  # ── POSTS ──────────────────────────────────────────────────────────────
+  - name: "posts"
+    label: "Posts"
+    label_singular: "Post"
+    folder: "content/posts"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Título", name: "title", widget: "string" }
+      - { label: "Categoria", name: "category", widget: "string", hint: "Ex: Ensaio, Reflexão, Nota" }
+      - { label: "Data", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "DD/MM/YYYY", time_format: false }
+      - { label: "Tempo de leitura (min)", name: "readtime", widget: "number", default: 5 }
+      - { label: "Resumo", name: "excerpt", widget: "text", hint: "Aparece na listagem da home" }
+      - { label: "Conteúdo", name: "body", widget: "markdown" }
+      - { label: "Publicado", name: "published", widget: "boolean", default: true }
+
+  # ── DROPS ──────────────────────────────────────────────────────────────
+  - name: "drops"
+    label: "Drops"
+    label_singular: "Drop"
+    folder: "content/drops"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Título", name: "title", widget: "string" }
+      - { label: "Autor / Artista", name: "author", widget: "string" }
+      - label: "Tipo"
+        name: "type"
+        widget: "select"
+        options:
+          - { label: "Livro", value: "book" }
+          - { label: "Álbum", value: "album" }
+          - { label: "Podcast", value: "podcast" }
+          - { label: "Filme", value: "film" }
+      - { label: "Capa", name: "cover", widget: "image", required: false }
+      - { label: "Nota pessoal", name: "note", widget: "text" }
+      - { label: "Link externo", name: "link", widget: "string", required: false }
+      - { label: "Ordem", name: "order", widget: "number", default: 1 }
+
+  # ── I WORKED ON ────────────────────────────────────────────────────────
+  - name: "works"
+    label: "I Worked On"
+    label_singular: "Projeto"
+    folder: "content/works"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Nome do projeto", name: "title", widget: "string" }
+      - label: "Tipo"
+        name: "type"
+        widget: "select"
+        options:
+          - { label: "Editoria", value: "Editoria" }
+          - { label: "Revisão", value: "Revisão" }
+          - { label: "Texto", value: "Texto" }
+          - { label: "Direção", value: "Direção" }
+          - { label: "Outro", value: "Outro" }
+      - { label: "Ano", name: "year", widget: "string" }
+      - { label: "Link", name: "link", widget: "string", required: false }
+      - { label: "Ordem", name: "order", widget: "number", default: 1 }
+
+  # ── CONFIGURAÇÕES DA HOME ───────────────────────────────────────────────
+  - name: "settings"
+    label: "Configurações"
+    files:
+
+      - label: "Home — Imagens flutuantes"
+        name: "home_covers"
+        file: "content/settings/home-covers.json"
+        fields:
+          - label: "Imagens flutuantes"
+            name: "covers"
+            widget: "list"
+            max: 3
+            fields:
+              - { label: "Imagem", name: "image", widget: "image" }
+              - { label: "Legenda (aparece no hover)", name: "label", widget: "string" }
+              - label: "Cor da borda"
+                name: "color"
+                widget: "select"
+                options:
+                  - { label: "Verde", value: "green" }
+                  - { label: "Roxo", value: "purple" }
+                  - { label: "Azul", value: "blue" }
+                  - { label: "Vermelho", value: "red" }
+              - label: "Tipo"
+                name: "type"
+                widget: "select"
+                options:
+                  - { label: "Livro", value: "book" }
+                  - { label: "Álbum", value: "album" }
+
+      - label: "Sobre mim"
+        name: "about"
+        file: "content/settings/about.json"
+        fields:
+          - { label: "Nome", name: "name", widget: "string" }
+          - { label: "Bio", name: "bio", widget: "text" }
+          - { label: "Foto", name: "photo", widget: "image", required: false }
+          - { label: "Instagram", name: "instagram", widget: "string", required: false }
+          - { label: "Email", name: "email", widget: "string", required: false }
+          - { label: "LinkedIn", name: "linkedin", widget: "string", required: false }

@@ -1,0 +1,22 @@
+{
+  "covers": [
+    {
+      "image": "",
+      "label": "A VERDADE VOS LIBERTARÁ\nGabriel Chalita",
+      "color": "green",
+      "type": "book"
+    },
+    {
+      "image": "",
+      "label": "MEDO E DELÍRIO EM BRASÍLIA\nPedro Daltro",
+      "color": "purple",
+      "type": "book"
+    },
+    {
+      "image": "",
+      "label": "STEVE JOBS\nWalter Isaacson",
+      "color": "blue",
+      "type": "book"
+    }
+  ]
+}
