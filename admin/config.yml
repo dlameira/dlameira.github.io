@@ -2,6 +2,8 @@ backend:
   name: github
   repo: dlameira/dlameira.github.io
   branch: master
+  auth_type: pkce
+  app_id: 0v23liTI960kTWso5L6j
 
 site_url: https://dlameira.netlify.app
 
@@ -9,7 +11,6 @@ media_folder: "images/uploads"
 public_folder: "/images/uploads"
 
 locale: 'pt'
-
 collections:
 
   # ── POSTS ──────────────────────────────────────────────────────────────
