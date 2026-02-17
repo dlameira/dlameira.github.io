@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WEIRD WIZ</title>
+<style>
+@font-face {
+  font-family: 'OffBit';
+  src: url('fonts/OffBit-101Bold.otf') format('opentype');
+}
+@font-face {
+  font-family: 'GTPressura';
+  src: url('fonts/gt-pressura-mono-regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'MyriadPro';
+  src: url('fonts/MyriadPro-Regular.otf') format('opentype');
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a08;
+  --fg: #e8e8d8;
+  --red: #E8320A;
+  --green: #00ff41;
+  --blue: #3355ff;
+  --purple: #cc44ff;
+  --yellow: #f2e04a;
+  --f-title: 'OffBit', monospace;
+  --f-ui: 'GTPressura', monospace;
+  --f-body: 'MyriadPro', sans-serif;
+}
+
+html { overflow-x: hidden; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-ui); overflow-x: hidden; cursor: crosshair; }
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
+  pointer-events: none; z-index: 997;
+}
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 16px 24px; background: var(--bg);
+  border-bottom: 1px solid rgba(232,50,10,0.25);
+}
+.nav-logo { display: flex; flex-direction: column; gap: 3px; }
+.nav-logo-title { font-family: var(--f-title); font-size: 26px; color: var(--red); letter-spacing: 0.06em; line-height: 1; text-decoration: none; }
+.nav-logo-sub { font-family: var(--f-ui); font-size: 8.5px; color: rgba(232,50,10,0.55); letter-spacing: 0.04em; line-height: 1.45; }
+.nav-links { display: flex; align-items: center; list-style: none; gap: 0; flex-wrap: wrap; justify-content: flex-end; }
+.nav-sep { color: var(--red); font-size: 11px; padding: 0 5px; opacity: 0.6; }
+.nav-links a { font-family: var(--f-ui); font-size: 11.5px; color: var(--fg); text-decoration: none; letter-spacing: 0.06em; padding: 2px 4px; transition: color 0.15s; }
+.nav-links a:hover { color: var(--red); }
+
+/* HOME */
+.home { min-height: 100vh; padding: 90px 0 60px; position: relative; overflow: hidden; }
+
+/* imagens flutuantes */
+.float-img {
+  position: absolute; z-index: 4; cursor: crosshair;
+  transition: transform 0.35s cubic-bezier(.23,1,.32,1); overflow: hidden;
+}
+.float-img:hover { z-index: 6; }
+.cover-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-family: var(--f-ui); font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; }
+.cover-label {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-family: var(--f-ui); font-size: 10px; letter-spacing: 0.06em; line-height: 1.5; padding: 12px;
+  opacity: 0; transition: opacity 0.2s;
+}
+.float-img[data-type="book"]    .cover-label { background: var(--green); color: var(--bg); }
+.float-img[data-type="album"]   .cover-label { background: var(--green); color: var(--bg); }
+.float-img[data-type="podcast"] .cover-label { background: var(--purple); color: var(--fg); }
+.float-img:hover .cover-label { opacity: 1; }
+
+.fi-1 { width: clamp(115px, 13vw, 185px); top: 108px; left: clamp(300px, 34vw, 500px); transform: rotate(1.5deg); border: 2px solid var(--green); aspect-ratio: 2/3; }
+.fi-2 { width: clamp(105px, 12vw, 165px); top: 290px; right: clamp(50px, 7vw, 120px); transform: rotate(-2.5deg); border: 2px solid var(--purple); aspect-ratio: 3/4; }
+.fi-3 { width: clamp(95px, 10vw, 145px); bottom: 100px; left: clamp(16px, 2.5vw, 40px); transform: rotate(1deg); border: 2px solid var(--blue); aspect-ratio: 2/3; }
+
+/* headlines */
+.headline {
+  display: block; font-family: var(--f-title);
+  font-size: clamp(38px, 6.5vw, 88px); letter-spacing: 0.04em; line-height: 1.06;
+  padding: 8px 20px; margin: 6px 0; width: fit-content;
+  text-decoration: none; color: var(--fg);
+  position: relative; z-index: 3; cursor: crosshair;
+}
+.headline.border-red    { border: 2px solid var(--red); }
+.headline.border-green  { border: 2px solid var(--green); }
+.headline.border-blue   { border: 2px solid var(--blue); }
+.headline.border-purple { border: 2px solid var(--purple); }
+.headline.border-yellow { border: 2px solid var(--yellow); }
+
+/* hover: fundo sólido por cima das imagens */
+.headline:hover { z-index: 50 !important; }
+.headline.border-red:hover    { background: var(--red);    color: var(--fg); }
+.headline.border-green:hover  { background: var(--green);  color: var(--bg); }
+.headline.border-blue:hover   { background: var(--blue);   color: var(--fg); }
+.headline.border-purple:hover { background: var(--purple); color: var(--fg); }
+.headline.border-yellow:hover { background: var(--yellow); color: var(--bg); }
+
+.hl-1 { margin-left: clamp(18px, 7vw, 120px); margin-top: 28px; }
+.hl-2 { margin-left: clamp(8px, 2vw, 24px); }
+.hl-3 { margin-left: clamp(36px, 13vw, 200px); }
+.hl-4 { margin-left: clamp(12px, 4vw, 65px); }
+.hl-5 { margin-left: clamp(60px, 16vw, 240px); }
+
+/* SEÇÕES */
+.section { padding: 72px 24px; border-top: 1px solid rgba(232,50,10,0.2); }
+.section-header { display: flex; align-items: flex-end; gap: 20px; margin-bottom: 48px; }
+.section-title { font-family: var(--f-title); font-size: clamp(44px, 7vw, 90px); letter-spacing: 0.05em; color: var(--red); line-height: 1; }
+.section-desc { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.1em; color: rgba(232,50,10,0.45); text-transform: uppercase; max-width: 160px; line-height: 1.55; border-left: 1px solid rgba(232,50,10,0.25); padding-left: 12px; margin-bottom: 8px; }
+
+/* POSTS */
+.post-row { display: grid; grid-template-columns: 72px 1fr; gap: 20px; padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.05); text-decoration: none; color: var(--fg); cursor: crosshair; transition: padding-left 0.2s, border-color 0.2s; align-items: start; }
+.post-row:hover { padding-left: 10px; border-color: rgba(232,50,10,0.3); }
+.post-row-num { font-family: var(--f-ui); font-size: 9px; letter-spacing: 0.15em; color: rgba(232,50,10,0.4); padding-top: 5px; }
+.post-row-tag { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--red); opacity: 0.65; margin-bottom: 7px; }
+.post-row-title { font-family: var(--f-title); font-size: clamp(22px, 3.5vw, 48px); letter-spacing: 0.03em; line-height: 1.05; }
+.post-row-excerpt { margin-top: 8px; font-family: var(--f-body); font-size: 13px; color: rgba(232,232,216,0.42); line-height: 1.6; max-width: 560px; }
+
+/* DROPS */
+.drops-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(188px, 1fr)); gap: 2px; }
+.drop-card { background: #111109; border: 1px solid rgba(255,255,255,0.04); text-decoration: none; color: var(--fg); display: flex; flex-direction: column; cursor: crosshair; transition: border-color 0.2s; }
+.drop-card:hover { border-color: var(--red); }
+.drop-cover { aspect-ratio: 1; position: relative; overflow: hidden; }
+.drop-cover-bg { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-family: var(--f-ui); font-size: 8px; letter-spacing: 0.12em; color: rgba(255,255,255,0.1); }
+.drop-cover-text { position: absolute; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; text-align: center; font-family: var(--f-ui); font-size: 11px; letter-spacing: 0.06em; line-height: 1.5; padding: 14px; opacity: 0; transition: opacity 0.2s; border: 2px solid var(--red); }
+.drop-card:hover .drop-cover-text { opacity: 1; }
+.drop-type-badge { position: absolute; top: 8px; left: 8px; font-family: var(--f-ui); font-size: 7.5px; letter-spacing: 0.16em; text-transform: uppercase; padding: 3px 6px; }
+.drop-card[data-type="book"]    .drop-cover-bg { background: #1a1208; }
+.drop-card[data-type="album"]   .drop-cover-bg { background: #08121a; }
+.drop-card[data-type="podcast"] .drop-cover-bg { background: #120a1a; }
+.drop-card[data-type="film"]    .drop-cover-bg { background: #0a1a0a; }
+.drop-card[data-type="book"]    .drop-type-badge { color: var(--yellow); border: 1px solid var(--yellow); }
+.drop-card[data-type="album"]   .drop-type-badge { color: var(--green);  border: 1px solid var(--green);  }
+.drop-card[data-type="podcast"] .drop-type-badge { color: var(--purple); border: 1px solid var(--purple); }
+.drop-card[data-type="film"]    .drop-type-badge { color: var(--blue);   border: 1px solid var(--blue);   }
+.drop-info { padding: 14px; display: flex; flex-direction: column; gap: 4px; }
+.drop-title { font-family: var(--f-ui); font-size: 12.5px; font-weight: 700; line-height: 1.2; }
+.drop-author { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.08em; color: rgba(232,232,216,0.35); text-transform: uppercase; }
+.drop-note { margin-top: 6px; font-family: var(--f-body); font-size: 11px; color: rgba(232,232,216,0.45); line-height: 1.55; }
+
+/* I WORKED ON */
+.work-row { display: grid; grid-template-columns: 72px 1fr auto; gap: 20px; align-items: center; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); text-decoration: none; color: var(--fg); cursor: crosshair; transition: padding-left 0.2s; }
+.work-row:hover { padding-left: 10px; }
+.work-num { font-family: var(--f-ui); font-size: 9px; letter-spacing: 0.14em; color: rgba(232,50,10,0.35); }
+.work-title { font-family: var(--f-title); font-size: clamp(18px, 2.8vw, 34px); letter-spacing: 0.04em; line-height: 1; }
+.work-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.work-type { font-family: var(--f-ui); font-size: 8px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--red); opacity: 0.65; }
+.work-year { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.1em; color: rgba(232,232,216,0.18); }
+
+/* ME */
+.me-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+.me-name { font-family: var(--f-title); font-size: clamp(60px, 11vw, 150px); line-height: 0.9; letter-spacing: 0.02em; }
+.me-name span { color: var(--red); }
+.me-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 28px; }
+.me-tag { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.15em; text-transform: uppercase; padding: 4px 10px; border: 1px solid rgba(232,232,216,0.1); color: rgba(232,232,216,0.35); }
+.me-bio { font-family: var(--f-body); font-size: 15px; line-height: 1.75; color: rgba(232,232,216,0.6); border-left: 2px solid var(--red); padding-left: 20px; margin-top: 36px; }
+.me-links { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 28px; }
+.me-link { font-family: var(--f-ui); font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(232,50,10,0.55); text-decoration: none; border-bottom: 1px solid rgba(232,50,10,0.25); padding-bottom: 2px; transition: color 0.15s; }
+.me-link:hover { color: var(--red); }
+
+footer { border-top: 1px solid rgba(232,50,10,0.18); padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em; text-transform: uppercase; color: rgba(232,232,216,0.14); }
+
+.r { opacity: 0; transform: translateY(18px); transition: opacity .55s ease, transform .55s ease; }
+.r.on { opacity: 1; transform: none; }
+.r.d1 { transition-delay: .08s; } .r.d2 { transition-delay: .16s; } .r.d3 { transition-delay: .26s; } .r.d4 { transition-delay: .36s; }
+
+@media (max-width: 760px) {
+  .me-grid { grid-template-columns: 1fr; gap: 40px; }
+  .work-row { grid-template-columns: 48px 1fr; }
+  .work-meta { display: none; }
+  .fi-2, .fi-3 { display: none; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <a href="index.html" class="nav-logo-title">WEIRD WIZ</a>
+    <span class="nav-logo-sub">a blog about art creativity<br>tech books and consciousness</span>
+  </div>
+  <ul class="nav-links">
+    <li><span class="nav-sep">..·</span><a href="#worked">I worked on</a></li>
+    <li><span class="nav-sep">:·</span><a href="#posts">Posts</a></li>
+    <li><span class="nav-sep">.·.</span><a href="#drops">Drops</a></li>
+    <li><span class="nav-sep">-·</span><a href="#me">Me</a></li>
+  </ul>
+</nav>
+
+<section class="home" id="home">
+  <div class="float-img fi-1" data-type="book">
+    <div class="cover-placeholder" style="background:#1a100a; color:rgba(0,255,65,0.2);">capa</div>
+    <div class="cover-label">A VERDADE VOS LIBERTARÁ<br>Gabriela Biló</div>
+  </div>
+  <div class="float-img fi-2" data-type="book">
+    <div class="cover-placeholder" style="background:#0e0a18; color:rgba(204,68,255,0.2);">capa</div>
+    <div class="cover-label">MEDO E DELÍRIO EM BRASÍLIA<br>Pedro Daltro</div>
+  </div>
+  <div class="float-img fi-3" data-type="book">
+    <div class="cover-placeholder" style="background:#080e18; color:rgba(51,85,255,0.2);">capa</div>
+    <div class="cover-label">STEVE JOBS<br>Walter Isaacson</div>
+  </div>
+
+  <a href="post.html" class="headline border-red hl-1 r">HOW CAN AI CHANGE</a>
+  <a href="post.html" class="headline border-red hl-2 r d1">THE BOOKS AS WE KNOW IT</a>
+  <a href="#" class="headline border-green hl-3 r d2">PARENTS NEED TO DEAL WITH TECH</a>
+  <a href="#" class="headline border-purple hl-4 r d3">THOUGHTS ABOUT ANTIFRAGILE</a>
+  <a href="#" class="headline border-blue hl-5 r d4">W CAN AI CHANGE THE BOOKS AS WE KNOW IT</a>
+</section>
+
+<section class="section" id="posts">
+  <div class="section-header r">
+    <h2 class="section-title">POSTS</h2>
+    <p class="section-desc">textos longos sobre o que importa</p>
+  </div>
+  <a href="post.html" class="post-row r">
+    <span class="post-row-num">01</span>
+    <div>
+      <div class="post-row-tag">Ensaio · Fev 2025</div>
+      <div class="post-row-title">HOW CAN AI CHANGE THE BOOKS AS WE KNOW IT</div>
+      <div class="post-row-excerpt">Uma investigação sobre o que muda e o que permanece quando algoritmos entram na cadeia editorial.</div>
+    </div>
+  </a>
+  <a href="#" class="post-row r d1">
+    <span class="post-row-num">02</span>
+    <div>
+      <div class="post-row-tag">Reflexão · Jan 2025</div>
+      <div class="post-row-title">PARENTS NEED TO DEAL WITH TECH</div>
+      <div class="post-row-excerpt">O que acontece com uma geração criada por pais que ainda estão tentando entender o smartphone.</div>
+    </div>
+  </a>
+  <a href="#" class="post-row r d2">
+    <span class="post-row-num">03</span>
+    <div>
+      <div class="post-row-tag">Nota · Dez 2024</div>
+      <div class="post-row-title">THOUGHTS ABOUT ANTIFRAGILE</div>
+    </div>
+  </a>
+</section>
+
+<section class="section" id="drops">
+  <div class="section-header r">
+    <h2 class="section-title">DROPS</h2>
+    <p class="section-desc">livros, álbuns, podcasts, filmes</p>
+  </div>
+  <div class="drops-grid">
+    <a href="#" class="drop-card r" data-type="book">
+      <div class="drop-cover"><div class="drop-cover-bg">capa</div><span class="drop-type-badge">book</span><div class="drop-cover-text">ANTIFRAGILE<br>Nassim Taleb</div></div>
+      <div class="drop-info"><div class="drop-title">Antifragile</div><div class="drop-author">Nassim Taleb</div><div class="drop-note">Livro que mudou como penso sobre sistemas, risco e o que nos fortalece com o caos.</div></div>
+    </a>
+    <a href="#" class="drop-card r d1" data-type="album">
+      <div class="drop-cover"><div class="drop-cover-bg">capa</div><span class="drop-type-badge">album</span><div class="drop-cover-text">OK COMPUTER<br>Radiohead</div></div>
+      <div class="drop-info"><div class="drop-title">OK Computer</div><div class="drop-author">Radiohead</div><div class="drop-note">Ainda soa como o futuro. Ouvi novamente em 2024 e ficou mais assustador.</div></div>
+    </a>
+    <a href="#" class="drop-card r d2" data-type="podcast">
+      <div class="drop-cover"><div class="drop-cover-bg">capa</div><span class="drop-type-badge">podcast</span><div class="drop-cover-text">LEX FRIDMAN #367<br>Lex Fridman</div></div>
+      <div class="drop-info"><div class="drop-title">Lex Fridman #367</div><div class="drop-author">Lex Fridman</div><div class="drop-note">A conversa sobre consciência que não consegui parar de ouvir.</div></div>
+    </a>
+    <a href="#" class="drop-card r d3" data-type="book">
+      <div class="drop-cover"><div class="drop-cover-bg">capa</div><span class="drop-type-badge">book</span><div class="drop-cover-text">STEVE JOBS<br>Walter Isaacson</div></div>
+      <div class="drop-info"><div class="drop-title">Steve Jobs</div><div class="drop-author">Walter Isaacson</div><div class="drop-note">Não uma hagiografia. Um retrato honesto de alguém impossível de ignorar.</div></div>
+    </a>
+    <a href="#" class="drop-card r d1" data-type="film">
+      <div class="drop-cover"><div class="drop-cover-bg">capa</div><span class="drop-type-badge">film</span><div class="drop-cover-text">ARRIVAL<br>Denis Villeneuve</div></div>
+      <div class="drop-info"><div class="drop-title">Arrival</div><div class="drop-author">Denis Villeneuve</div><div class="drop-note">O melhor argumento cinematográfico sobre linguagem e percepção do tempo.</div></div>
+    </a>
+    <a href="#" class="drop-card r d2" data-type="book">
+      <div class="drop-cover"><div class="drop-cover-bg">capa</div><span class="drop-type-badge">book</span><div class="drop-cover-text">THE MASTER AND MARGARITA<br>Bulgakov</div></div>
+      <div class="drop-info"><div class="drop-title">The Master and Margarita</div><div class="drop-author">Bulgakov</div><div class="drop-note">Lido três vezes. Cada vez é um livro diferente.</div></div>
+    </a>
+  </div>
+</section>
+
+<section class="section" id="worked">
+  <div class="section-header r">
+    <h2 class="section-title">I WORKED ON</h2>
+    <p class="section-desc">livros, projetos e editorias</p>
+  </div>
+  <a href="#" class="work-row r"><span class="work-num">001</span><span class="work-title">NOME DO LIVRO OU PROJETO</span><div class="work-meta"><span class="work-type">Editoria</span><span class="work-year">2024</span></div></a>
+  <a href="#" class="work-row r d1"><span class="work-num">002</span><span class="work-title">OUTRO PROJETO EDITORIAL</span><div class="work-meta"><span class="work-type">Revisão</span><span class="work-year">2023</span></div></a>
+  <a href="#" class="work-row r d2"><span class="work-num">003</span><span class="work-title">REVISTA OU PUBLICAÇÃO</span><div class="work-meta"><span class="work-type">Texto</span><span class="work-year">2023</span></div></a>
+  <a href="#" class="work-row r d3"><span class="work-num">004</span><span class="work-title">NOME DO LIVRO</span><div class="work-meta"><span class="work-type">Editoria</span><span class="work-year">2022</span></div></a>
+</section>
+
+<section class="section" id="me">
+  <div class="me-grid">
+    <div class="r">
+      <h2 class="me-name">WEIRD<br><span>WIZ</span></h2>
+      <div class="me-tags">
+        <span class="me-tag">arte</span><span class="me-tag">criatividade</span>
+        <span class="me-tag">tecnologia</span><span class="me-tag">livros</span><span class="me-tag">consciência</span>
+      </div>
+    </div>
+    <div class="r d1">
+      <p style="font-family:var(--f-ui); font-size:8.5px; letter-spacing:0.18em; text-transform:uppercase; color:rgba(232,50,10,0.45);">— quem escreve</p>
+      <p class="me-bio">Sou um editor e pesquisador sobre tecnologia, arte e criatividade. Pai de um menino maravilhoso, fundador da Antofágica e da Seiva, editei muitos livros. Criei este blog para registrar mudanças, pensamentos e indicações de conteúdos que gosto.</p>
+      <div class="me-links">
+        <a href="#" class="me-link">Instagram ↗</a>
+        <a href="#" class="me-link">Email ↗</a>
+        <a href="#" class="me-link">LinkedIn ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>© 2025 Weird Wiz</span>
+  <span>Daniel Lameira</span>
+  <span>made by hand</span>
+</footer>
+
+<script>
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('on'); });
+}, { threshold: 0.07, rootMargin: '0px 0px -28px 0px' });
+document.querySelectorAll('.r').forEach(el => obs.observe(el));
+
+document.addEventListener('mousemove', e => {
+  const mx = (e.clientX / window.innerWidth - 0.5);
+  const my = (e.clientY / window.innerHeight - 0.5);
+  document.querySelectorAll('.float-img').forEach((img, i) => {
+    const d = (i + 1) * 10;
+    img.style.marginLeft = (mx * d) + 'px';
+    img.style.marginTop  = (my * d * 0.55) + 'px';
+  });
+});
+</script>
+</body>
+</html>

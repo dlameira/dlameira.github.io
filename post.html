@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WEIRD WIZ — Post</title>
+<style>
+@font-face { font-family: 'OffBit'; src: url('fonts/OffBit-101Bold.otf') format('opentype'); }
+@font-face { font-family: 'GTPressura'; src: url('fonts/gt-pressura-mono-regular.ttf') format('truetype'); }
+@font-face { font-family: 'MyriadPro'; src: url('fonts/MyriadPro-Regular.otf') format('opentype'); }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a08; --fg: #e8e8d8; --red: #E8320A;
+  --green: #00ff41; --blue: #3355ff; --purple: #cc44ff;
+  --f-title: 'OffBit', monospace;
+  --f-ui: 'GTPressura', monospace;
+  --f-body: 'MyriadPro', sans-serif;
+}
+
+html { overflow-x: hidden; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); overflow-x: hidden; cursor: crosshair; }
+
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
+  pointer-events: none; z-index: 997;
+}
+
+/* NAV — igual à home */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 16px 24px; background: var(--bg);
+  border-bottom: 1px solid rgba(232,50,10,0.25);
+}
+.nav-logo { display: flex; flex-direction: column; gap: 3px; }
+.nav-logo-title { font-family: var(--f-title); font-size: 26px; color: var(--red); letter-spacing: 0.06em; line-height: 1; text-decoration: none; }
+.nav-logo-sub { font-family: var(--f-ui); font-size: 8.5px; color: rgba(232,50,10,0.55); letter-spacing: 0.04em; line-height: 1.45; }
+.nav-links { display: flex; align-items: center; list-style: none; gap: 0; flex-wrap: wrap; justify-content: flex-end; }
+.nav-sep { color: var(--red); font-size: 11px; padding: 0 5px; opacity: 0.6; }
+.nav-links a { font-family: var(--f-ui); font-size: 11.5px; color: var(--fg); text-decoration: none; letter-spacing: 0.06em; padding: 2px 4px; transition: color 0.15s; }
+.nav-links a:hover { color: var(--red); }
+
+/* LAYOUT PRINCIPAL */
+.post-wrap {
+  padding: 96px 24px 100px;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+/* COLUNA ESQUERDA */
+.post-main {}
+
+.back-btn {
+  display: inline-block;
+  font-family: var(--f-ui);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg);
+  text-decoration: none;
+  border: 1px solid var(--red);
+  padding: 10px 28px;
+  margin-bottom: 48px;
+  transition: background 0.15s, color 0.15s;
+}
+.back-btn:hover { background: var(--red); }
+
+.post-tag {
+  font-family: var(--f-ui);
+  font-size: 8.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--red);
+  opacity: 0.7;
+  margin-bottom: 16px;
+}
+
+.post-title {
+  font-family: var(--f-title);
+  font-size: clamp(36px, 5.5vw, 72px);
+  letter-spacing: 0.03em;
+  line-height: 1.02;
+  margin-bottom: 40px;
+}
+
+.post-body {
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.8;
+  color: rgba(232,232,216,0.78);
+  max-width: 620px;
+}
+
+.post-body p { margin-bottom: 24px; }
+
+.post-body p:last-child { margin-bottom: 0; }
+
+.post-body strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.post-body a {
+  color: var(--red);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(232,50,10,0.3);
+}
+.post-body a:hover { border-color: var(--red); }
+
+/* separador entre parágrafos */
+.post-divider {
+  width: 32px;
+  height: 1px;
+  background: var(--red);
+  opacity: 0.4;
+  margin: 32px 0;
+}
+
+/* COLUNA DIREITA — sidebar */
+.post-sidebar {
+  position: sticky;
+  top: 88px;
+}
+
+.sidebar-card {
+  border: 2px solid var(--purple);
+  background: #0f0f0d;
+  padding: 0;
+  overflow: hidden;
+}
+
+.sidebar-photo {
+  width: 100%;
+  aspect-ratio: 1;
+  background: #1a1018;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* placeholder foto — troca por <img> quando tiver foto real */
+.sidebar-photo-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-ui); font-size: 9px;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: rgba(255,255,255,0.12);
+  background: #1a1018;
+}
+
+/* efeito duotone / filtro na foto */
+.sidebar-photo img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: contrast(1.2) brightness(0.85) saturate(0.4);
+  mix-blend-mode: normal;
+}
+
+.sidebar-info {
+  padding: 20px 20px 0;
+  border-top: 1px solid rgba(204,68,255,0.2);
+}
+
+.sidebar-name {
+  font-family: var(--f-title);
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.sidebar-bio {
+  font-family: var(--f-ui);
+  font-size: 10px;
+  line-height: 1.7;
+  color: rgba(232,232,216,0.55);
+  letter-spacing: 0.02em;
+  text-align: center;
+  padding-bottom: 20px;
+}
+
+.sidebar-bio a {
+  color: var(--red);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(232,50,10,0.3);
+}
+
+/* grid de imagens pequenas na sidebar */
+.sidebar-imgs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  border-top: 1px solid rgba(204,68,255,0.2);
+}
+
+.sidebar-img-item {
+  aspect-ratio: 1;
+  background: #1a1018;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-ui); font-size: 7px;
+  letter-spacing: 0.1em; color: rgba(255,255,255,0.1);
+  overflow: hidden;
+  cursor: crosshair;
+  transition: opacity 0.15s;
+}
+.sidebar-img-item:hover { opacity: 0.7; }
+.sidebar-img-item img { width: 100%; height: 100%; object-fit: cover; filter: contrast(1.1) saturate(0.5); }
+
+/* post meta no rodapé */
+.post-footer-meta {
+  margin-top: 64px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(232,50,10,0.15);
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.post-meta-item {
+  display: flex; flex-direction: column; gap: 4px;
+}
+
+.post-meta-label {
+  font-family: var(--f-ui); font-size: 8px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(232,50,10,0.4);
+}
+
+.post-meta-val {
+  font-family: var(--f-ui); font-size: 10px;
+  letter-spacing: 0.08em;
+  color: rgba(232,232,216,0.45);
+}
+
+/* nav de posts */
+.post-nav {
+  margin-top: 48px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+}
+
+.post-nav-item {
+  background: #111109;
+  border: 1px solid rgba(255,255,255,0.04);
+  padding: 20px;
+  text-decoration: none;
+  color: var(--fg);
+  cursor: crosshair;
+  transition: border-color 0.2s;
+}
+.post-nav-item:hover { border-color: var(--red); }
+
+.post-nav-dir {
+  font-family: var(--f-ui); font-size: 8px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(232,50,10,0.4); margin-bottom: 8px;
+}
+
+.post-nav-title {
+  font-family: var(--f-title); font-size: 16px;
+  letter-spacing: 0.04em; line-height: 1.1;
+}
+
+/* FOOTER */
+footer {
+  border-top: 1px solid rgba(232,50,10,0.18);
+  padding: 18px 24px;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+}
+footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em; text-transform: uppercase; color: rgba(232,232,216,0.14); }
+
+/* RESPONSIVE */
+@media (max-width: 860px) {
+  .post-wrap { grid-template-columns: 1fr; }
+  .post-sidebar { position: static; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <a href="index.html" class="nav-logo-title">WEIRD WIZ</a>
+    <span class="nav-logo-sub">a blog about art creativity<br>tech books and consciousness</span>
+  </div>
+  <ul class="nav-links">
+    <li><span class="nav-sep">..·</span><a href="index.html#worked">I worked on</a></li>
+    <li><span class="nav-sep">:·</span><a href="index.html#posts">Posts</a></li>
+    <li><span class="nav-sep">.·.</span><a href="index.html#drops">Drops</a></li>
+    <li><span class="nav-sep">-·</span><a href="index.html#me">Me</a></li>
+  </ul>
+</nav>
+
+<div class="post-wrap">
+
+  <!-- COLUNA PRINCIPAL -->
+  <main class="post-main">
+
+    <a href="index.html" class="back-btn">← back to home</a>
+
+    <div class="post-tag">Ensaio · Fev 2025 · 12 min</div>
+
+    <h1 class="post-title">HOW CAN AI CHANGE<br>THE BOOKS AS WE<br>KNOW IT</h1>
+
+    <div class="post-body">
+      <p>Artificial Intelligence (AI) has been revolutionizing various industries in recent years, and the publishing industry is no exception. With the increasing capabilities of AI, it has the potential to change books as we know them. From content creation to distribution and even reading experience, AI can bring significant changes.</p>
+
+      <p>Firstly, AI can assist authors in content creation. With AI-powered writing tools, authors can streamline the writing process and generate content quickly. These tools can also analyze the market trends and suggest relevant topics to authors. Furthermore, AI can help in content curation by analyzing data from social media and other sources to understand readers' preferences.</p>
+
+      <div class="post-divider"></div>
+
+      <p>Secondly, AI can transform the distribution of books. Traditional book distribution involves multiple intermediaries, which can be time-consuming and costly. AI can optimize the distribution process by predicting demand, managing inventory, and streamlining logistics. This can result in faster delivery and lower costs, making books more accessible to a wider audience.</p>
+
+      <p>Moreover, AI can personalize the reading experience. By analyzing a reader's past reading habits and preferences, AI can recommend books that the reader is likely to enjoy. This can enhance the reading experience and increase reader engagement. AI can also create personalized content, such as personalized summaries or analyses of books, which can add value for readers.</p>
+
+      <div class="post-divider"></div>
+
+      <p>However, the integration of AI in the book industry also raises some concerns. <strong>One of the main concerns is the potential impact on authors.</strong> If AI can generate content, it might reduce the demand for human authors, which could have significant implications for the creative industry. Additionally, the quality of AI-generated content is still a debated topic. While AI can generate text that is grammatically correct and coherent, it might lack the depth, creativity, and emotional resonance that human authors bring to their work.</p>
+
+      <p>In conclusion, while AI has the potential to bring significant changes to the book industry, it's important to consider both the opportunities and the challenges. The key is to use AI as a tool to enhance, rather than replace, human creativity and judgment. As with any technological advancement, the impact of AI on the book industry will depend on how we choose to use it.</p>
+    </div>
+
+    <!-- meta -->
+    <div class="post-footer-meta">
+      <div class="post-meta-item">
+        <span class="post-meta-label">Publicado</span>
+        <span class="post-meta-val">Fevereiro 2025</span>
+      </div>
+      <div class="post-meta-item">
+        <span class="post-meta-label">Categoria</span>
+        <span class="post-meta-val">Ensaio</span>
+      </div>
+      <div class="post-meta-item">
+        <span class="post-meta-label">Leitura</span>
+        <span class="post-meta-val">12 minutos</span>
+      </div>
+    </div>
+
+    <!-- nav anterior/próximo -->
+    <div class="post-nav">
+      <a href="#" class="post-nav-item">
+        <div class="post-nav-dir">← anterior</div>
+        <div class="post-nav-title">THOUGHTS ABOUT ANTIFRAGILE</div>
+      </a>
+      <a href="#" class="post-nav-item" style="text-align:right;">
+        <div class="post-nav-dir">próximo →</div>
+        <div class="post-nav-title">PARENTS NEED TO DEAL WITH TECH</div>
+      </a>
+    </div>
+
+  </main>
+
+  <!-- SIDEBAR -->
+  <aside class="post-sidebar">
+    <div class="sidebar-card">
+
+      <!-- foto — substitui o placeholder por <img src="sua-foto.jpg"> -->
+      <div class="sidebar-photo">
+        <div class="sidebar-photo-placeholder">foto</div>
+      </div>
+
+      <div class="sidebar-info">
+        <div class="sidebar-name">Daniel Lameira</div>
+        <p class="sidebar-bio">
+          Sou um editor e pesquisador sobre tecnologia, arte e criatividade. Pai de um menino maravilhoso, fundador da Antofágica e da Seiva, editei muitos livros <a href="index.html#worked">(que você pode ver aqui)</a>. Criei este blog para poder registrar algumas mudanças, pensamentos e indicações de conteúdos que gosto.
+        </p>
+      </div>
+
+      <!-- grid de imagens pequenas -->
+      <div class="sidebar-imgs">
+        <div class="sidebar-img-item">img</div>
+        <div class="sidebar-img-item">img</div>
+        <div class="sidebar-img-item">img</div>
+      </div>
+
+    </div>
+  </aside>
+
+</div>
+
+<footer>
+  <span>© 2025 Weird Wiz</span>
+  <span>Daniel Lameira</span>
+  <span>made by hand</span>
+</footer>
+
+</body>
+</html>
