@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WEIRD WIZ</title>
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <style>
 @font-face {
   font-family: 'OffBit';
@@ -195,9 +194,9 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
     <span class="nav-logo-sub">a blog about art creativity<br>tech books and consciousness</span>
   </div>
   <ul class="nav-links">
-    <li><span class="nav-sep">..·</span><a href="#worked">I worked on</a></li>
-    <li><span class="nav-sep">:·</span><a href="#posts">Posts</a></li>
-    <li><span class="nav-sep">.·.</span><a href="#drops">Drops</a></li>
+    <li><span class="nav-sep">..·</span><a href="works.html">I worked on</a></li>
+    <li><span class="nav-sep">:·</span><a href="posts.html">Posts</a></li>
+    <li><span class="nav-sep">.·.</span><a href="drops.html">Drops</a></li>
     <li><span class="nav-sep">-·</span><a href="#me">Me</a></li>
   </ul>
 </nav>
@@ -569,16 +568,5 @@ async function init() {
 init();
 </script>
 
-<script>
-if (window.netlifyIdentity) {
-  window.netlifyIdentity.on("init", user => {
-    if (!user) {
-      window.netlifyIdentity.on("login", () => {
-        document.location.href = "/admin/";
-      });
-    }
-  });
-}
-</script>
 </body>
 </html>
