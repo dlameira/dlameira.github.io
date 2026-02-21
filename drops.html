@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WEIRD WIZ — Drops</title>
+<style>
+@font-face { font-family: 'OffBit'; src: url('fonts/OffBit-101Bold.otf') format('opentype'); }
+@font-face { font-family: 'AuthenticSans'; src: url('fonts/60b11050899817005a227b9e.otf') format('opentype'); }
+@font-face { font-family: 'GTPressura'; src: url('fonts/gt-pressura-mono-regular.ttf') format('truetype'); }
+@font-face { font-family: 'MyriadPro'; src: url('fonts/MyriadPro-Regular.otf') format('opentype'); }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a08; --fg: #e8e8d8; --red: #E8320A;
+  --green: #00ff41; --blue: #3355ff; --purple: #cc44ff; --yellow: #f2e04a;
+  --f-title: 'AuthenticSans', 'OffBit', monospace;
+  --f-ui: 'GTPressura', monospace;
+  --f-body: 'MyriadPro', sans-serif;
+}
+
+html { overflow-x: hidden; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-ui); overflow-x: hidden; cursor: crosshair; }
+
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
+  pointer-events: none; z-index: 997;
+}
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 16px 24px; background: var(--bg);
+  border-bottom: 1px solid rgba(232,50,10,0.25);
+}
+.nav-logo { display: flex; flex-direction: column; gap: 3px; }
+.nav-logo-title { font-family: var(--f-title); font-size: 26px; color: var(--red); letter-spacing: 0.06em; line-height: 1; text-decoration: none; }
+.nav-logo-sub { font-family: var(--f-ui); font-size: 8.5px; color: rgba(232,50,10,0.55); letter-spacing: 0.04em; line-height: 1.45; }
+.nav-links { display: flex; align-items: center; list-style: none; gap: 0; flex-wrap: wrap; justify-content: flex-end; }
+.nav-sep { color: var(--red); font-size: 11px; padding: 0 5px; opacity: 0.6; }
+.nav-links a { font-family: var(--f-ui); font-size: 11.5px; color: var(--fg); text-decoration: none; letter-spacing: 0.06em; padding: 2px 4px; transition: color 0.15s; }
+.nav-links a:hover { color: var(--red); }
+.nav-links a.active { color: var(--red); }
+
+/* PAGE HEADER */
+.page-header {
+  padding: 100px 24px 56px;
+  border-bottom: 1px solid rgba(232,50,10,0.2);
+}
+.page-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+}
+.page-title {
+  font-family: var(--f-title);
+  font-size: clamp(56px, 10vw, 130px);
+  letter-spacing: 0.05em;
+  color: var(--red);
+  line-height: 1;
+}
+.page-desc {
+  font-family: var(--f-ui);
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  color: rgba(232,50,10,0.45);
+  text-transform: uppercase;
+  max-width: 160px;
+  line-height: 1.55;
+  border-left: 1px solid rgba(232,50,10,0.25);
+  padding-left: 12px;
+  margin-bottom: 10px;
+}
+
+/* FILTROS */
+.filter-bar {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.filter-btn {
+  font-family: var(--f-ui);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border: 1px solid rgba(232,50,10,0.25);
+  color: rgba(232,232,216,0.35);
+  background: none;
+  cursor: crosshair;
+  transition: all 0.15s;
+}
+.filter-btn:hover { border-color: var(--red); color: var(--red); }
+.filter-btn[data-type="all"].active    { border-color: var(--fg); color: var(--fg); }
+.filter-btn[data-type="book"].active   { border-color: var(--yellow); color: var(--yellow); }
+.filter-btn[data-type="album"].active  { border-color: var(--green); color: var(--green); }
+.filter-btn[data-type="podcast"].active{ border-color: var(--purple); color: var(--purple); }
+.filter-btn[data-type="film"].active   { border-color: var(--blue); color: var(--blue); }
+
+/* GRID */
+.drops-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2px 24px 100px;
+}
+.drops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2px;
+}
+
+/* CARDS */
+.drop-card { background: #111109; border: 1px solid rgba(255,255,255,0.04); text-decoration: none; color: var(--fg); display: flex; flex-direction: column; cursor: crosshair; transition: border-color 0.2s; }
+.drop-card:hover { border-color: var(--red); }
+.drop-cover { aspect-ratio: 1; position: relative; overflow: hidden; }
+.drop-cover-bg { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-family: var(--f-ui); font-size: 8px; letter-spacing: 0.12em; color: rgba(255,255,255,0.1); }
+.drop-cover img { width: 100%; height: 100%; object-fit: cover; display: block; filter: contrast(1.1) brightness(0.9) saturate(0.6); }
+.drop-cover-text { position: absolute; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; text-align: center; font-family: var(--f-ui); font-size: 11px; letter-spacing: 0.06em; line-height: 1.5; padding: 14px; opacity: 0; transition: opacity 0.2s; border: 2px solid var(--red); }
+.drop-card:hover .drop-cover-text { opacity: 1; }
+.drop-type-badge { position: absolute; top: 8px; left: 8px; font-family: var(--f-ui); font-size: 7.5px; letter-spacing: 0.16em; text-transform: uppercase; padding: 3px 6px; }
+.drop-card[data-type="book"]    .drop-cover-bg { background: #1a1208; }
+.drop-card[data-type="album"]   .drop-cover-bg { background: #08121a; }
+.drop-card[data-type="podcast"] .drop-cover-bg { background: #120a1a; }
+.drop-card[data-type="film"]    .drop-cover-bg { background: #0a1a0a; }
+.drop-card[data-type="book"]    .drop-type-badge { color: var(--yellow); border: 1px solid var(--yellow); }
+.drop-card[data-type="album"]   .drop-type-badge { color: var(--green);  border: 1px solid var(--green);  }
+.drop-card[data-type="podcast"] .drop-type-badge { color: var(--purple); border: 1px solid var(--purple); }
+.drop-card[data-type="film"]    .drop-type-badge { color: var(--blue);   border: 1px solid var(--blue);   }
+.drop-info { padding: 14px; display: flex; flex-direction: column; gap: 4px; }
+.drop-title { font-family: var(--f-ui); font-size: 12.5px; font-weight: 700; line-height: 1.2; }
+.drop-author { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.08em; color: rgba(232,232,216,0.35); text-transform: uppercase; }
+.drop-note { margin-top: 6px; font-family: var(--f-body); font-size: 11px; color: rgba(232,232,216,0.45); line-height: 1.55; }
+
+/* EMPTY */
+.empty-state {
+  padding: 80px 0;
+  text-align: center;
+  font-family: var(--f-ui);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(232,232,216,0.15);
+}
+
+/* ANIMAÇÕES */
+.r { opacity: 0; transform: translateY(18px); transition: opacity .55s ease, transform .55s ease; }
+.r.on { opacity: 1; transform: none; }
+.r.d1 { transition-delay: .08s; } .r.d2 { transition-delay: .16s; } .r.d3 { transition-delay: .26s; }
+
+footer {
+  border-top: 1px solid rgba(232,50,10,0.18);
+  padding: 18px 24px;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+}
+footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em; text-transform: uppercase; color: rgba(232,232,216,0.14); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <a href="index.html" class="nav-logo-title">WEIRD WIZ</a>
+    <span class="nav-logo-sub">a blog about art creativity<br>tech books and consciousness</span>
+  </div>
+  <ul class="nav-links">
+    <li><span class="nav-sep">..·</span><a href="works.html">I worked on</a></li>
+    <li><span class="nav-sep">:·</span><a href="posts.html">Posts</a></li>
+    <li><span class="nav-sep">.·.</span><a href="drops.html" class="active">Drops</a></li>
+    <li><span class="nav-sep">-·</span><a href="index.html#me">Me</a></li>
+  </ul>
+</nav>
+
+<header class="page-header">
+  <div class="page-header-inner">
+    <h1 class="page-title r">DROPS</h1>
+    <p class="page-desc r d1">livros, álbuns, podcasts e filmes que valem a pena</p>
+  </div>
+</header>
+
+<div class="filter-bar" id="filter-bar"></div>
+
+<div class="drops-wrap">
+  <div class="drops-grid" id="drops-grid"></div>
+</div>
+
+<footer>
+  <span>© 2025 Weird Wiz</span>
+  <span>Daniel Lameira</span>
+  <span>made by hand</span>
+</footer>
+
+<script>
+
+// ── LISTA DE ARQUIVOS ─────────────────────────────────────────────────────
+// Adicione novos drops aqui quando criar pelo CMS
+const DROP_FILES = [
+  'content/drops/antifragile.md',
+  'content/drops/ok-computer.md',
+  'content/drops/lex-fridman-367.md',
+  'content/drops/steve-jobs.md',
+  'content/drops/arrival.md',
+  'content/drops/master-and-margarita.md',
+];
+
+function parseFrontmatter(text) {
+  const match = text.match(/^---\n([\s\S]*?)\n---/);
+  if (!match) return { meta: {}, body: text };
+  const meta = {};
+  match[1].split('\n').forEach(line => {
+    const [key, ...val] = line.split(':');
+    if (key && val.length) meta[key.trim()] = val.join(':').trim().replace(/^"|"$/g, '');
+  });
+  return { meta, body: text.slice(match[0].length).trim() };
+}
+
+async function fetchMarkdownList(files) {
+  const results = [];
+  for (const file of files) {
+    try {
+      const res = await fetch(file);
+      if (!res.ok) continue;
+      const text = await res.text();
+      const { meta, body } = parseFrontmatter(text);
+      results.push({ ...meta, body, _file: file });
+    } catch(e) {}
+  }
+  return results;
+}
+
+let allDrops = [];
+let activeType = 'all';
+
+function renderDrops(drops) {
+  const grid = document.getElementById('drops-grid');
+  const filtered = activeType === 'all'
+    ? drops
+    : drops.filter(d => d.type === activeType);
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="empty-state">nenhum drop encontrado</div>';
+    return;
+  }
+
+  grid.innerHTML = '';
+  filtered.sort((a,b) => (a.order||99) - (b.order||99)).forEach((drop, i) => {
+    const delay = i > 0 ? ` d${Math.min(i % 4, 3)}` : '';
+    const a = document.createElement('a');
+    a.href = drop.link || '#';
+    if (drop.link) a.target = '_blank';
+    a.className = `drop-card r${delay}`;
+    a.dataset.type = drop.type || 'book';
+
+    const coverHtml = drop.cover
+      ? `<img src="${drop.cover}" alt="${drop.title}">`
+      : `<div class="drop-cover-bg">${drop.type || 'book'}</div>`;
+
+    a.innerHTML = `
+      <div class="drop-cover">
+        ${coverHtml}
+        <span class="drop-type-badge">${drop.type || 'book'}</span>
+        <div class="drop-cover-text">${drop.title?.toUpperCase() || ''}<br>${drop.author || ''}</div>
+      </div>
+      <div class="drop-info">
+        <div class="drop-title">${drop.title || ''}</div>
+        <div class="drop-author">${drop.author || ''}</div>
+        ${drop.note ? `<div class="drop-note">${drop.note}</div>` : ''}
+      </div>`;
+    grid.appendChild(a);
+  });
+
+  initObserver();
+}
+
+function renderFilters(drops) {
+  const bar = document.getElementById('filter-bar');
+  const types = ['all', ...new Set(drops.map(d => d.type).filter(Boolean))];
+  const labels = { all: 'Todos', book: 'Livros', album: 'Álbuns', podcast: 'Podcasts', film: 'Filmes' };
+
+  bar.innerHTML = '';
+  types.forEach(type => {
+    const btn = document.createElement('button');
+    btn.className = `filter-btn${type === 'all' ? ' active' : ''}`;
+    btn.dataset.type = type;
+    btn.textContent = labels[type] || type;
+    btn.addEventListener('click', () => {
+      activeType = type;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderDrops(allDrops);
+    });
+    bar.appendChild(btn);
+  });
+}
+
+function initObserver() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('on'); });
+  }, { threshold: 0.07, rootMargin: '0px 0px -28px 0px' });
+  document.querySelectorAll('.r').forEach(el => obs.observe(el));
+}
+
+async function init() {
+  allDrops = await fetchMarkdownList(DROP_FILES);
+  renderFilters(allDrops);
+  renderDrops(allDrops);
+  initObserver();
+}
+
+init();
+</script>
+</body>
+</html>
