@@ -2,7 +2,7 @@ backend:
   name: github
   repo: dlameira/dlameira.github.io
   branch: master
-  auth_type: pkce
+  base_url: https://sveltia-cms-auth.dlameira.workers.dev
 
 site_url: https://dlameira.github.io
 
