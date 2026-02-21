@@ -1,6 +1,7 @@
 ---
-title: "REVISTA OU PUBLICAÇÃO"
+title: "REVISTA FORMA — ED. 12"
 type: "Texto"
-year: "2023"
+year: "2024"
 order: 3
+link: ""
 ---
