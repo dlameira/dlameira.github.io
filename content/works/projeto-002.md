@@ -1,6 +1,7 @@
 ---
-title: "OUTRO PROJETO EDITORIAL"
+title: "MEMÓRIAS DE UM SOBREVIVENTE"
 type: "Revisão"
-year: "2023"
+year: "2024"
 order: 2
+link: ""
 ---
