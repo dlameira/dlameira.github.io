@@ -78,14 +78,20 @@ nav {
   font-family: var(--f-ui); font-size: 10px; letter-spacing: 0.06em; line-height: 1.5; padding: 12px;
   opacity: 0; transition: opacity 0.2s;
 }
-.float-img[data-type="book"]    .cover-label { background: var(--green); color: var(--bg); }
-.float-img[data-type="album"]   .cover-label { background: var(--green); color: var(--bg); }
+.float-img[data-type="book"]    .cover-label { background: var(--yellow); color: var(--bg); }
+.float-img[data-type="album"]   .cover-label { background: var(--green);  color: var(--bg); }
 .float-img[data-type="podcast"] .cover-label { background: var(--purple); color: var(--fg); }
+.float-img[data-type="film"]    .cover-label { background: var(--blue);   color: var(--fg); }
 .float-img:hover .cover-label { opacity: 1; }
 
-.fi-1 { width: clamp(115px, 13vw, 185px); top: 108px; left: clamp(300px, 34vw, 500px); transform: rotate(1.5deg); border: 2px solid var(--green); aspect-ratio: 2/3; }
-.fi-2 { width: clamp(105px, 12vw, 165px); top: 290px; right: clamp(50px, 7vw, 120px); transform: rotate(-2.5deg); border: 2px solid var(--purple); aspect-ratio: 3/4; }
-.fi-3 { width: clamp(95px, 10vw, 145px); bottom: 100px; left: clamp(16px, 2.5vw, 40px); transform: rotate(1deg); border: 2px solid var(--blue); aspect-ratio: 2/3; }
+.fi-1 { width: clamp(115px, 13vw, 185px); top: 108px; left: clamp(300px, 34vw, 500px); transform: rotate(1.5deg); border: 2px solid; }
+.fi-2 { width: clamp(105px, 12vw, 165px); top: 290px; right: clamp(50px, 7vw, 120px); transform: rotate(-2.5deg); border: 2px solid; }
+.fi-3 { width: clamp(95px, 10vw, 145px); bottom: 100px; left: clamp(16px, 2.5vw, 40px); transform: rotate(1deg); border: 2px solid; }
+
+.float-img[data-type="book"]    { border-color: var(--yellow); aspect-ratio: 2/3; }
+.float-img[data-type="album"]   { border-color: var(--green);  aspect-ratio: 1/1; }
+.float-img[data-type="podcast"] { border-color: var(--purple); aspect-ratio: 1/1; }
+.float-img[data-type="film"]    { border-color: var(--blue);   aspect-ratio: 2/3; }
 
 /* headlines */
 .headline {
@@ -339,6 +345,7 @@ document.addEventListener('mousemove', e => {
 
 // ── PARSE FRONTMATTER ─────────────────────────────────────────────────────
 function parseFrontmatter(text) {
+  text = text.replace(/\r\n/g, '\n');
   const match = text.match(/^---\n([\s\S]*?)\n---/);
   if (!match) return { meta: {}, body: text };
   const meta = {};
@@ -432,7 +439,11 @@ function renderHeroPosts(posts) {
   // remove headlines antigas
   homeSection.querySelectorAll('.headline').forEach(el => el.remove());
 
-  posts.filter(p => p.published !== 'false').slice(0, 5).forEach((post, i) => {
+  const published = posts.filter(p => p.published !== 'false');
+  const featured  = published.filter(p => p.featured === 'true' || p.featured === true);
+  const toShow    = featured.length > 0 ? featured : published;
+
+  toShow.slice(0, 5).forEach((post, i) => {
     const slug = fileToSlug(post._file);
     const a = document.createElement('a');
     a.href = `post.html?slug=${slug}`;
@@ -535,29 +546,27 @@ async function renderAbout() {
   } catch(e) {}
 }
 
-// ── RENDER HOME COVERS ────────────────────────────────────────────────────
-async function renderHomeCovers() {
-  try {
-    const res = await fetch('content/settings/home-covers.json');
-    if (!res.ok) return;
-    const data = await res.json();
-    const homeSection = document.getElementById('home');
-    homeSection.querySelectorAll('.float-img').forEach(el => el.remove());
-    const positions = ['fi-1', 'fi-2', 'fi-3'];
-    const bgColors  = ['#1a100a', '#0e0a18', '#080e18'];
-    const fgColors  = ['rgba(0,255,65,0.2)', 'rgba(204,68,255,0.2)', 'rgba(51,85,255,0.2)'];
+// ── RENDER FEATURED DROPS (imagens flutuantes) ────────────────────────────
+function renderFeaturedDrops(drops) {
+  const homeSection = document.getElementById('home');
+  homeSection.querySelectorAll('.float-img').forEach(el => el.remove());
 
-    (data.covers || []).slice(0,3).forEach((cover, i) => {
-      const div = document.createElement('div');
-      div.className = `float-img ${positions[i]}`;
-      div.dataset.type = cover.type || 'book';
-      const imgHtml = cover.image
-        ? `<img src="${cover.image}" alt="${cover.label}" style="width:100%;height:100%;object-fit:cover;filter:contrast(1.2) brightness(0.85) saturate(0.4);">`
-        : `<div class="cover-placeholder" style="background:${bgColors[i]};color:${fgColors[i]};">capa</div>`;
-      div.innerHTML = `${imgHtml}<div class="cover-label">${(cover.label || '').replace(/\n/g,'<br>')}</div>`;
-      homeSection.insertBefore(div, homeSection.firstChild);
-    });
-  } catch(e) {}
+  const featured = drops.filter(d => d.featured === 'true' || d.featured === true).slice(0, 3);
+  if (featured.length === 0) return;
+
+  const positions = ['fi-1', 'fi-2', 'fi-3'];
+
+  featured.forEach((drop, i) => {
+    const div = document.createElement('div');
+    div.className = `float-img ${positions[i]}`;
+    div.dataset.type = drop.type || 'book';
+    const imgHtml = drop.cover
+      ? `<img src="${drop.cover}" alt="${drop.title}" style="width:100%;height:100%;object-fit:cover;">`
+      : `<div class="cover-placeholder">${drop.type || 'book'}</div>`;
+    const label = [drop.title?.toUpperCase(), drop.author].filter(Boolean).join('\n');
+    div.innerHTML = `${imgHtml}<div class="cover-label">${label.replace(/\n/g,'<br>')}</div>`;
+    homeSection.insertBefore(div, homeSection.firstChild);
+  });
 }
 
 // ── INTERSECTION OBSERVER ─────────────────────────────────────────────────
@@ -579,9 +588,9 @@ async function init() {
   renderHeroPosts(posts);
   renderPostList(posts);
   renderDrops(drops);
+  renderFeaturedDrops(drops);
   renderWorks(works);
   await renderAbout();
-  await renderHomeCovers();
   initObserver();
 }
 
