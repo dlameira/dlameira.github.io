@@ -28,6 +28,7 @@ collections:
       - { label: "Resumo", name: "excerpt", widget: "text", hint: "Aparece na listagem da home" }
       - { label: "Conteúdo", name: "body", widget: "markdown" }
       - { label: "Publicado", name: "published", widget: "boolean", default: true }
+      - { label: "Destaque na home", name: "featured", widget: "boolean", default: false, required: false, hint: "Aparece como headline na página inicial" }
 
   # ── DROPS ──────────────────────────────────────────────────────────────
   - name: "drops"
@@ -51,6 +52,7 @@ collections:
       - { label: "Nota pessoal", name: "note", widget: "text" }
       - { label: "Link externo", name: "link", widget: "string", required: false }
       - { label: "Ordem", name: "order", widget: "number", default: 1 }
+      - { label: "Destaque na home", name: "featured", widget: "boolean", default: false, required: false, hint: "Aparece como imagem flutuante na página inicial (máx. 3)" }
 
   # ── I WORKED ON ────────────────────────────────────────────────────────
   - name: "works"
@@ -74,36 +76,10 @@ collections:
       - { label: "Link", name: "link", widget: "string", required: false }
       - { label: "Ordem", name: "order", widget: "number", default: 1 }
 
-  # ── CONFIGURAÇÕES DA HOME ───────────────────────────────────────────────
+  # ── CONFIGURAÇÕES ───────────────────────────────────────────────────────
   - name: "settings"
     label: "Configurações"
     files:
-
-      - label: "Home — Imagens flutuantes"
-        name: "home_covers"
-        file: "content/settings/home-covers.json"
-        fields:
-          - label: "Imagens flutuantes"
-            name: "covers"
-            widget: "list"
-            max: 3
-            fields:
-              - { label: "Imagem", name: "image", widget: "image" }
-              - { label: "Legenda (aparece no hover)", name: "label", widget: "string" }
-              - label: "Cor da borda"
-                name: "color"
-                widget: "select"
-                options:
-                  - { label: "Verde", value: "green" }
-                  - { label: "Roxo", value: "purple" }
-                  - { label: "Azul", value: "blue" }
-                  - { label: "Vermelho", value: "red" }
-              - label: "Tipo"
-                name: "type"
-                widget: "select"
-                options:
-                  - { label: "Livro", value: "book" }
-                  - { label: "Álbum", value: "album" }
 
       - label: "Sobre mim"
         name: "about"
