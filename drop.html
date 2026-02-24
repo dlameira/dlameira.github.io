@@ -381,25 +381,28 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
 
-const DROP_FILES = [
-  'content/drops/antifragile.md',
-  'content/drops/ok-computer.md',
-  'content/drops/lex-fridman-367.md',
-  'content/drops/steve-jobs.md',
-  'content/drops/arrival.md',
-  'content/drops/master-and-margarita.md',
-  'content/drops/godel-escher-bach.md',
-  'content/drops/the-wave-watcher-companion.md',
-  'content/drops/kid-a.md',
-  'content/drops/a-hora-da-estrela.md',
-  'content/drops/fargo-s01.md',
-  'content/drops/in-rainbows.md',
-  'content/drops/o-castelo.md',
-  'content/drops/hardcore-history.md',
-  'content/drops/2001-odisseia.md',
-  'content/drops/a-sociedade-do-cansaco.md',
-  'content/drops/99-percent-invisible.md',
-];
+async function getDropFiles() {
+  try {
+    const res = await fetch('https://api.github.com/repos/dlameira/dlameira.github.io/contents/content/drops');
+    if (!res.ok) throw new Error('API error');
+    const files = await res.json();
+    return files
+      .filter(f => f.type === 'file' && f.name.endsWith('.md'))
+      .map(f => `content/drops/${f.name}`);
+  } catch(e) {
+    return [
+      'content/drops/antifragile.md','content/drops/ok-computer.md',
+      'content/drops/lex-fridman-367.md','content/drops/steve-jobs.md',
+      'content/drops/arrival.md','content/drops/master-and-margarita.md',
+      'content/drops/godel-escher-bach.md','content/drops/the-wave-watcher-companion.md',
+      'content/drops/kid-a.md','content/drops/a-hora-da-estrela.md',
+      'content/drops/fargo-s01.md','content/drops/in-rainbows.md',
+      'content/drops/o-castelo.md','content/drops/hardcore-history.md',
+      'content/drops/2001-odisseia.md','content/drops/a-sociedade-do-cansaco.md',
+      'content/drops/99-percent-invisible.md',
+    ];
+  }
+}
 
 const TYPE_LABELS = { all: 'Todos', book: 'Livros', album: 'Álbuns', podcast: 'Podcasts', film: 'Filmes' };
 
@@ -545,6 +548,7 @@ async function loadDrop() {
 }
 
 async function init() {
+  const DROP_FILES = await getDropFiles();
   allDrops = await fetchMarkdownList(DROP_FILES);
   await loadDrop();
 }
