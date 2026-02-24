@@ -109,11 +109,11 @@ nav {
 .headline.border-purple:hover { background: var(--purple); color: var(--fg); }
 .headline.border-yellow:hover { background: var(--yellow); color: var(--bg); }
 
-.hl-1 { margin-left: clamp(18px, 7vw, 120px); margin-top: 28px; }
-.hl-2 { margin-left: clamp(8px, 2vw, 24px); }
-.hl-3 { margin-left: clamp(36px, 13vw, 200px); }
-.hl-4 { margin-left: clamp(12px, 4vw, 65px); }
-.hl-5 { margin-left: clamp(60px, 16vw, 240px); }
+.hl-1 { margin-left: clamp(18px, 7vw, 120px); margin-right: clamp(16px, 4vw, 60px); margin-top: 28px; }
+.hl-2 { margin-left: clamp(8px, 2vw, 24px); margin-right: clamp(40px, 10vw, 160px); }
+.hl-3 { margin-left: clamp(36px, 13vw, 200px); margin-right: clamp(8px, 2vw, 30px); }
+.hl-4 { margin-left: clamp(12px, 4vw, 65px); margin-right: clamp(28px, 7vw, 120px); }
+.hl-5 { margin-left: clamp(60px, 16vw, 240px); margin-right: clamp(12px, 3vw, 40px); }
 
 /* SEÇÕES */
 .section { padding: 72px 24px; border-top: 1px solid rgba(232,50,10,0.2); }
@@ -173,6 +173,13 @@ nav {
 
 footer { border-top: 1px solid rgba(232,50,10,0.18); padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
 footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em; text-transform: uppercase; color: rgba(232,232,216,0.14); }
+.footer-nl { display: flex; align-items: center; gap: 2px; }
+.footer-nl-input { background: transparent; border: 1px solid rgba(232,50,10,0.2); padding: 6px 12px; font-family: var(--f-ui); font-size: 9px; letter-spacing: 0.06em; color: var(--fg); outline: none; width: 200px; transition: border-color 0.15s; cursor: text; }
+.footer-nl-input:focus { border-color: var(--red); }
+.footer-nl-input::placeholder { color: rgba(232,232,216,0.18); }
+.footer-nl-btn { background: none; border: 1px solid rgba(232,50,10,0.2); border-left: none; padding: 6px 10px; font-family: var(--f-ui); font-size: 11px; color: rgba(232,50,10,0.5); cursor: crosshair; transition: all 0.15s; }
+.footer-nl-btn:hover { border-color: var(--red); color: var(--red); }
+.footer-nl-ok { display: none; font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.12em; color: var(--green); }
 
 .r { opacity: 0; transform: translateY(18px); transition: opacity .55s ease, transform .55s ease; }
 .r.on { opacity: 1; transform: none; }
@@ -319,7 +326,20 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
 
 <footer>
   <span>© 2025 Weird Wiz</span>
-  <span>Daniel Lameira</span>
+  <div class="footer-nl">
+    <form id="nl-form-footer-home"
+          action="https://00bc7bfa.sibforms.com/serve/MUIFAP6Irrw--9y9roSCjipmIl4QR0T4wNHGL7l3E3UeY6kVH3b2sscz8ok4KT7n3UBxLtxBmrvtMMkSbyE9mfORmip7vX7y2z6PllCs5twrQmEg47eiJdgNP_mK__9s2-LLLtTCJA2qQO3fbMzyym_sdAkHL_0dMmGuC4JbQ0bTmFz11oDurorHHcJzHrxnEZEnT3V58kfQA_pSqQ=="
+          method="POST"
+          target="nl-iframe-footer-home">
+      <input type="email" name="EMAIL" class="footer-nl-input"
+             placeholder="receba novos posts por email" required autocomplete="email">
+      <input type="hidden" name="email_address_check" value="">
+      <input type="hidden" name="locale" value="pt">
+      <button type="submit" class="footer-nl-btn">→</button>
+    </form>
+    <iframe name="nl-iframe-footer-home" style="display:none;" title="newsletter"></iframe>
+    <span class="footer-nl-ok" id="nl-ok-footer-home">✓ inscrito</span>
+  </div>
   <span>made by hand</span>
 </footer>
 
@@ -472,9 +492,9 @@ function renderDrops(drops) {
 
   drops.sort((a,b) => (a.order||99) - (b.order||99)).forEach((drop, i) => {
     const delay = i > 0 ? ` d${(i % 4)}` : '';
+    const slug = drop._file.split('/').pop().replace('.md', '');
     const a = document.createElement('a');
-    a.href = drop.link || '#';
-    if (drop.link) a.target = '_blank';
+    a.href = `drop.html?slug=${slug}`;
     a.className = `drop-card r${delay}`;
     a.dataset.type = drop.type || 'book';
     const coverHtml = drop.cover
@@ -586,6 +606,14 @@ async function init() {
 }
 
 init();
+
+// ── NEWSLETTER FOOTER ──────────────────────────────────────────────────────
+document.getElementById('nl-form-footer-home')?.addEventListener('submit', function() {
+  setTimeout(() => {
+    this.style.display = 'none';
+    document.getElementById('nl-ok-footer-home').style.display = 'inline';
+  }, 600);
+});
 </script>
 
 </body>
