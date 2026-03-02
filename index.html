@@ -434,28 +434,8 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
     <h2 class="section-title col-yellow">LIVROS QUE DIRIGI</h2>
     <p class="section-desc" style="border-color:rgba(242,224,74,0.25); color:rgba(242,224,74,0.4);">~200 títulos · desde 2003</p>
   </div>
-  <div class="books-grid">
-    <!-- placeholders: substitua pelo src real de cada capa -->
-    <div class="book-mini r">   <div class="book-mini-bg" style="background:#1a100a;">capa</div><div class="book-mini-overlay">A HORA DA LUZ<br>Autor</div></div>
-    <div class="book-mini r d1"><div class="book-mini-bg" style="background:#0a0e18;">capa</div><div class="book-mini-overlay">O NOME DAS COISAS<br>Autor</div></div>
-    <div class="book-mini r d2"><div class="book-mini-bg" style="background:#0d1a0a;">capa</div><div class="book-mini-overlay">TUDO QUE RESTA<br>Autor</div></div>
-    <div class="book-mini r d3"><div class="book-mini-bg" style="background:#180a14;">capa</div><div class="book-mini-overlay">AS FORMAS DO VAZIO<br>Autor</div></div>
-    <div class="book-mini r d4"><div class="book-mini-bg" style="background:#1a1208;">capa</div><div class="book-mini-overlay">CORPO E SOMBRA<br>Autor</div></div>
-    <div class="book-mini r">   <div class="book-mini-bg" style="background:#08121a;">capa</div><div class="book-mini-overlay">DERIVA<br>Autor</div></div>
-    <div class="book-mini r d1"><div class="book-mini-bg" style="background:#120818;">capa</div><div class="book-mini-overlay">A CIDADE INVENTADA<br>Autor</div></div>
-    <div class="book-mini r d2"><div class="book-mini-bg" style="background:#0a180e;">capa</div><div class="book-mini-overlay">NENHUM DE NÓS<br>Autor</div></div>
-    <div class="book-mini r d3"><div class="book-mini-bg" style="background:#181008;">capa</div><div class="book-mini-overlay">ANTES DO SILÊNCIO<br>Autor</div></div>
-    <div class="book-mini r d4"><div class="book-mini-bg" style="background:#080e18;">capa</div><div class="book-mini-overlay">MAR INTERIOR<br>Autor</div></div>
-    <div class="book-mini r">   <div class="book-mini-bg" style="background:#14100a;">capa</div><div class="book-mini-overlay">A ÚLTIMA VIAGEM<br>Autor</div></div>
-    <div class="book-mini r d1"><div class="book-mini-bg" style="background:#0a1414;">capa</div><div class="book-mini-overlay">GEOGRAFIAS<br>Autor</div></div>
-    <div class="book-mini r d2"><div class="book-mini-bg" style="background:#180814;">capa</div><div class="book-mini-overlay">ESPELHO PARTIDO<br>Autor</div></div>
-    <div class="book-mini r d3"><div class="book-mini-bg" style="background:#0c1808;">capa</div><div class="book-mini-overlay">RAÍZES<br>Autor</div></div>
-    <div class="book-mini r d4"><div class="book-mini-bg" style="background:#100c18;">capa</div><div class="book-mini-overlay">O PESO DA LUZ<br>Autor</div></div>
-    <div class="book-mini r">   <div class="book-mini-bg" style="background:#0a1008;">capa</div><div class="book-mini-overlay">FRONTEIRAS<br>Autor</div></div>
-    <div class="book-mini r d1"><div class="book-mini-bg" style="background:#180e08;">capa</div><div class="book-mini-overlay">A NOITE LONGA<br>Autor</div></div>
-    <div class="book-mini r d2"><div class="book-mini-bg" style="background:#081014;">capa</div><div class="book-mini-overlay">TERRA FIRME<br>Autor</div></div>
-    <div class="book-mini r d3"><div class="book-mini-bg" style="background:#14080e;">capa</div><div class="book-mini-overlay">LABIRINTO<br>Autor</div></div>
-    <div class="book-mini r d4"><div class="book-mini-bg" style="background:#0a1418;">capa</div><div class="book-mini-overlay">PASSAGEM<br>Autor</div></div>
+  <div class="books-grid" id="books-grid">
+    <!-- preenchido dinamicamente pelo Directus -->
   </div>
   <a href="livros.html" class="see-all r">ver todos os livros →</a>
 </section>
@@ -618,6 +598,45 @@ document.addEventListener('mousemove', e => {
     img.style.marginTop  = (my * d * 0.55) + 'px';
   });
 });
+
+// ── DIRECTUS ──────────────────────────────────────────────────────────────
+const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
+
+function directusImg(id, width = 400) {
+  if (!id) return null;
+  return `${DIRECTUS}/assets/${id}?width=${width}`;
+}
+
+async function fetchLivros() {
+  try {
+    const res = await fetch(`${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=-ano&limit=200`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data || [];
+  } catch(e) { return []; }
+}
+
+function renderLivros(livros) {
+  const grid = document.getElementById('books-grid');
+  if (!grid) return;
+  if (livros.length === 0) {
+    grid.innerHTML = '<p style="color:var(--yellow);opacity:0.5;grid-column:1/-1;padding:2rem 0;font-size:0.85rem;">Nenhum livro publicado ainda.</p>';
+    return;
+  }
+  const delays = ['', 'd1', 'd2', 'd3', 'd4'];
+  grid.innerHTML = '';
+  livros.forEach((livro, i) => {
+    const delay = delays[i % delays.length];
+    const div = document.createElement('div');
+    div.className = `book-mini r${delay ? ' ' + delay : ''}`;
+    const coverUrl = directusImg(livro.cover, 300);
+    const coverHtml = coverUrl
+      ? `<img src="${coverUrl}" alt="${livro.title}">`
+      : `<div class="book-mini-bg" style="background:#1a100a;">capa</div>`;
+    div.innerHTML = `${coverHtml}<div class="book-mini-overlay">${(livro.title || '').toUpperCase()}<br>${livro.autor || ''}</div>`;
+    grid.appendChild(div);
+  });
+}
 
 // ── PARSE FRONTMATTER ─────────────────────────────────────────────────────
 function parseFrontmatter(text) {
@@ -841,9 +860,10 @@ function initObserver() {
 
 // ── INIT ──────────────────────────────────────────────────────────────────
 async function init() {
-  const [POST_FILES, DROP_FILES] = await Promise.all([
+  const [POST_FILES, DROP_FILES, livros] = await Promise.all([
     getPostFiles(),
     getDropFiles(),
+    fetchLivros(),
   ]);
   const [posts, drops] = await Promise.all([
     fetchMarkdownList(POST_FILES),
@@ -854,6 +874,7 @@ async function init() {
   renderPostList(posts);
   renderProjetos(posts);
   renderDrops(drops);
+  renderLivros(livros);
   await renderAbout();
   initObserver();
 }
