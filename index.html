@@ -629,7 +629,7 @@ function renderLivros(livros) {
     const delay = delays[i % delays.length];
     const div = document.createElement('div');
     div.className = `book-mini r${delay ? ' ' + delay : ''}`;
-    const coverUrl = directusImg(livro.cover, 300);
+    const coverUrl = directusImg(livro.Cover || livro.cover, 300);
     const coverHtml = coverUrl
       ? `<img src="${coverUrl}" alt="${livro.title}">`
       : `<div class="book-mini-bg" style="background:#1a100a;">capa</div>`;
