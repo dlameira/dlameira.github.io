@@ -655,6 +655,8 @@ const POST_FILES = [
   'content/posts/traducao-como-traicao.md',
   'content/posts/mercado-editorial-brasileiro.md',
   'content/posts/poesia-fora-do-lugar.md',
+  'content/posts/a-criacao-da-antofagica.md',
+  'content/posts/a-seiva-origem-e-trajetoria.md',
 ];
 
 async function getDropFiles() {
@@ -723,7 +725,7 @@ function renderPostList(posts) {
   if (!section) return;
   section.querySelectorAll('.post-row').forEach(el => el.remove());
 
-  posts.filter(p => p.published !== 'false').forEach((post, i) => {
+  posts.filter(p => p.published !== 'false' && p.category !== 'projeto').forEach((post, i) => {
     const slug = fileToSlug(post._file);
     const a = document.createElement('a');
     a.href = `post.html?slug=${slug}`;
@@ -737,6 +739,35 @@ function renderPostList(posts) {
       </div>`;
     section.appendChild(a);
   });
+}
+
+// ── RENDER PROJETOS ───────────────────────────────────────────────────────
+function renderProjetos(posts) {
+  const section = document.getElementById('projetos');
+  if (!section) return;
+  section.querySelectorAll('.projeto-row').forEach(el => el.remove());
+
+  posts
+    .filter(p => p.published !== 'false' && p.category === 'projeto')
+    .forEach((post, i) => {
+      const slug = fileToSlug(post._file);
+      const a = document.createElement('a');
+      a.href = `post.html?slug=${slug}`;
+      a.className = `projeto-row r${i > 0 ? ' d'+i : ''}`;
+      const imgHtml = post.cover
+        ? `<img src="${post.cover}" alt="${post.title}">`
+        : 'imagem';
+      const year = post.date ? new Date(post.date).getFullYear() : '';
+      const tag = [post.type, year].filter(Boolean).join(' · ');
+      a.innerHTML = `
+        <div class="projeto-img">${imgHtml}</div>
+        <div>
+          <div class="projeto-tag">${tag}</div>
+          <div class="projeto-title">${post.title?.toUpperCase() || ''}</div>
+          <div class="projeto-desc">${post.excerpt || ''}</div>
+        </div>`;
+      section.appendChild(a);
+    });
 }
 
 // ── RENDER DROPS ──────────────────────────────────────────────────────────
@@ -806,6 +837,7 @@ async function init() {
 
   renderHeroPosts(posts);
   renderPostList(posts);
+  renderProjetos(posts);
   renderDrops(drops);
   await renderAbout();
   initObserver();
