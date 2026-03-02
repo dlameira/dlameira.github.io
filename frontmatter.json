@@ -1,0 +1,165 @@
+{
+  "$schema": "https://frontmatter.codes/frontmatter.schema.json",
+  "frontMatter.framework.id": "other",
+  "frontMatter.preview.host": "http://localhost:4321",
+  "frontMatter.content.publicFolder": "[[workspace]]",
+  "frontMatter.media.defaultFolderName": "images/uploads",
+  "frontMatter.dashboard.openOnStart": true,
+
+  "frontMatter.content.pageFolders": [
+    {
+      "title": "Escritos & Projetos",
+      "path": "[[workspace]]/content/posts",
+      "contentTypes": ["Escrito", "Projeto"]
+    },
+    {
+      "title": "Drops",
+      "path": "[[workspace]]/content/drops",
+      "contentTypes": ["Drop"]
+    }
+  ],
+
+  "frontMatter.taxonomy.contentTypes": [
+    {
+      "name": "Escrito",
+      "pageBundle": false,
+      "fields": [
+        {
+          "title": "Título",
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "title": "Data",
+          "name": "date",
+          "type": "datetime"
+        },
+        {
+          "title": "Categoria",
+          "name": "category",
+          "type": "choice",
+          "choices": ["ensaio", "poesia", "nota", "artigo", "reflexão", "entrevista"]
+        },
+        {
+          "title": "Excerpt",
+          "name": "excerpt",
+          "type": "string"
+        },
+        {
+          "title": "Capa",
+          "name": "cover",
+          "type": "image"
+        },
+        {
+          "title": "Publicado",
+          "name": "published",
+          "type": "choice",
+          "choices": ["true", "false"],
+          "default": "true"
+        },
+        {
+          "title": "Destaque na home",
+          "name": "featured",
+          "type": "choice",
+          "choices": ["true", "false"],
+          "default": "false"
+        }
+      ]
+    },
+    {
+      "name": "Projeto",
+      "pageBundle": false,
+      "fields": [
+        {
+          "title": "Título",
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "title": "Data",
+          "name": "date",
+          "type": "datetime"
+        },
+        {
+          "title": "Tipo",
+          "name": "type",
+          "type": "string",
+          "placeholder": "ex: Editora, Projeto Editorial, Reflexão"
+        },
+        {
+          "title": "Categoria (não alterar)",
+          "name": "category",
+          "type": "string",
+          "default": "projeto",
+          "hidden": true
+        },
+        {
+          "title": "Excerpt",
+          "name": "excerpt",
+          "type": "string"
+        },
+        {
+          "title": "Capa",
+          "name": "cover",
+          "type": "image"
+        },
+        {
+          "title": "Publicado",
+          "name": "published",
+          "type": "choice",
+          "choices": ["true", "false"],
+          "default": "true"
+        }
+      ]
+    },
+    {
+      "name": "Drop",
+      "pageBundle": false,
+      "fields": [
+        {
+          "title": "Título",
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "title": "Tipo",
+          "name": "type",
+          "type": "choice",
+          "choices": ["book", "album", "podcast", "film"]
+        },
+        {
+          "title": "Autor / Artista",
+          "name": "author",
+          "type": "string"
+        },
+        {
+          "title": "Capa",
+          "name": "cover",
+          "type": "image"
+        },
+        {
+          "title": "Nota (texto curto)",
+          "name": "note",
+          "type": "string"
+        },
+        {
+          "title": "Link externo",
+          "name": "link",
+          "type": "string"
+        },
+        {
+          "title": "Ordem no grid",
+          "name": "order",
+          "type": "number"
+        },
+        {
+          "title": "Destaque na home",
+          "name": "featured",
+          "type": "choice",
+          "choices": ["true", "false"],
+          "default": "false"
+        }
+      ]
+    }
+  ]
+}
