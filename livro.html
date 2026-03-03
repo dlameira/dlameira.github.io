@@ -324,7 +324,7 @@ async function fetchLivro(id) {
 }
 
 async function fetchOutros(currentId) {
-  const res = await fetch(`${DIRECTUS}/items/livros?filter[status][_eq]=published&limit=30&fields=id,title,Cover,cover`);
+  const res = await fetch(`${DIRECTUS}/items/livros?filter[status][_eq]=published&limit=30&fields=id,title,Cover`);
   const data = await res.json();
   return (data.data || []).filter(l => l.id !== currentId);
 }

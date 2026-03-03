@@ -241,7 +241,7 @@ let todosLivros = [];
 let filtroAtivo = 'todos';
 
 async function fetchLivros() {
-  const res = await fetch(`${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=-ano&limit=500&fields=id,title,autor,editora,ano,Cover,cover`);
+  const res = await fetch(`${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=-ano&limit=500&fields=id,title,autor,editora,ano,Cover`);
   const data = await res.json();
   return data.data || [];
 }
