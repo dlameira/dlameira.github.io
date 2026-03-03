@@ -403,6 +403,13 @@ async function init() {
        <div class="livro-sinopse">${livro.sinopse.split('\n\n').map(p => `<p>${p}</p>`).join('')}</div>`
     : '';
 
+  const notasHtml = livro.notas
+    ? `<div style="margin-top:48px;padding-top:24px;border-top:1px solid rgba(232,50,10,0.12);">
+         <div class="livro-sinopse-label">— bastidores</div>
+         <div class="livro-sinopse">${livro.notas.split('\n\n').map(p => `<p>${p}</p>`).join('')}</div>
+       </div>`
+    : '';
+
   document.getElementById('livro-content').innerHTML = `
     <div class="livro-header">
       <div>${coverHtml}</div>
@@ -417,6 +424,7 @@ async function init() {
       </div>
     </div>
     ${sinopseHtml}
+    ${notasHtml}
   `;
 
   // sidebar outros livros
