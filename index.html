@@ -354,12 +354,7 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
     <div class="cover-label">DROP<br>placeholder</div>
   </div>
 
-  <!-- headlines geradas pelo JS via renderHeroPosts -->
-  <a href="post.html" class="headline border-red hl-1 r">HOW CAN AI CHANGE</a>
-  <a href="post.html" class="headline border-red hl-2 r d1">THE BOOKS AS WE KNOW IT</a>
-  <a href="#" class="headline border-green hl-3 r d2">PARENTS NEED TO DEAL WITH TECH</a>
-  <a href="#" class="headline border-purple hl-4 r d3">THOUGHTS ABOUT ANTIFRAGILE</a>
-  <a href="#" class="headline border-blue hl-5 r d4">W CAN AI CHANGE THE BOOKS AS WE KNOW IT</a>
+  <!-- headlines injetadas pelo JS via renderHeroPosts() -->
 </section>
 
 <!-- ── ESCRITOS ───────────────────────────────────────────────────────────── -->
@@ -368,30 +363,7 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
     <h2 class="section-title">ESCRITOS</h2>
     <p class="section-desc">ensaios · poesia · artigos · notas</p>
   </div>
-  <!-- linhas geradas pelo JS via renderPostList -->
-  <a href="post.html" class="post-row r">
-    <span class="post-row-num">01</span>
-    <div>
-      <div class="post-row-tag">Ensaio · Fev 2025</div>
-      <div class="post-row-title">HOW CAN AI CHANGE THE BOOKS AS WE KNOW IT</div>
-      <div class="post-row-excerpt">Uma investigação sobre o que muda e o que permanece quando algoritmos entram na cadeia editorial.</div>
-    </div>
-  </a>
-  <a href="#" class="post-row r d1">
-    <span class="post-row-num">02</span>
-    <div>
-      <div class="post-row-tag">Reflexão · Jan 2025</div>
-      <div class="post-row-title">PARENTS NEED TO DEAL WITH TECH</div>
-      <div class="post-row-excerpt">O que acontece com uma geração criada por pais que ainda estão tentando entender o smartphone.</div>
-    </div>
-  </a>
-  <a href="#" class="post-row r d2">
-    <span class="post-row-num">03</span>
-    <div>
-      <div class="post-row-tag">Nota · Dez 2024</div>
-      <div class="post-row-title">THOUGHTS ABOUT ANTIFRAGILE</div>
-    </div>
-  </a>
+  <!-- linhas injetadas pelo JS via renderPostList() -->
 </section>
 
 <!-- ── DROPS ─────────────────────────────────────────────────────────────── -->
@@ -400,32 +372,8 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
     <h2 class="section-title">DROPS</h2>
     <p class="section-desc">livros, álbuns, podcasts, filmes</p>
   </div>
-  <div class="drops-grid">
-    <a href="#" class="drop-card r" data-type="book">
-      <div class="drop-cover"><div class="drop-cover-bg">capa</div><span class="drop-type-badge">book</span><div class="drop-cover-text">ANTIFRAGILE<br>Nassim Taleb</div></div>
-      <div class="drop-info"><div class="drop-title">Antifragile</div><div class="drop-author">Nassim Taleb</div><div class="drop-note">Livro que mudou como penso sobre sistemas, risco e o que nos fortalece com o caos.</div></div>
-    </a>
-    <a href="#" class="drop-card r d1" data-type="album">
-      <div class="drop-cover"><div class="drop-cover-bg">capa</div><span class="drop-type-badge">album</span><div class="drop-cover-text">OK COMPUTER<br>Radiohead</div></div>
-      <div class="drop-info"><div class="drop-title">OK Computer</div><div class="drop-author">Radiohead</div><div class="drop-note">Ainda soa como o futuro. Ouvi novamente em 2024 e ficou mais assustador.</div></div>
-    </a>
-    <a href="#" class="drop-card r d2" data-type="podcast">
-      <div class="drop-cover"><div class="drop-cover-bg">capa</div><span class="drop-type-badge">podcast</span><div class="drop-cover-text">LEX FRIDMAN #367<br>Lex Fridman</div></div>
-      <div class="drop-info"><div class="drop-title">Lex Fridman #367</div><div class="drop-author">Lex Fridman</div><div class="drop-note">A conversa sobre consciência que não consegui parar de ouvir.</div></div>
-    </a>
-    <a href="#" class="drop-card r d3" data-type="book">
-      <div class="drop-cover"><div class="drop-cover-bg">capa</div><span class="drop-type-badge">book</span><div class="drop-cover-text">STEVE JOBS<br>Walter Isaacson</div></div>
-      <div class="drop-info"><div class="drop-title">Steve Jobs</div><div class="drop-author">Walter Isaacson</div><div class="drop-note">Não uma hagiografia. Um retrato honesto de alguém impossível de ignorar.</div></div>
-    </a>
-    <a href="#" class="drop-card r d1" data-type="film">
-      <div class="drop-cover"><div class="drop-cover-bg">capa</div><span class="drop-type-badge">film</span><div class="drop-cover-text">ARRIVAL<br>Denis Villeneuve</div></div>
-      <div class="drop-info"><div class="drop-title">Arrival</div><div class="drop-author">Denis Villeneuve</div><div class="drop-note">O melhor argumento cinematográfico sobre linguagem e percepção do tempo.</div></div>
-    </a>
-    <a href="#" class="drop-card r d2" data-type="book">
-      <div class="drop-cover"><div class="drop-cover-bg">capa</div><span class="drop-type-badge">book</span><div class="drop-cover-text">THE MASTER AND MARGARITA<br>Bulgakov</div></div>
-      <div class="drop-info"><div class="drop-title">The Master and Margarita</div><div class="drop-author">Bulgakov</div><div class="drop-note">Lido três vezes. Cada vez é um livro diferente.</div></div>
-    </a>
-  </div>
+  <!-- cards injetados pelo JS via renderDrops() -->
+  <div class="drops-grid"></div>
 </section>
 
 <!-- ── LIVROS QUE DIRIGI ──────────────────────────────────────────────────── -->
@@ -499,31 +447,7 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
     <h2 class="section-title col-blue">PROJETOS</h2>
     <p class="section-desc" style="border-color:rgba(51,85,255,0.25); color:rgba(51,85,255,0.4);">histórias longas sobre o que construí</p>
   </div>
-  <!-- placeholders: adicione imagem e link reais de cada projeto -->
-  <a href="#" class="projeto-row r">
-    <div class="projeto-img">imagem</div>
-    <div>
-      <div class="projeto-tag">Editora · 2015</div>
-      <div class="projeto-title">A CRIAÇÃO DA ANTOFÁGICA</div>
-      <div class="projeto-desc">Como surgiu uma editora que virou referência no cenário cultural brasileiro — da primeira ideia até o dia em que ela teve vida própria.</div>
-    </div>
-  </a>
-  <a href="#" class="projeto-row r d1">
-    <div class="projeto-img">imagem</div>
-    <div>
-      <div class="projeto-tag">Projeto Editorial · 2019</div>
-      <div class="projeto-title">A SEIVA: ORIGEM E TRAJETÓRIA</div>
-      <div class="projeto-desc">O caminho da fundação de uma editora que transformou como pensamos sobre livros de não ficção no Brasil.</div>
-    </div>
-  </a>
-  <a href="#" class="projeto-row r d2">
-    <div class="projeto-img">imagem</div>
-    <div>
-      <div class="projeto-tag">Reflexão · 2022</div>
-      <div class="projeto-title">LIVROS E TECNOLOGIA</div>
-      <div class="projeto-desc">Duas décadas entre livros e o crescente universo tecnológico. O que aprendi sobre como esses dois mundos se encontram — e onde eles ainda resistem a se tocar.</div>
-    </div>
-  </a>
+  <!-- linhas injetadas pelo JS via renderProjetos() -->
 </section>
 
 <!-- ── ME ─────────────────────────────────────────────────────────────────── -->
@@ -585,7 +509,6 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
   <span>made by hand</span>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
 
 // ── PARALLAX ──────────────────────────────────────────────────────────────
