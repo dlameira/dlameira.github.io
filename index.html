@@ -627,14 +627,16 @@ function renderLivros(livros) {
   grid.innerHTML = '';
   livros.forEach((livro, i) => {
     const delay = delays[i % delays.length];
-    const div = document.createElement('div');
-    div.className = `book-mini r${delay ? ' ' + delay : ''}`;
+    const a = document.createElement('a');
+    a.href = `livro.html?id=${livro.id}`;
+    a.className = `book-mini r${delay ? ' ' + delay : ''}`;
+    a.style.textDecoration = 'none';
     const coverUrl = directusImg(livro.Cover || livro.cover, 300);
     const coverHtml = coverUrl
       ? `<img src="${coverUrl}" alt="${livro.title}">`
       : `<div class="book-mini-bg" style="background:#1a100a;">capa</div>`;
-    div.innerHTML = `${coverHtml}<div class="book-mini-overlay">${(livro.title || '').toUpperCase()}<br>${livro.autor || ''}</div>`;
-    grid.appendChild(div);
+    a.innerHTML = `${coverHtml}<div class="book-mini-overlay">${(livro.title || '').toUpperCase()}<br>${livro.autor || ''}</div>`;
+    grid.appendChild(a);
   });
 }
 
