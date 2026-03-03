@@ -417,9 +417,10 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
     <span class="nav-logo-sub">a blog about art creativity<br>tech books and consciousness</span>
   </div>
   <ul class="nav-links">
-    <li><span class="nav-sep">..·</span><a href="works.html">I worked on</a></li>
-    <li><span class="nav-sep">:·</span><a href="posts.html">Posts</a></li>
-    <li><span class="nav-sep">.·.</span><a href="drops.html">Drops</a></li>
+    <li><span class="nav-sep">..·</span><a href="index.html#escritos">Escritos</a></li>
+    <li><span class="nav-sep">:·</span><a href="drops.html">Drops</a></li>
+    <li><span class="nav-sep">.·.</span><a href="livros.html">Livros</a></li>
+    <li><span class="nav-sep">-·.</span><a href="index.html#obras">Obras</a></li>
     <li><span class="nav-sep">-·</span><a href="index.html#me">Me</a></li>
   </ul>
 </nav>
@@ -501,25 +502,9 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
   <span>made by hand</span>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
 
-const POST_FILES = [
-  'content/posts/how-can-ai-change-the-books.md',
-  'content/posts/parents-need-to-deal-with-tech.md',
-  'content/posts/thoughts-about-antifragile.md',
-];
-
-function parseFrontmatter(text) {
-  const match = text.match(/^---\n([\s\S]*?)\n---/);
-  if (!match) return { meta: {}, body: text };
-  const meta = {};
-  match[1].split('\n').forEach(line => {
-    const [key, ...val] = line.split(':');
-    if (key && val.length) meta[key.trim()] = val.join(':').trim().replace(/^"|"$/g, '');
-  });
-  return { meta, body: text.slice(match[0].length).trim() };
-}
+const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
@@ -536,77 +521,79 @@ function formatDateShort(dateStr) {
 
 async function loadPost() {
   const params = new URLSearchParams(window.location.search);
-  const slug = params.get('slug') || 'how-can-ai-change-the-books';
+  const id = params.get('id');
+  const tipo = params.get('tipo'); // 'projeto' → projetos, senão → escritos
 
-  // encontra o arquivo pelo slug
-  const file = POST_FILES.find(f => f.includes(slug));
-  if (!file) {
-    document.getElementById('post-content').innerHTML = '<p style="color:rgba(232,232,216,0.4);font-family:var(--f-ui);font-size:11px;">Post não encontrado.</p>';
+  if (!id) {
+    document.getElementById('post-content').innerHTML =
+      '<p style="color:rgba(232,232,216,0.4);font-family:var(--f-ui);font-size:11px;letter-spacing:0.1em;">post não encontrado.</p>';
     return;
   }
 
-  const res = await fetch(file);
-  const text = await res.text();
-  const { meta, body } = parseFrontmatter(text);
+  const collection = tipo === 'projeto' ? 'projetos' : 'escritos';
 
-  // título da aba
-  document.title = `WEIRD WIZ – ${meta.title || 'Post'}`;
-
-  // renderiza o conteúdo
-  const content = document.getElementById('post-content');
-  content.innerHTML = `
-    <div class="post-tag">${meta.category || ''} · ${formatDateShort(meta.date)} · ${meta.readtime || ''}min</div>
-    <h1 class="post-title">${(meta.title || '').toUpperCase()}</h1>
-    <div class="post-body">${marked.parse(body)}</div>
-    <div class="post-footer-meta">
-      <div class="post-meta-item">
-        <span class="post-meta-label">Publicado</span>
-        <span class="post-meta-val">${formatDate(meta.date)}</span>
-      </div>
-      <div class="post-meta-item">
-        <span class="post-meta-label">Categoria</span>
-        <span class="post-meta-val">${meta.category || ''}</span>
-      </div>
-      <div class="post-meta-item">
-        <span class="post-meta-label">Leitura</span>
-        <span class="post-meta-val">${meta.readtime || ''} minutos</span>
-      </div>
-    </div>
-    <div class="post-nav" id="post-nav"></div>
-  `;
-
-  // nav anterior / próximo
-  const allFiles = POST_FILES;
-  const idx = allFiles.indexOf(file);
-  const navEl = document.getElementById('post-nav');
-  if (idx > 0) {
-    const prevSlug = allFiles[idx-1].split('/').pop().replace('.md','');
-    const prevRes = await fetch(allFiles[idx-1]);
-    const prevText = await prevRes.text();
-    const { meta: prevMeta } = parseFrontmatter(prevText);
-    navEl.innerHTML += `<a href="post.html?slug=${prevSlug}" class="post-nav-item"><div class="post-nav-dir">← anterior</div><div class="post-nav-title">${(prevMeta.title||'').toUpperCase()}</div></a>`;
-  } else {
-    navEl.innerHTML += `<div></div>`;
-  }
-  if (idx < allFiles.length - 1) {
-    const nextSlug = allFiles[idx+1].split('/').pop().replace('.md','');
-    const nextRes = await fetch(allFiles[idx+1]);
-    const nextText = await nextRes.text();
-    const { meta: nextMeta } = parseFrontmatter(nextText);
-    navEl.innerHTML += `<a href="post.html?slug=${nextSlug}" class="post-nav-item" style="text-align:right;"><div class="post-nav-dir">próximo →</div><div class="post-nav-title">${(nextMeta.title||'').toUpperCase()}</div></a>`;
-  }
-
-  // sidebar about
   try {
-    const aRes = await fetch('content/settings/about.json');
-    const about = await aRes.json();
-    if (about.bio) document.querySelector('.sidebar-bio').innerHTML = about.bio + (about.instagram ? ` <a href="${about.instagram}" target="_blank">↗</a>` : '');
-    if (about.name) document.querySelector('.sidebar-name').textContent = about.name;
-    if (about.photo) {
-      const photoEl = document.querySelector('.sidebar-photo');
-      photoEl.innerHTML = `<img src="${about.photo}" alt="${about.name}">`;
+    // Busca o post atual
+    const res = await fetch(`${DIRECTUS}/items/${collection}/${id}`);
+    if (!res.ok) throw new Error('not found');
+    const data = await res.json();
+    const post = data.data;
+
+    // Título da aba
+    document.title = `WEIRD WIZ – ${post.title || 'Post'}`;
+
+    // Tag de categoria / tipo
+    const tagParts = [];
+    if (post.type || post.category) tagParts.push((post.type || post.category).toUpperCase());
+    if (post.date) tagParts.push(formatDateShort(post.date));
+    if (post.readtime) tagParts.push(post.readtime + 'min');
+
+    // Renderiza conteúdo
+    const content = document.getElementById('post-content');
+    content.innerHTML = `
+      ${tagParts.length ? `<div class="post-tag">${tagParts.join(' · ')}</div>` : ''}
+      <h1 class="post-title">${(post.title || '').toUpperCase()}</h1>
+      <div class="post-body">${post.content || ''}</div>
+      <div class="post-footer-meta">
+        ${post.date ? `<div class="post-meta-item">
+          <span class="post-meta-label">Publicado</span>
+          <span class="post-meta-val">${formatDate(post.date)}</span>
+        </div>` : ''}
+        ${post.type || post.category ? `<div class="post-meta-item">
+          <span class="post-meta-label">Categoria</span>
+          <span class="post-meta-val">${post.type || post.category}</span>
+        </div>` : ''}
+        ${post.readtime ? `<div class="post-meta-item">
+          <span class="post-meta-label">Leitura</span>
+          <span class="post-meta-val">${post.readtime} minutos</span>
+        </div>` : ''}
+      </div>
+      <div class="post-nav" id="post-nav"></div>
+    `;
+
+    // Busca todos para prev / next
+    const allRes = await fetch(`${DIRECTUS}/items/${collection}?filter[status][_eq]=published&sort[]=-date&limit=200&fields=id,title,date`);
+    const allData = await allRes.json();
+    const all = allData.data || [];
+    const idx = all.findIndex(p => String(p.id) === String(id));
+    const navEl = document.getElementById('post-nav');
+    const tipoParam = tipo ? `&tipo=${tipo}` : '';
+
+    if (idx > 0) {
+      const prev = all[idx - 1];
+      navEl.innerHTML += `<a href="post.html?id=${prev.id}${tipoParam}" class="post-nav-item"><div class="post-nav-dir">← anterior</div><div class="post-nav-title">${(prev.title||'').toUpperCase()}</div></a>`;
+    } else {
+      navEl.innerHTML += `<div></div>`;
     }
-  } catch(e) {}
+    if (idx !== -1 && idx < all.length - 1) {
+      const next = all[idx + 1];
+      navEl.innerHTML += `<a href="post.html?id=${next.id}${tipoParam}" class="post-nav-item" style="text-align:right;"><div class="post-nav-dir">próximo →</div><div class="post-nav-title">${(next.title||'').toUpperCase()}</div></a>`;
+    }
+
+  } catch(e) {
+    document.getElementById('post-content').innerHTML =
+      '<p style="color:rgba(232,232,216,0.4);font-family:var(--f-ui);font-size:11px;letter-spacing:0.1em;">post não encontrado.</p>';
+  }
 }
 
 loadPost();

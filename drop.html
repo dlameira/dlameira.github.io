@@ -333,9 +333,10 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
     <span class="nav-logo-sub">a blog about art creativity<br>tech books and consciousness</span>
   </div>
   <ul class="nav-links">
-    <li><span class="nav-sep">..·</span><a href="works.html">I worked on</a></li>
-    <li><span class="nav-sep">:·</span><a href="posts.html">Posts</a></li>
-    <li><span class="nav-sep">.·.</span><a href="drops.html" class="active">Drops</a></li>
+    <li><span class="nav-sep">..·</span><a href="index.html#escritos">Escritos</a></li>
+    <li><span class="nav-sep">:·</span><a href="drops.html" class="active">Drops</a></li>
+    <li><span class="nav-sep">.·.</span><a href="livros.html">Livros</a></li>
+    <li><span class="nav-sep">-·.</span><a href="index.html#obras">Obras</a></li>
     <li><span class="nav-sep">-·</span><a href="index.html#me">Me</a></li>
   </ul>
 </nav>
@@ -378,76 +379,43 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
   <span>made by hand</span>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
 
-async function getDropFiles() {
-  try {
-    const res = await fetch('https://api.github.com/repos/dlameira/dlameira.github.io/contents/content/drops');
-    if (!res.ok) throw new Error('API error');
-    const files = await res.json();
-    return files
-      .filter(f => f.type === 'file' && f.name.endsWith('.md'))
-      .map(f => `content/drops/${f.name}`);
-  } catch(e) {
-    return [
-      'content/drops/antifragile.md','content/drops/ok-computer.md',
-      'content/drops/lex-fridman-367.md','content/drops/steve-jobs.md',
-      'content/drops/arrival.md','content/drops/master-and-margarita.md',
-      'content/drops/godel-escher-bach.md','content/drops/the-wave-watcher-companion.md',
-      'content/drops/kid-a.md','content/drops/a-hora-da-estrela.md',
-      'content/drops/fargo-s01.md','content/drops/in-rainbows.md',
-      'content/drops/o-castelo.md','content/drops/hardcore-history.md',
-      'content/drops/2001-odisseia.md','content/drops/a-sociedade-do-cansaco.md',
-      'content/drops/99-percent-invisible.md',
-    ];
-  }
+const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
+
+function directusImg(id, width) {
+  if (!id) return null;
+  return `${DIRECTUS}/assets/${id}${width ? '?width=' + width : ''}`;
 }
 
-const TYPE_LABELS = { all: 'Todos', book: 'Livros', album: 'Álbuns', podcast: 'Podcasts', film: 'Filmes' };
-
-function parseFrontmatter(text) {
-  const match = text.match(/^---\n([\s\S]*?)\n---/);
-  if (!match) return { meta: {}, body: text };
-  const meta = {};
-  match[1].split('\n').forEach(line => {
-    const [key, ...val] = line.split(':');
-    if (key && val.length) meta[key.trim()] = val.join(':').trim().replace(/^"|"$/g, '');
-  });
-  return { meta, body: text.slice(match[0].length).trim() };
+// Mapeia tipos do Directus (português) para classes CSS (inglês)
+function typeClass(type) {
+  const map = { livro: 'book', album: 'album', podcast: 'podcast', filme: 'film', outro: 'book' };
+  return 'type-' + (map[type] || 'book');
 }
 
-async function fetchMarkdownList(files) {
-  const results = [];
-  for (const file of files) {
-    try {
-      const res = await fetch(file);
-      if (!res.ok) continue;
-      const text = await res.text();
-      const { meta, body } = parseFrontmatter(text);
-      results.push({ ...meta, body, _file: file });
-    } catch(e) {}
-  }
-  return results;
+function typeLabel(type) {
+  const map = { livro: 'Livro', album: 'Álbum', podcast: 'Podcast', filme: 'Filme', outro: 'Outro' };
+  return map[type] || type || '';
 }
 
-function fileToSlug(filepath) {
-  return filepath.split('/').pop().replace('.md', '');
-}
+const TYPE_LABELS = { all: 'Todos', livro: 'Livros', album: 'Álbuns', podcast: 'Podcasts', filme: 'Filmes', outro: 'Outros' };
+
+let allDrops = [];
+let currentId = '';
+let activeType = 'all';
 
 function coverHtml(drop, size = 'thumb') {
   const cls = size === 'thumb' ? 'sidebar-drop-thumb' : 'drop-cover-img';
   const phCls = size === 'thumb' ? 'sidebar-drop-thumb-placeholder' : 'drop-cover-placeholder';
+  const tc = typeClass(drop.type);
   if (drop.cover) {
-    return `<img src="${drop.cover}" alt="${drop.title}" class="${cls}">`;
+    return `<img src="${directusImg(drop.cover, size === 'thumb' ? 120 : 400)}" alt="${drop.title || ''}" class="${cls}">`;
   }
-  return `<div class="${phCls} type-${drop.type || 'book'}">${drop.type || ''}</div>`;
+  return `<div class="${phCls} ${tc}">${typeLabel(drop.type)}</div>`;
 }
 
 // ── SIDEBAR ────────────────────────────────────────────────────────────────
-let allDrops = [];
-let currentSlug = '';
-let activeType = 'all';
 
 function renderSidebarFilters(drops) {
   const bar = document.getElementById('sidebar-filter-bar');
@@ -471,8 +439,8 @@ function renderSidebarFilters(drops) {
 function renderSidebarList(drops) {
   const list = document.getElementById('sidebar-drop-list');
   const filtered = activeType === 'all'
-    ? drops.filter(d => fileToSlug(d._file) !== currentSlug)
-    : drops.filter(d => d.type === activeType && fileToSlug(d._file) !== currentSlug);
+    ? drops.filter(d => String(d.id) !== String(currentId))
+    : drops.filter(d => d.type === activeType && String(d.id) !== String(currentId));
 
   list.innerHTML = '';
   if (filtered.length === 0) {
@@ -480,10 +448,9 @@ function renderSidebarList(drops) {
     return;
   }
 
-  filtered.sort((a,b) => (a.order||99) - (b.order||99)).forEach(drop => {
-    const slug = fileToSlug(drop._file);
+  filtered.forEach(drop => {
     const a = document.createElement('a');
-    a.href = `drop.html?slug=${slug}`;
+    a.href = `drop.html?id=${drop.id}`;
     a.className = 'sidebar-drop-item';
     a.innerHTML = `
       ${coverHtml(drop, 'thumb')}
@@ -496,60 +463,71 @@ function renderSidebarList(drops) {
 }
 
 // ── MAIN DROP ─────────────────────────────────────────────────────────────
+
 async function loadDrop() {
   const params = new URLSearchParams(window.location.search);
-  currentSlug = params.get('slug') || '';
+  currentId = params.get('id') || '';
 
-  const file = DROP_FILES.find(f => f.includes(currentSlug));
-  if (!file) {
+  if (!currentId) {
     document.getElementById('drop-content').innerHTML =
-      '<p style="color:rgba(232,232,216,0.4);font-family:var(--f-ui);font-size:11px;">Drop não encontrado.</p>';
+      '<p style="color:rgba(232,232,216,0.4);font-family:var(--f-ui);font-size:11px;letter-spacing:0.1em;">drop não encontrado.</p>';
     return;
   }
 
-  const res = await fetch(file);
-  const text = await res.text();
-  const { meta, body } = parseFrontmatter(text);
+  try {
+    const res = await fetch(`${DIRECTUS}/items/drops/${currentId}`);
+    if (!res.ok) throw new Error('not found');
+    const data = await res.json();
+    const drop = data.data;
 
-  document.title = `WEIRD WIZ – ${meta.title || 'Drop'}`;
+    document.title = `WEIRD WIZ – ${drop.title || 'Drop'}`;
 
-  const typeClass = `type-${meta.type || 'book'}`;
+    const tc = typeClass(drop.type);
 
-  const externalBtn = meta.link
-    ? `<a href="${meta.link}" target="_blank" rel="noopener" class="drop-external-btn">Acessar ↗</a>`
-    : '';
+    const externalBtn = drop.link
+      ? `<a href="${drop.link}" target="_blank" rel="noopener" class="drop-external-btn">Acessar ↗</a>`
+      : '';
 
-  const bodyHtml = body
-    ? `<div class="drop-body">${marked.parse(body)}</div>`
-    : '';
+    const bodyHtml = drop.note
+      ? `<div class="drop-body">${drop.note}</div>`
+      : '';
 
-  const coverEl = meta.cover
-    ? `<img src="${meta.cover}" alt="${meta.title}" class="drop-cover-img">`
-    : `<div class="drop-cover-placeholder ${typeClass}">${meta.type || ''}</div>`;
+    const coverEl = drop.cover
+      ? `<img src="${directusImg(drop.cover, 400)}" alt="${drop.title || ''}" class="drop-cover-img">`
+      : `<div class="drop-cover-placeholder ${tc}">${typeLabel(drop.type)}</div>`;
 
-  document.getElementById('drop-content').innerHTML = `
-    <div class="drop-header">
-      <div class="drop-cover-large">${coverEl}</div>
-      <div class="drop-header-info">
-        <span class="drop-type-badge ${typeClass}">${meta.type || ''}</span>
-        <h1 class="drop-detail-title">${(meta.title || '').toUpperCase()}</h1>
-        <div class="drop-detail-author">${meta.author || ''}</div>
-        ${meta.note ? `<p class="drop-detail-note">${meta.note}</p>` : ''}
-        ${externalBtn}
+    document.getElementById('drop-content').innerHTML = `
+      <div class="drop-header">
+        <div class="drop-cover-large">${coverEl}</div>
+        <div class="drop-header-info">
+          <span class="drop-type-badge ${tc}">${typeLabel(drop.type)}</span>
+          <h1 class="drop-detail-title">${(drop.title || '').toUpperCase()}</h1>
+          <div class="drop-detail-author">${drop.author || ''}</div>
+          ${externalBtn}
+        </div>
       </div>
-    </div>
-    ${bodyHtml}
-  `;
+      ${bodyHtml}
+    `;
 
-  // sidebar: default filter = mesmo tipo do drop atual
-  activeType = meta.type || 'all';
-  renderSidebarFilters(allDrops);
-  renderSidebarList(allDrops);
+    // sidebar: filtro padrão = tipo do drop atual
+    activeType = drop.type || 'all';
+    renderSidebarFilters(allDrops);
+    renderSidebarList(allDrops);
+
+  } catch(e) {
+    document.getElementById('drop-content').innerHTML =
+      '<p style="color:rgba(232,232,216,0.4);font-family:var(--f-ui);font-size:11px;letter-spacing:0.1em;">drop não encontrado.</p>';
+  }
 }
 
 async function init() {
-  const DROP_FILES = await getDropFiles();
-  allDrops = await fetchMarkdownList(DROP_FILES);
+  // Busca todos os drops para a sidebar
+  try {
+    const res = await fetch(`${DIRECTUS}/items/drops?filter[status][_eq]=published&sort[]=order&limit=200&fields=id,title,author,type,cover`);
+    const data = await res.json();
+    allDrops = data.data || [];
+  } catch(e) { allDrops = []; }
+
   await loadDrop();
 }
 

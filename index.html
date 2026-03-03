@@ -640,87 +640,39 @@ function renderLivros(livros) {
   });
 }
 
-// ── PARSE FRONTMATTER ─────────────────────────────────────────────────────
-function parseFrontmatter(text) {
-  text = text.replace(/\r\n/g, '\n');
-  const match = text.match(/^---\n([\s\S]*?)\n---/);
-  if (!match) return { meta: {}, body: text };
-  const meta = {};
-  match[1].split('\n').forEach(line => {
-    const [key, ...val] = line.split(':');
-    if (key && val.length) meta[key.trim()] = val.join(':').trim().replace(/^"|"$/g, '');
-  });
-  return { meta, body: text.slice(match[0].length).trim() };
-}
-
-// ── FETCH MARKDOWN FILES ──────────────────────────────────────────────────
-async function fetchMarkdownList(files) {
-  const results = [];
-  for (const file of files) {
-    try {
-      const res = await fetch(file);
-      if (!res.ok) continue;
-      const text = await res.text();
-      const { meta, body } = parseFrontmatter(text);
-      results.push({ ...meta, body, _file: file });
-    } catch(e) {}
-  }
-  return results;
-}
-
-// ── LISTA DE ARQUIVOS ─────────────────────────────────────────────────────
-async function getPostFiles() {
+// ── FETCH DO DIRECTUS ─────────────────────────────────────────────────────
+async function fetchEscritos() {
   try {
-    const res = await fetch('https://api.github.com/repos/dlameira/dlameira.github.io/contents/content/posts');
-    if (!res.ok) throw new Error('API error');
-    const files = await res.json();
-    return files
-      .filter(f => f.type === 'file' && f.name.endsWith('.md'))
-      .map(f => `content/posts/${f.name}`);
-  } catch(e) {
-    // fallback caso a API falhe
-    return [
-      'content/posts/how-can-ai-change-the-books.md',
-      'content/posts/o-editor-como-leitor.md',
-      'content/posts/sobre-reler.md',
-      'content/posts/traducao-como-traicao.md',
-      'content/posts/mercado-editorial-brasileiro.md',
-      'content/posts/poesia-fora-do-lugar.md',
-      'content/posts/a-criacao-da-antofagica.md',
-      'content/posts/a-seiva-origem-e-trajetoria.md',
-    ];
-  }
+    const res = await fetch(`${DIRECTUS}/items/escritos?filter[status][_eq]=published&sort[]=-date&limit=50`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data || [];
+  } catch(e) { return []; }
 }
 
-async function getDropFiles() {
+async function fetchProjetos() {
   try {
-    const res = await fetch('https://api.github.com/repos/dlameira/dlameira.github.io/contents/content/drops');
-    if (!res.ok) throw new Error('API error');
-    const files = await res.json();
-    return files
-      .filter(f => f.type === 'file' && f.name.endsWith('.md'))
-      .map(f => `content/drops/${f.name}`);
-  } catch(e) {
-    return [
-      'content/drops/antifragile.md','content/drops/ok-computer.md',
-      'content/drops/lex-fridman-367.md','content/drops/steve-jobs.md',
-      'content/drops/arrival.md','content/drops/master-and-margarita.md',
-      'content/drops/godel-escher-bach.md','content/drops/the-wave-watcher-companion.md',
-      'content/drops/kid-a.md','content/drops/a-hora-da-estrela.md',
-      'content/drops/fargo-s01.md','content/drops/in-rainbows.md',
-      'content/drops/o-castelo.md','content/drops/hardcore-history.md',
-      'content/drops/2001-odisseia.md','content/drops/a-sociedade-do-cansaco.md',
-      'content/drops/99-percent-invisible.md',
-    ];
-  }
+    const res = await fetch(`${DIRECTUS}/items/projetos?filter[status][_eq]=published&sort[]=-date&limit=50`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data || [];
+  } catch(e) { return []; }
 }
 
-// ── CORES PARA POSTS ──────────────────────────────────────────────────────
+async function fetchDrops() {
+  try {
+    const res = await fetch(`${DIRECTUS}/items/drops?filter[status][_eq]=published&sort[]=order&limit=100`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data || [];
+  } catch(e) { return []; }
+}
+
+// ── CORES E UTILITÁRIOS ────────────────────────────────────────────────────
 const borderColors = ['border-red', 'border-green', 'border-purple', 'border-blue', 'border-yellow'];
 const hlClasses   = ['hl-1', 'hl-2', 'hl-3', 'hl-4', 'hl-5'];
 const delays      = ['', 'd1', 'd2', 'd3', 'd4'];
 
-// ── FORMATAR DATA ─────────────────────────────────────────────────────────
 function formatDate(dateStr) {
   if (!dateStr) return '';
   const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -728,24 +680,15 @@ function formatDate(dateStr) {
   return `${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-// ── SLUG DO ARQUIVO ───────────────────────────────────────────────────────
-function fileToSlug(filepath) {
-  return filepath.split('/').pop().replace('.md', '');
-}
-
 // ── RENDER POSTS HERO (headlines) ─────────────────────────────────────────
-function renderHeroPosts(posts) {
+function renderHeroPosts(escritos) {
   const homeSection = document.getElementById('home');
   homeSection.querySelectorAll('.headline').forEach(el => el.remove());
-
-  const published = posts.filter(p => p.published !== 'false');
-  const featured  = published.filter(p => p.featured === 'true' || p.featured === true);
-  const toShow    = featured.length > 0 ? featured : published;
-
+  const featured = escritos.filter(p => p.featured);
+  const toShow   = featured.length > 0 ? featured : escritos;
   toShow.slice(0, 5).forEach((post, i) => {
-    const slug = fileToSlug(post._file);
     const a = document.createElement('a');
-    a.href = `post.html?slug=${slug}`;
+    a.href = `post.html?id=${post.id}`;
     a.className = `headline ${borderColors[i % borderColors.length]} ${hlClasses[i]} r ${delays[i]}`;
     a.textContent = post.title?.toUpperCase() || 'SEM TÍTULO';
     homeSection.appendChild(a);
@@ -753,20 +696,18 @@ function renderHeroPosts(posts) {
 }
 
 // ── RENDER LISTA DE ESCRITOS ──────────────────────────────────────────────
-function renderPostList(posts) {
+function renderPostList(escritos) {
   const section = document.getElementById('escritos');
   if (!section) return;
   section.querySelectorAll('.post-row').forEach(el => el.remove());
-
-  posts.filter(p => p.published !== 'false' && p.category !== 'projeto').forEach((post, i) => {
-    const slug = fileToSlug(post._file);
+  escritos.forEach((post, i) => {
     const a = document.createElement('a');
-    a.href = `post.html?slug=${slug}`;
-    a.className = `post-row r${i > 0 ? ' d'+(i) : ''}`;
+    a.href = `post.html?id=${post.id}`;
+    a.className = `post-row r${i > 0 ? ' d'+i : ''}`;
     a.innerHTML = `
       <span class="post-row-num">${String(i+1).padStart(2,'0')}</span>
       <div>
-        <div class="post-row-tag">${post.category || ''} · ${formatDate(post.date)}</div>
+        <div class="post-row-tag">${formatDate(post.date)}</div>
         <div class="post-row-title">${post.title?.toUpperCase() || ''}</div>
         ${post.excerpt ? `<div class="post-row-excerpt">${post.excerpt}</div>` : ''}
       </div>`;
@@ -775,32 +716,27 @@ function renderPostList(posts) {
 }
 
 // ── RENDER PROJETOS ───────────────────────────────────────────────────────
-function renderProjetos(posts) {
+function renderProjetos(projetos) {
   const section = document.getElementById('projetos');
   if (!section) return;
   section.querySelectorAll('.projeto-row').forEach(el => el.remove());
-
-  posts
-    .filter(p => p.published !== 'false' && p.category === 'projeto')
-    .forEach((post, i) => {
-      const slug = fileToSlug(post._file);
-      const a = document.createElement('a');
-      a.href = `post.html?slug=${slug}`;
-      a.className = `projeto-row r${i > 0 ? ' d'+i : ''}`;
-      const imgHtml = post.cover
-        ? `<img src="${post.cover}" alt="${post.title}">`
-        : 'imagem';
-      const year = post.date ? new Date(post.date).getFullYear() : '';
-      const tag = [post.type, year].filter(Boolean).join(' · ');
-      a.innerHTML = `
-        <div class="projeto-img">${imgHtml}</div>
-        <div>
-          <div class="projeto-tag">${tag}</div>
-          <div class="projeto-title">${post.title?.toUpperCase() || ''}</div>
-          <div class="projeto-desc">${post.excerpt || ''}</div>
-        </div>`;
-      section.appendChild(a);
-    });
+  projetos.forEach((post, i) => {
+    const a = document.createElement('a');
+    a.href = `post.html?id=${post.id}&tipo=projeto`;
+    a.className = `projeto-row r${i > 0 ? ' d'+i : ''}`;
+    const coverUrl = post.cover ? directusImg(post.cover, 200) : null;
+    const imgHtml  = coverUrl ? `<img src="${coverUrl}" alt="${post.title}">` : 'imagem';
+    const year = post.date ? new Date(post.date).getFullYear() : '';
+    const tag  = [post.type, year].filter(Boolean).join(' · ');
+    a.innerHTML = `
+      <div class="projeto-img">${imgHtml}</div>
+      <div>
+        <div class="projeto-tag">${tag}</div>
+        <div class="projeto-title">${post.title?.toUpperCase() || ''}</div>
+        <div class="projeto-desc">${post.excerpt || ''}</div>
+      </div>`;
+    section.appendChild(a);
+  });
 }
 
 // ── RENDER DROPS ──────────────────────────────────────────────────────────
@@ -808,21 +744,20 @@ function renderDrops(drops) {
   const grid = document.querySelector('.drops-grid');
   if (!grid) return;
   grid.innerHTML = '';
-
-  drops.sort((a,b) => (a.order||99) - (b.order||99)).forEach((drop, i) => {
+  drops.forEach((drop, i) => {
     const delay = i > 0 ? ` d${(i % 4)}` : '';
-    const slug = drop._file.split('/').pop().replace('.md', '');
     const a = document.createElement('a');
-    a.href = `drop.html?slug=${slug}`;
+    a.href = `drop.html?id=${drop.id}`;
     a.className = `drop-card r${delay}`;
-    a.dataset.type = drop.type || 'book';
-    const coverHtml = drop.cover
-      ? `<img src="${drop.cover}" alt="${drop.title}" style="width:100%;height:100%;object-fit:cover;">`
-      : `<div class="drop-cover-bg">${drop.type || 'book'}</div>`;
+    a.dataset.type = drop.type || 'livro';
+    const coverUrl  = drop.cover ? directusImg(drop.cover, 300) : null;
+    const coverHtml = coverUrl
+      ? `<img src="${coverUrl}" alt="${drop.title}" style="width:100%;height:100%;object-fit:cover;">`
+      : `<div class="drop-cover-bg">${drop.type || ''}</div>`;
     a.innerHTML = `
       <div class="drop-cover">
         ${coverHtml}
-        <span class="drop-type-badge">${drop.type || 'book'}</span>
+        <span class="drop-type-badge">${drop.type || ''}</span>
         <div class="drop-cover-text">${drop.title?.toUpperCase() || ''}<br>${drop.author || ''}</div>
       </div>
       <div class="drop-info">
@@ -862,19 +797,15 @@ function initObserver() {
 
 // ── INIT ──────────────────────────────────────────────────────────────────
 async function init() {
-  const [POST_FILES, DROP_FILES, livros] = await Promise.all([
-    getPostFiles(),
-    getDropFiles(),
+  const [escritos, projetos, drops, livros] = await Promise.all([
+    fetchEscritos(),
+    fetchProjetos(),
+    fetchDrops(),
     fetchLivros(),
   ]);
-  const [posts, drops] = await Promise.all([
-    fetchMarkdownList(POST_FILES),
-    fetchMarkdownList(DROP_FILES),
-  ]);
-
-  renderHeroPosts(posts);
-  renderPostList(posts);
-  renderProjetos(posts);
+  renderHeroPosts(escritos);
+  renderPostList(escritos);
+  renderProjetos(projetos);
   renderDrops(drops);
   renderLivros(livros);
   await renderAbout();
