@@ -331,19 +331,39 @@ async function fetchOutros(currentId) {
 
 function formatMeta(livro) {
   const items = [];
-  if (livro.editora) items.push({ label: 'Editora', val: livro.editora });
-  if (livro.ano) items.push({ label: 'Ano', val: livro.ano });
-  if (livro.paginas) items.push({ label: 'Páginas', val: livro.paginas });
-  if (livro.colecao) items.push({ label: 'Coleção', val: livro.colecao });
-  if (livro.formato) items.push({ label: 'Formato', val: livro.formato });
-  if (livro.idioma) items.push({ label: 'Idioma', val: livro.idioma });
+  if (livro.editora)    items.push({ label: 'Editora',    val: livro.editora });
+  if (livro.ano)        items.push({ label: 'Ano',        val: livro.ano });
+  if (livro.paginas)    items.push({ label: 'Páginas',    val: livro.paginas });
+  if (livro.colecao)    items.push({ label: 'Coleção',    val: livro.colecao });
+  if (livro.formato)    items.push({ label: 'Formato',    val: livro.formato });
+  if (livro.idioma)     items.push({ label: 'Idioma',     val: livro.idioma });
   if (livro.isbn_fisico) items.push({ label: 'ISBN Físico', val: livro.isbn_fisico });
-  if (livro.isbn_ebook) items.push({ label: 'ISBN Ebook', val: livro.isbn_ebook });
+  if (livro.isbn_ebook)  items.push({ label: 'ISBN Ebook',  val: livro.isbn_ebook });
   return items.map(i => `
     <div class="livro-meta-item">
       <span class="livro-meta-label">${i.label}</span>
       <span class="livro-meta-val">${i.val}</span>
     </div>`).join('');
+}
+
+function formatFichaTecnica(livro) {
+  const items = [];
+  if (livro.tradutor)       items.push({ label: 'Tradução',       val: livro.tradutor });
+  if (livro.capista)        items.push({ label: 'Capa',           val: livro.capista });
+  if (livro.arte_de_capa)   items.push({ label: 'Arte de capa',   val: livro.arte_de_capa });
+  if (livro.artes_internas) items.push({ label: 'Artes internas', val: livro.artes_internas });
+  if (items.length === 0) return '';
+  return `
+    <div style="margin-top:40px;padding-top:24px;border-top:1px solid rgba(232,50,10,0.12);">
+      <div class="livro-sinopse-label">— ficha técnica</div>
+      <div class="livro-meta-row">
+        ${items.map(i => `
+          <div class="livro-meta-item">
+            <span class="livro-meta-label">${i.label}</span>
+            <span class="livro-meta-val">${i.val}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
 }
 
 async function init() {
@@ -380,8 +400,9 @@ async function init() {
 
   const sinopseHtml = livro.sinopse
     ? `<div class="livro-sinopse-label">— sinopse</div>
-       <div class="livro-sinopse">${livro.sinopse.split('\n\n').map(p => `<p>${p}</p>`).join('')}</div>`
-    : '';
+       <div class="livro-sinopse">${livro.sinopse.split('\n\n').map(p => `<p>${p}</p>`).join('')}</div>
+       ${formatFichaTecnica(livro)}`
+    : formatFichaTecnica(livro);
 
   document.getElementById('livro-content').innerHTML = `
     <div class="livro-header">
