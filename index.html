@@ -531,15 +531,6 @@ async function fetchEscritos() {
   } catch(e) { return []; }
 }
 
-async function fetchProjetos() {
-  try {
-    const res = await fetch(`${DIRECTUS}/items/projetos?filter[status][_eq]=published&sort[]=-date&limit=50`);
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.data || [];
-  } catch(e) { return []; }
-}
-
 async function fetchDrops() {
   try {
     const res = await fetch(`${DIRECTUS}/items/drops?filter[status][_eq]=published&sort[]=order&limit=100`);
@@ -590,10 +581,11 @@ function renderPostList(escritos) {
   const section = document.getElementById('escritos');
   if (!section) return;
   section.querySelectorAll('.post-row').forEach(el => el.remove());
-  escritos.forEach((post, i) => {
+  const lista = escritos.filter(p => p.tipo !== 'projeto');
+  lista.forEach((post, i) => {
     const a = document.createElement('a');
     a.href = `post.html?id=${post.id}`;
-    a.className = `post-row r${i > 0 ? ' d'+i : ''}`;
+    a.className = `post-row r${i > 0 ? ' d'+(Math.min(i,4)) : ''}`;
     a.innerHTML = `
       <span class="post-row-num">${String(i+1).padStart(2,'0')}</span>
       <div>
@@ -617,7 +609,7 @@ function renderProjetos(projetos) {
     const coverUrl = post.cover ? directusImg(post.cover, 200) : null;
     const imgHtml  = coverUrl ? `<img src="${coverUrl}" alt="${post.title}">` : 'imagem';
     const year = post.date ? new Date(post.date).getFullYear() : '';
-    const tag  = [post.type, year].filter(Boolean).join(' · ');
+    const tag  = year ? String(year) : '';
     a.innerHTML = `
       <div class="projeto-img">${imgHtml}</div>
       <div>
@@ -713,16 +705,15 @@ function initObserver() {
 
 // ── INIT ──────────────────────────────────────────────────────────────────
 async function init() {
-  const [escritos, projetos, drops, livros, obras] = await Promise.all([
+  const [escritos, drops, livros, obras] = await Promise.all([
     fetchEscritos(),
-    fetchProjetos(),
     fetchDrops(),
     fetchLivros(),
     fetchObras(),
   ]);
   renderHeroPosts(escritos);
   renderPostList(escritos);
-  renderProjetos(projetos);
+  renderProjetos(escritos.filter(e => e.tipo === 'projeto'));
   renderDrops(drops);
   renderLivros(livros);
   renderObras(obras);

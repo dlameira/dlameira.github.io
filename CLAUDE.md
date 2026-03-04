@@ -61,24 +61,20 @@ works.html           —                       (a verificar)
 ## Collections do Directus — Campos
 
 ### `escritos`
-| Campo     | Tipo    | Obs                              |
-|-----------|---------|----------------------------------|
-| title     | String  |                                  |
-| date      | Date    |                                  |
-| excerpt   | Text    | aparece na listagem da home      |
-| body      | Text    | markdown / rich text             |
-| status    | String  | published / draft                |
-| featured  | Boolean | aparece como headline no hero    |
+| Campo     | Tipo    | Obs                                                      |
+|-----------|---------|----------------------------------------------------------|
+| title     | String  |                                                          |
+| date      | Date    |                                                          |
+| excerpt   | Text    | aparece na listagem da home                              |
+| body      | Text    | markdown / rich text                                     |
+| status    | String  | published / draft                                        |
+| featured  | Boolean | aparece como headline no hero                            |
+| tipo      | String  | `"projeto"` → aparece na seção PROJETOS (layout diferente) |
+| cover     | Image   | opcional, usado quando tipo="projeto"                    |
 
-### `projetos`
-| Campo     | Tipo    | Obs                              |
-|-----------|---------|----------------------------------|
-| title     | String  |                                  |
-| date      | Date    |                                  |
-| type      | String  |                                  |
-| excerpt   | Text    |                                  |
-| cover     | Image   |                                  |
-| status    | String  | published / draft                |
+> ⚠️ Não existe collection `projetos` separada. A seção PROJETOS na home
+> filtra `escritos` onde `tipo === "projeto"`. Campos extras úteis para projetos:
+> `tipo` (String) e `cover` (Image).
 
 ### `drops`
 | Campo   | Tipo    | Obs                                        |
