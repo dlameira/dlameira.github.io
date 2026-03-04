@@ -224,6 +224,7 @@ nav {
   color: rgba(255,255,255,0.06); text-transform: uppercase;
 }
 .gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; filter: contrast(1.05) brightness(0.9) saturate(0.7); }
+.gallery-item video { width: 100%; height: 100%; object-fit: cover; display: block; filter: contrast(1.05) brightness(0.9) saturate(0.7); }
 .gallery-item-overlay {
   position: absolute; inset: 0;
   background: rgba(204,68,255,0.88);
@@ -542,7 +543,7 @@ async function fetchDrops() {
 
 async function fetchObras() {
   try {
-    const res = await fetch(`${DIRECTUS}/items/obras?filter[status][_eq]=published&sort[]=order&limit=100`);
+    const res = await fetch(`${DIRECTUS}/items/obras?filter[status][_eq]=published&sort[]=order&limit=100&fields=id,title,type,year,image,video`);
     if (!res.ok) return [];
     const data = await res.json();
     return data.data || [];
@@ -663,9 +664,14 @@ function renderObras(obras) {
     div.style.textDecoration = 'none';
     div.className = `gallery-item r${delay}`;
     const imgUrl = obra.image ? directusImg(obra.image, 600) : null;
-    const bgHtml = imgUrl
-      ? `<img src="${imgUrl}" alt="${obra.title || ''}">`
-      : `<div class="gallery-item-bg" style="background:#120818;">obra</div>`;
+    const posterAttr = imgUrl ? `poster="${imgUrl}"` : '';
+    const bgHtml = obra.video
+      ? `<video autoplay muted loop playsinline preload="metadata" ${posterAttr}>
+           <source src="${DIRECTUS}/assets/${obra.video}" type="video/mp4">
+         </video>`
+      : imgUrl
+        ? `<img src="${imgUrl}" alt="${obra.title || ''}">`
+        : `<div class="gallery-item-bg" style="background:#120818;">obra</div>`;
     const typeYear = [obra.type, obra.year].filter(Boolean).join(' · ');
     div.innerHTML = `
       ${bgHtml}
