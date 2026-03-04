@@ -394,50 +394,8 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
     <h2 class="section-title col-purple">OBRAS VISUAIS</h2>
     <p class="section-desc" style="border-color:rgba(204,68,255,0.25); color:rgba(204,68,255,0.4);">desenhos · pinturas · animações · vídeos</p>
   </div>
-  <div class="gallery-grid">
-    <!-- placeholders: substitua pelo src real de cada obra -->
-    <div class="gallery-item r">
-      <div class="gallery-item-bg" style="background:#120818;">obra</div>
-      <div class="gallery-item-overlay">
-        <div class="gallery-item-type">desenho · 2023</div>
-        <div class="gallery-item-title">SEM TÍTULO #01</div>
-      </div>
-    </div>
-    <div class="gallery-item r d1">
-      <div class="gallery-item-bg" style="background:#081218;">obra</div>
-      <div class="gallery-item-overlay">
-        <div class="gallery-item-type">pintura · 2022</div>
-        <div class="gallery-item-title">COMPOSIÇÃO EM AZUL</div>
-      </div>
-    </div>
-    <div class="gallery-item r d2">
-      <div class="gallery-item-bg" style="background:#181008;">obra</div>
-      <div class="gallery-item-overlay">
-        <div class="gallery-item-type">animação · 2024</div>
-        <div class="gallery-item-title">LOOP 01</div>
-      </div>
-    </div>
-    <div class="gallery-item r d3">
-      <div class="gallery-item-bg" style="background:#0a1808;">obra</div>
-      <div class="gallery-item-overlay">
-        <div class="gallery-item-type">desenho · 2023</div>
-        <div class="gallery-item-title">SÉRIE RASCUNHOS 03</div>
-      </div>
-    </div>
-    <div class="gallery-item r d4">
-      <div class="gallery-item-bg" style="background:#180a10;">obra</div>
-      <div class="gallery-item-overlay">
-        <div class="gallery-item-type">vídeo · 2021</div>
-        <div class="gallery-item-title">FRAGMENTO</div>
-      </div>
-    </div>
-    <div class="gallery-item r d1">
-      <div class="gallery-item-bg" style="background:#0c0c18;">obra</div>
-      <div class="gallery-item-overlay">
-        <div class="gallery-item-type">pintura · 2024</div>
-        <div class="gallery-item-title">ESTUDO #07</div>
-      </div>
-    </div>
+  <div class="gallery-grid" id="obras-grid">
+    <!-- preenchido dinamicamente pelo Directus -->
   </div>
 </section>
 
@@ -591,6 +549,15 @@ async function fetchDrops() {
   } catch(e) { return []; }
 }
 
+async function fetchObras() {
+  try {
+    const res = await fetch(`${DIRECTUS}/items/obras?filter[status][_eq]=published&sort[]=order&limit=100`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data || [];
+  } catch(e) { return []; }
+}
+
 // ── CORES E UTILITÁRIOS ────────────────────────────────────────────────────
 const borderColors = ['border-red', 'border-green', 'border-purple', 'border-blue', 'border-yellow'];
 const hlClasses   = ['hl-1', 'hl-2', 'hl-3', 'hl-4', 'hl-5'];
@@ -692,7 +659,33 @@ function renderDrops(drops) {
   });
 }
 
-// ── RENDER ABOUT ──────────────────────────────────────────────────────────
+// ── RENDER OBRAS VISUAIS ──────────────────────────────────────────────────
+function renderObras(obras) {
+  const grid = document.getElementById('obras-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  obras.forEach((obra, i) => {
+    const delay = i > 0 ? ` d${i % 4}` : '';
+    const div = document.createElement('a');
+    div.href = `obra.html?id=${obra.id}`;
+    div.style.textDecoration = 'none';
+    div.className = `gallery-item r${delay}`;
+    const imgUrl = obra.image ? directusImg(obra.image, 600) : null;
+    const bgHtml = imgUrl
+      ? `<img src="${imgUrl}" alt="${obra.title || ''}">`
+      : `<div class="gallery-item-bg" style="background:#120818;">obra</div>`;
+    const typeYear = [obra.type, obra.year].filter(Boolean).join(' · ');
+    div.innerHTML = `
+      ${bgHtml}
+      <div class="gallery-item-overlay">
+        <div class="gallery-item-type">${typeYear}</div>
+        <div class="gallery-item-title">${(obra.title || '').toUpperCase()}</div>
+      </div>`;
+    grid.appendChild(div);
+  });
+}
+
+// ── RENDER ABOUT ─────────────────────────────────────────────────────────
 async function renderAbout() {
   try {
     const res = await fetch('content/settings/about.json');
@@ -720,17 +713,19 @@ function initObserver() {
 
 // ── INIT ──────────────────────────────────────────────────────────────────
 async function init() {
-  const [escritos, projetos, drops, livros] = await Promise.all([
+  const [escritos, projetos, drops, livros, obras] = await Promise.all([
     fetchEscritos(),
     fetchProjetos(),
     fetchDrops(),
     fetchLivros(),
+    fetchObras(),
   ]);
   renderHeroPosts(escritos);
   renderPostList(escritos);
   renderProjetos(projetos);
   renderDrops(drops);
   renderLivros(livros);
+  renderObras(obras);
   await renderAbout();
   initObserver();
 }

@@ -284,38 +284,16 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
 
 <script>
 
-// ── LISTA DE ARQUIVOS ─────────────────────────────────────────────────────
-// Adicione novos projetos aqui quando criar pelo CMS
-const WORK_FILES = [
-  'content/works/projeto-001.md',
-  'content/works/projeto-002.md',
-  'content/works/projeto-003.md',
-  'content/works/projeto-004.md',
-];
+// ── DIRECTUS ──────────────────────────────────────────────────────────────
+const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
 
-function parseFrontmatter(text) {
-  const match = text.match(/^---\n([\s\S]*?)\n---/);
-  if (!match) return { meta: {}, body: text };
-  const meta = {};
-  match[1].split('\n').forEach(line => {
-    const [key, ...val] = line.split(':');
-    if (key && val.length) meta[key.trim()] = val.join(':').trim().replace(/^"|"$/g, '');
-  });
-  return { meta, body: text.slice(match[0].length).trim() };
-}
-
-async function fetchMarkdownList(files) {
-  const results = [];
-  for (const file of files) {
-    try {
-      const res = await fetch(file);
-      if (!res.ok) continue;
-      const text = await res.text();
-      const { meta, body } = parseFrontmatter(text);
-      results.push({ ...meta, body, _file: file });
-    } catch(e) {}
-  }
-  return results;
+async function fetchWorks() {
+  try {
+    const res = await fetch(`${DIRECTUS}/items/works?filter[status][_eq]=published&sort[]=order&limit=200`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data || [];
+  } catch(e) { return []; }
 }
 
 let allWorks = [];
@@ -380,7 +358,7 @@ function initObserver() {
 }
 
 async function init() {
-  allWorks = await fetchMarkdownList(WORK_FILES);
+  allWorks = await fetchWorks();
   renderFilters(allWorks);
   renderWorks(allWorks);
   initObserver();
