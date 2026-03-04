@@ -97,6 +97,24 @@ nav {
   text-transform: uppercase;
 }
 
+/* VIDEO */
+.obra-video {
+  width: 100%;
+  display: block;
+  background: #000;
+  cursor: auto;
+}
+.obra-video::-webkit-media-controls-panel {
+  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+}
+.obra-video-wrap {
+  width: 100%;
+  margin-bottom: 36px;
+  border: 1px solid rgba(204,68,255,0.15);
+  overflow: hidden;
+  position: relative;
+}
+
 .obra-type-badge {
   display: inline-block;
   font-family: var(--f-ui);
@@ -307,7 +325,9 @@ function renderSidebarList(obras) {
     a.className = 'sidebar-obra-item';
     const thumbHtml = obra.image
       ? `<img src="${directusImg(obra.image, 160)}" alt="${obra.title || ''}" class="sidebar-obra-thumb">`
-      : `<div class="sidebar-obra-thumb-placeholder">obra</div>`;
+      : obra.video
+        ? `<div class="sidebar-obra-thumb-placeholder">▶</div>`
+        : `<div class="sidebar-obra-thumb-placeholder">obra</div>`;
     const typeYear = [obra.type, obra.year].filter(Boolean).join(' · ');
     a.innerHTML = `
       ${thumbHtml}
@@ -339,10 +359,6 @@ async function loadObra() {
 
     const typeYear = [obra.type, obra.year].filter(Boolean).join(' · ');
 
-    const imageHtml = obra.image
-      ? `<img src="${directusImg(obra.image, 1200)}" alt="${obra.title || ''}">`
-      : `<div class="obra-image-placeholder">imagem</div>`;
-
     const typeEl = obra.type
       ? `<div class="obra-type-badge">${obra.type}</div>`
       : '';
@@ -355,8 +371,24 @@ async function loadObra() {
       ? `<div class="obra-description">${obra.description}</div>`
       : '';
 
+    let mediaHtml;
+    if (obra.video) {
+      const posterAttr = obra.image ? `poster="${directusImg(obra.image, 1200)}"` : '';
+      mediaHtml = `
+        <div class="obra-video-wrap">
+          <video class="obra-video" controls playsinline preload="metadata" ${posterAttr}>
+            <source src="${DIRECTUS}/assets/${obra.video}" type="video/mp4">
+          </video>
+        </div>`;
+    } else {
+      const imageHtml = obra.image
+        ? `<img src="${directusImg(obra.image, 1200)}" alt="${obra.title || ''}">`
+        : `<div class="obra-image-placeholder">imagem</div>`;
+      mediaHtml = `<div class="obra-image-wrap">${imageHtml}</div>`;
+    }
+
     document.getElementById('obra-content').innerHTML = `
-      <div class="obra-image-wrap">${imageHtml}</div>
+      ${mediaHtml}
       ${typeEl}
       <h1 class="obra-title">${(obra.title || '').toUpperCase()}</h1>
       ${yearEl}
@@ -373,7 +405,7 @@ async function loadObra() {
 
 async function init() {
   try {
-    const res = await fetch(`${DIRECTUS}/items/obras?filter[status][_eq]=published&sort[]=order&limit=200&fields=id,title,type,year,image`);
+    const res = await fetch(`${DIRECTUS}/items/obras?filter[status][_eq]=published&sort[]=order&limit=200&fields=id,title,type,year,image,video`);
     const data = await res.json();
     allObras = data.data || [];
   } catch(e) { allObras = []; }
