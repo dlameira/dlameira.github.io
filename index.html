@@ -542,7 +542,7 @@ async function fetchDrops() {
 
 async function fetchObras() {
   try {
-    const res = await fetch(`${DIRECTUS}/items/obras?filter[status][_eq]=published&sort[]=order&limit=100`);
+    const res = await fetch(`${DIRECTUS}/items/obras?filter[status][_eq]=published&filter[categoria][_eq]=visual&sort[]=order&limit=100`);
     if (!res.ok) return [];
     const data = await res.json();
     return data.data || [];

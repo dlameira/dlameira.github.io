@@ -98,19 +98,20 @@ works.html           —                       (a verificar)
 | ano     | Integer |                                  |
 | status  | String  | published / draft                |
 
-### `obras` ← NOVA (criar no Directus)
-| Campo       | Tipo    | Obs                              |
-|-------------|---------|----------------------------------|
-| title       | String  |                                  |
-| type        | String  | desenho, pintura, animação, vídeo|
-| year        | String  |                                  |
-| image       | Image   |                                  |
-| description | Text    | opcional                         |
-| order       | Integer |                                  |
-| status      | String  | published / draft                |
+### `obras` ← collection única para OBRAS VISUAIS + WORKS
+| Campo       | Tipo    | Obs                                                        |
+|-------------|---------|------------------------------------------------------------|
+| title       | String  |                                                            |
+| categoria   | String  | `"visual"` → grade da home / `"profissional"` → works.html |
+| type        | String  | ex: desenho, pintura, animação, vídeo, editoria, direção... |
+| year        | String  |                                                            |
+| image       | Image   | obrigatória para visuais                                   |
+| description | Text    | opcional                                                   |
+| link        | String  | opcional, útil para obras profissionais                    |
+| order       | Integer |                                                            |
+| status      | String  | published / draft                                          |
 
-> ⚠️ Após criar `obras`, configurar permissões públicas:
-> Settings → Access Control → Public → obras: **read**
+> Permissão pública de leitura já configurada via API.
 
 ---
 

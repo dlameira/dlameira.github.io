@@ -289,7 +289,7 @@ const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
 
 async function fetchWorks() {
   try {
-    const res = await fetch(`${DIRECTUS}/items/works?filter[status][_eq]=published&sort[]=order&limit=200`);
+    const res = await fetch(`${DIRECTUS}/items/obras?filter[status][_eq]=published&filter[categoria][_eq]=profissional&sort[]=order&limit=200`);
     if (!res.ok) return [];
     const data = await res.json();
     return data.data || [];
