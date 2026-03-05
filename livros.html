@@ -236,6 +236,7 @@ function directusImg(id, width) {
   const transforms = encodeURIComponent(JSON.stringify([['sharpen']]));
   return `${DIRECTUS}/assets/${id}?${width ? 'width=' + width + '&' : ''}quality=90&format=webp&transforms=${transforms}`;
 }
+function px(cssMax) { return Math.round(cssMax * (window.devicePixelRatio || 1)); }
 
 let todosLivros = [];
 let filtroAtivo = 'todos';
@@ -282,7 +283,7 @@ function renderGrid(livros) {
     a.href = `livro.html?id=${livro.id}`;
     a.className = 'book-card';
     a.innerHTML = covId
-      ? `<img src="${directusImg(covId, 600)}" alt="${livro.title}" loading="lazy">
+      ? `<img src="${directusImg(covId, px(260))}" alt="${livro.title}" loading="lazy">
          <div class="book-card-overlay">
            <div class="book-card-title">${(livro.title || '').toUpperCase()}</div>
            <div class="book-card-autor">${livro.autor || ''}</div>

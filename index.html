@@ -478,6 +478,11 @@ function directusImg(id, width = 400) {
   return `${DIRECTUS}/assets/${id}?width=${width}&quality=90&format=webp&transforms=${transforms}`;
 }
 
+// Retorna largura em px adequada ao DPR do dispositivo
+function px(cssMax) {
+  return Math.round(cssMax * (window.devicePixelRatio || 1));
+}
+
 async function fetchLivros() {
   try {
     const res = await fetch(`${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=-ano&limit=200`);
@@ -502,7 +507,7 @@ function renderLivros(livros) {
     a.href = `livro.html?id=${livro.id}`;
     a.className = `book-mini r${delay ? ' ' + delay : ''}`;
     a.style.textDecoration = 'none';
-    const coverUrl = directusImg(livro.Cover || livro.cover, 600);
+    const coverUrl = directusImg(livro.Cover || livro.cover, px(200));
     const coverHtml = coverUrl
       ? `<img src="${coverUrl}" alt="${livro.title}">`
       : `<div class="book-mini-bg" style="background:#1a100a;">capa</div>`;
@@ -596,7 +601,7 @@ function renderProjetos(projetos) {
     const a = document.createElement('a');
     a.href = `post.html?id=${post.id}&tipo=projeto`;
     a.className = `projeto-row r${i > 0 ? ' d'+i : ''}`;
-    const coverUrl = post.cover ? directusImg(post.cover, 400) : null;
+    const coverUrl = post.cover ? directusImg(post.cover, px(80)) : null;
     const imgHtml  = coverUrl ? `<img src="${coverUrl}" alt="${post.title}">` : 'imagem';
     const year = post.date ? new Date(post.date).getFullYear() : '';
     const tag  = year ? String(year) : '';
@@ -622,7 +627,7 @@ function renderDrops(drops) {
     a.href = `drop.html?id=${drop.id}`;
     a.className = `drop-card r${delay}`;
     a.dataset.type = drop.type || 'livro';
-    const coverUrl  = drop.cover ? directusImg(drop.cover, 600) : null;
+    const coverUrl  = drop.cover ? directusImg(drop.cover, px(260)) : null;
     const coverHtml = coverUrl
       ? `<img src="${coverUrl}" alt="${drop.title}" style="width:100%;height:100%;object-fit:cover;">`
       : `<div class="drop-cover-bg">${drop.type || ''}</div>`;
@@ -652,7 +657,7 @@ function renderObras(obras) {
     div.href = `obra.html?id=${obra.id}`;
     div.style.textDecoration = 'none';
     div.className = `gallery-item r${delay}`;
-    const imgUrl = obra.image ? directusImg(obra.image, 600) : null;
+    const imgUrl = obra.image ? directusImg(obra.image, px(400)) : null;
     const posterAttr = imgUrl ? `poster="${imgUrl}"` : '';
     const bgHtml = obra.video
       ? `<video autoplay muted loop playsinline preload="metadata" ${posterAttr}>
@@ -750,7 +755,7 @@ function renderHeroFloats(drops, livros, obras) {
     if (i >= sources.length) return;
     const src = sources[i];
     el.dataset.type = src.type;
-    const imgUrl = src.imgId ? directusImg(src.imgId, 800) : null;
+    const imgUrl = src.imgId ? directusImg(src.imgId, px(185)) : null;
     const imgHtml = imgUrl
       ? `<img src="${imgUrl}" alt="${src.title || ''}" style="width:100%;height:100%;object-fit:cover;display:block;">`
       : `<div class="cover-placeholder">${src.label}</div>`;
