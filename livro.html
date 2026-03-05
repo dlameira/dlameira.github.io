@@ -314,7 +314,7 @@ const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
 
 function directusImg(id, width) {
   if (!id) return null;
-  return `${DIRECTUS}/assets/${id}${width ? '?width=' + width : ''}`;
+  return `${DIRECTUS}/assets/${id}?${width ? 'width=' + width + '&' : ''}quality=90&format=webp`;
 }
 
 async function fetchLivro(id) {
