@@ -661,7 +661,7 @@ async function dropsCarregarLista() {
   const panel = document.getElementById('drops-panel');
   panel.innerHTML = '<div class="loading"><span class="spinner"></span>CARREGANDO…</div>';
   try {
-    const res = await api('GET', '/items/drops?sort[]=-date_created&limit=500&fields=id,title,author,type,status,featured,cover,order');
+    const res = await api('GET', '/items/drops?sort[]=-id&limit=500&fields=id,title,author,type,status,featured,cover,order');
     dropsData = res.data || [];
     if (!dropsData.length) {
       panel.innerHTML = `<div class="empty"><div class="empty-icon">◌</div><h3>Nenhum drop ainda</h3><p>Adicione o primeiro drop.</p></div>`;
@@ -960,7 +960,7 @@ async function livrosCarregarLista() {
   const panel = document.getElementById('livros-panel');
   panel.innerHTML = '<div class="loading"><span class="spinner"></span>CARREGANDO…</div>';
   try {
-    const res = await api('GET', '/items/livros?sort[]=-date_created&limit=500&fields=id,title,autor,ano,status,Cover');
+    const res = await api('GET', '/items/livros?sort[]=-id&limit=500&fields=id,title,autor,ano,status,Cover');
     livrosData = res.data || [];
     if (!livrosData.length) {
       panel.innerHTML = `<div class="empty"><div class="empty-icon">◌</div><h3>Nenhum livro ainda</h3></div>`;
@@ -1132,7 +1132,7 @@ async function obrasCarregarLista() {
   const panel = document.getElementById('obras-panel');
   panel.innerHTML = '<div class="loading"><span class="spinner"></span>CARREGANDO…</div>';
   try {
-    const res = await api('GET', '/items/obras?sort[]=order&sort[]=-date_created&limit=500&fields=id,title,type,year,status,image,order');
+    const res = await api('GET', '/items/obras?sort[]=order&sort[]=-id&limit=500&fields=id,title,type,year,status,image,order');
     obrasData = res.data || [];
     if (!obrasData.length) {
       panel.innerHTML = `<div class="empty"><div class="empty-icon">◌</div><h3>Nenhuma obra ainda</h3></div>`;
@@ -1318,7 +1318,7 @@ async function escritosCarregarLista() {
   const panel = document.getElementById('escritos-panel');
   panel.innerHTML = '<div class="loading"><span class="spinner"></span>CARREGANDO…</div>';
   try {
-    const res = await api('GET', '/items/escritos?sort[]=-date&limit=500&fields=id,title,date,status,featured,tipo');
+    const res = await api('GET', '/items/escritos?sort[]=-id&limit=500&fields=id,title,date,status,featured,tipo');
     escritosData = res.data || [];
     if (!escritosData.length) {
       panel.innerHTML = `<div class="empty"><div class="empty-icon">◌</div><h3>Nenhum escrito ainda</h3></div>`;
