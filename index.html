@@ -213,6 +213,7 @@ nav {
 .gallery-item {
   aspect-ratio: 4/3;
   position: relative; overflow: hidden; cursor: crosshair;
+  background: #000;
   border: 1px solid rgba(255,255,255,0.04);
   transition: border-color 0.2s;
 }
@@ -714,9 +715,10 @@ function renderHeroFloats(drops, livros, obras) {
     });
   }
 
-  // Complementa com obra visual se necessário
-  if (sources.length < 3 && obras.length > 0) {
-    const o = obras[0];
+  // Complementa com obra visual se necessário (só obras com imagem estática)
+  const obrasComImagem = obras.filter(o => o.image);
+  if (sources.length < 3 && obrasComImagem.length > 0) {
+    const o = obrasComImagem[0];
     sources.push({
       type: 'visual',
       imgId: o.image,
