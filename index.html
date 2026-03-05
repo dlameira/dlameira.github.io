@@ -168,7 +168,7 @@ nav {
 /* LIVROS QUE DIRIGI */
 .books-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 3px;
 }
 .book-mini {
@@ -316,7 +316,7 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
   .me-grid { grid-template-columns: 1fr; gap: 40px; }
   .fi-2, .fi-3 { display: none; }
   .projeto-row { grid-template-columns: 56px 1fr; gap: 16px; }
-  .books-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
+  .books-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
   .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
   .drops-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
   .drop-note { display: none; }
@@ -474,7 +474,8 @@ const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
 
 function directusImg(id, width = 400) {
   if (!id) return null;
-  return `${DIRECTUS}/assets/${id}?width=${width}&quality=90&format=webp`;
+  const transforms = encodeURIComponent(JSON.stringify([['sharpen']]));
+  return `${DIRECTUS}/assets/${id}?width=${width}&quality=90&format=webp&transforms=${transforms}`;
 }
 
 async function fetchLivros() {

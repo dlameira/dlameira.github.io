@@ -385,7 +385,8 @@ const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
 
 function directusImg(id, width) {
   if (!id) return null;
-  return `${DIRECTUS}/assets/${id}?${width ? 'width=' + width + '&' : ''}quality=90&format=webp`;
+  const transforms = encodeURIComponent(JSON.stringify([['sharpen']]));
+  return `${DIRECTUS}/assets/${id}?${width ? 'width=' + width + '&' : ''}quality=90&format=webp&transforms=${transforms}`;
 }
 
 // Mapeia tipos do Directus (português) para classes CSS (inglês)
