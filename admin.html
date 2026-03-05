@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WW ADMIN</title>
+<style>
+@font-face { font-family: 'OffBit'; src: url('fonts/OffBit-101Bold.otf') format('opentype'); }
+@font-face { font-family: 'AuthenticSans'; src: url('fonts/60b11050899817005a227b9e.otf') format('opentype'); }
+@font-face { font-family: 'GTPressura'; src: url('fonts/gt-pressura-mono-regular.ttf') format('truetype'); }
+@font-face { font-family: 'MyriadPro'; src: url('fonts/MyriadPro-Regular.otf') format('opentype'); }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:     #0a0a08;
+  --bg2:    #111110;
+  --bg3:    #1a1a18;
+  --fg:     #e8e8d8;
+  --fg2:    #888880;
+  --red:    #E8320A;
+  --green:  #00ff41;
+  --blue:   #3355ff;
+  --purple: #cc44ff;
+  --yellow: #f2e04a;
+  --f-title: 'AuthenticSans', 'OffBit', monospace;
+  --f-ui:    'GTPressura', monospace;
+  --f-body:  'MyriadPro', sans-serif;
+}
+
+html, body { height: 100%; overflow-x: hidden; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--f-ui); font-size: 13px;
+  cursor: crosshair;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
+  pointer-events: none; z-index: 999;
+}
+
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font-family: var(--f-ui); font-size: 13px; color: var(--fg); }
+input[type="text"], input[type="email"], input[type="password"], input[type="url"], input[type="number"],
+textarea, select {
+  background: var(--bg3); border: 1px solid rgba(232,232,216,0.12);
+  padding: 8px 12px; border-radius: 2px; outline: none; width: 100%;
+  transition: border-color 0.15s;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--red); }
+textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+select option { background: var(--bg3); }
+label { font-size: 11px; color: var(--fg2); letter-spacing: 0.05em; display: block; margin-bottom: 4px; }
+
+/* ── BOTÕES ─────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border: none; border-radius: 2px;
+  cursor: crosshair; font-family: var(--f-ui); font-size: 12px;
+  letter-spacing: 0.04em; transition: opacity 0.15s, transform 0.1s;
+  user-select: none;
+}
+.btn:hover { opacity: 0.8; }
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--red); color: #fff; }
+.btn-ghost { background: transparent; border: 1px solid rgba(232,232,216,0.2); color: var(--fg); }
+.btn-ghost:hover { border-color: var(--fg); opacity: 1; }
+.btn-danger { background: transparent; border: 1px solid rgba(232,50,10,0.4); color: var(--red); }
+.btn-danger:hover { background: rgba(232,50,10,0.1); opacity: 1; }
+.btn-sm { padding: 5px 10px; font-size: 11px; }
+.btn-green { background: var(--green); color: #000; }
+.btn-yellow { background: var(--yellow); color: #000; }
+.btn-purple { background: var(--purple); color: #000; }
+.btn-blue { background: var(--blue); color: #fff; }
+.btn:disabled { opacity: 0.4; pointer-events: none; }
+
+/* ── TOAST ──────────────────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+}
+.toast-item {
+  background: var(--bg3); border-left: 3px solid var(--green);
+  padding: 10px 16px; font-size: 12px; border-radius: 2px;
+  animation: toastIn 0.2s ease; max-width: 320px;
+}
+.toast-item.err { border-color: var(--red); }
+@keyframes toastIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── LOGIN ──────────────────────────────────────────────── */
+#view-login {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+}
+.login-box {
+  width: 360px; padding: 48px 40px;
+  border: 1px solid rgba(232,50,10,0.2);
+}
+.login-logo {
+  font-family: var(--f-title); font-size: 32px; color: var(--red);
+  letter-spacing: 0.06em; margin-bottom: 4px;
+}
+.login-sub { font-size: 10px; color: var(--fg2); letter-spacing: 0.1em; margin-bottom: 36px; }
+.login-box .field { margin-bottom: 16px; }
+.login-box .btn { width: 100%; justify-content: center; margin-top: 8px; padding: 12px; }
+
+/* ── LAYOUT PRINCIPAL ───────────────────────────────────── */
+#app { display: none; min-height: 100vh; }
+
+/* ── SIDEBAR ────────────────────────────────────────────── */
+#sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0; width: 200px;
+  background: var(--bg2); border-right: 1px solid rgba(232,232,216,0.06);
+  display: flex; flex-direction: column; z-index: 100;
+  padding: 24px 0;
+}
+.sidebar-logo {
+  font-family: var(--f-title); font-size: 22px; color: var(--red);
+  letter-spacing: 0.06em; padding: 0 20px 24px;
+  border-bottom: 1px solid rgba(232,50,10,0.15);
+}
+.sidebar-logo span { font-family: var(--f-ui); font-size: 9px; color: rgba(232,50,10,0.5); display: block; letter-spacing: 0.08em; margin-top: 2px; }
+.sidebar-nav { flex: 1; padding: 16px 0; }
+.sidebar-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px; cursor: crosshair; font-size: 12px;
+  letter-spacing: 0.05em; transition: background 0.15s, color 0.15s;
+  border-left: 2px solid transparent; color: var(--fg2);
+}
+.sidebar-item:hover { background: rgba(232,232,216,0.04); color: var(--fg); }
+.sidebar-item.active { color: var(--fg); border-left-color: var(--red); background: rgba(232,50,10,0.06); }
+.sidebar-item .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.sidebar-item .count { margin-left: auto; font-size: 10px; color: var(--fg2); }
+.sidebar-bottom { padding: 16px 20px; border-top: 1px solid rgba(232,232,216,0.06); }
+.sidebar-user { font-size: 10px; color: var(--fg2); margin-bottom: 8px; }
+
+/* ── MAIN ───────────────────────────────────────────────── */
+#main {
+  margin-left: 200px; min-height: 100vh;
+  display: flex; flex-direction: column;
+}
+
+/* ── TOPBAR ─────────────────────────────────────────────── */
+#topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--bg); border-bottom: 1px solid rgba(232,232,216,0.06);
+  padding: 14px 32px; display: flex; align-items: center; justify-content: space-between;
+}
+.topbar-title { font-family: var(--f-title); font-size: 18px; letter-spacing: 0.05em; }
+.topbar-actions { display: flex; gap: 8px; align-items: center; }
+
+/* ── CONTEÚDO ───────────────────────────────────────────── */
+#content { padding: 32px; flex: 1; }
+
+/* ── TABS ───────────────────────────────────────────────── */
+.tabs { display: flex; gap: 0; margin-bottom: 28px; border-bottom: 1px solid rgba(232,232,216,0.08); }
+.tab {
+  padding: 10px 20px; cursor: crosshair; font-size: 12px; letter-spacing: 0.05em;
+  color: var(--fg2); border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab:hover { color: var(--fg); }
+.tab.active { color: var(--fg); border-bottom-color: var(--red); }
+
+/* ── LISTA DE ITENS ─────────────────────────────────────── */
+.items-table { width: 100%; border-collapse: collapse; }
+.items-table th {
+  text-align: left; font-size: 10px; color: var(--fg2); letter-spacing: 0.08em;
+  padding: 0 12px 10px; border-bottom: 1px solid rgba(232,232,216,0.08);
+}
+.items-table td {
+  padding: 10px 12px; border-bottom: 1px solid rgba(232,232,216,0.04);
+  vertical-align: middle;
+}
+.items-table tr:hover td { background: rgba(232,232,216,0.02); }
+.item-thumb {
+  width: 40px; height: 56px; object-fit: cover;
+  border-radius: 1px; display: block; background: var(--bg3);
+}
+.item-thumb-sq {
+  width: 48px; height: 48px; object-fit: cover;
+  border-radius: 1px; display: block; background: var(--bg3);
+}
+.badge {
+  display: inline-block; padding: 2px 7px; border-radius: 2px;
+  font-size: 10px; letter-spacing: 0.04em; font-family: var(--f-ui);
+}
+.badge-published { background: rgba(0,255,65,0.12); color: var(--green); }
+.badge-draft { background: rgba(232,232,216,0.08); color: var(--fg2); }
+.badge-book { background: rgba(242,224,74,0.12); color: var(--yellow); }
+.badge-album { background: rgba(0,255,65,0.12); color: var(--green); }
+.badge-podcast { background: rgba(204,68,255,0.12); color: var(--purple); }
+.badge-film { background: rgba(51,85,255,0.12); color: var(--blue); }
+.row-actions { display: flex; gap: 6px; }
+
+/* ── FORMULÁRIO ÚNICO ───────────────────────────────────── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-grid .full { grid-column: 1 / -1; }
+.field { display: flex; flex-direction: column; }
+.field-row { display: flex; gap: 16px; }
+.field-hint { font-size: 10px; color: var(--fg2); margin-top: 4px; }
+
+.cover-upload-zone {
+  border: 1px dashed rgba(232,232,216,0.2); border-radius: 2px;
+  padding: 24px; text-align: center; cursor: crosshair;
+  transition: border-color 0.15s, background 0.15s; position: relative;
+}
+.cover-upload-zone:hover, .cover-upload-zone.drag { border-color: var(--red); background: rgba(232,50,10,0.04); }
+.cover-upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: crosshair; }
+.cover-upload-zone img { max-height: 120px; max-width: 100%; object-fit: contain; display: block; margin: 0 auto; }
+.cover-upload-text { font-size: 11px; color: var(--fg2); }
+
+.toggle-wrap { display: flex; align-items: center; gap: 10px; cursor: crosshair; }
+.toggle { width: 36px; height: 20px; background: var(--bg3); border-radius: 10px; position: relative; border: 1px solid rgba(232,232,216,0.15); transition: background 0.2s; flex-shrink: 0; }
+.toggle.on { background: var(--red); border-color: var(--red); }
+.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; background: var(--fg); border-radius: 50%; transition: transform 0.2s; }
+.toggle.on::after { transform: translateX(16px); }
+.toggle-label { font-size: 12px; color: var(--fg2); }
+
+/* ── BULK UPLOAD ────────────────────────────────────────── */
+.bulk-drop-zone {
+  border: 2px dashed rgba(232,50,10,0.3); border-radius: 2px;
+  padding: 48px 24px; text-align: center; cursor: crosshair;
+  transition: border-color 0.15s, background 0.15s; position: relative;
+  margin-bottom: 24px;
+}
+.bulk-drop-zone:hover, .bulk-drop-zone.drag { border-color: var(--red); background: rgba(232,50,10,0.04); }
+.bulk-drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: crosshair; }
+.bulk-drop-icon { font-size: 32px; margin-bottom: 12px; }
+.bulk-drop-text { font-size: 13px; color: var(--fg2); }
+.bulk-drop-text strong { color: var(--fg); }
+
+.bulk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.bulk-card {
+  background: var(--bg2); border: 1px solid rgba(232,232,216,0.08);
+  border-radius: 2px; overflow: hidden; position: relative;
+}
+.bulk-card-img { width: 100%; height: 160px; object-fit: cover; display: block; background: var(--bg3); }
+.bulk-card-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.bulk-card-remove {
+  position: absolute; top: 6px; right: 6px;
+  background: rgba(10,10,8,0.8); border: none; color: var(--red);
+  width: 22px; height: 22px; border-radius: 50%; cursor: crosshair;
+  font-size: 14px; line-height: 1; display: flex; align-items: center; justify-content: center;
+}
+.bulk-card input, .bulk-card select { font-size: 12px; padding: 6px 8px; }
+.bulk-progress { display: none; margin-bottom: 16px; }
+.bulk-progress-bar { height: 3px; background: var(--bg3); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+.bulk-progress-fill { height: 100%; background: var(--green); width: 0%; transition: width 0.3s; }
+.bulk-progress-text { font-size: 11px; color: var(--fg2); }
+.bulk-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+/* ── EDITOR (escrito) ───────────────────────────────────── */
+.editor-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.editor-wrap textarea { min-height: 400px; font-family: var(--f-body); font-size: 14px; line-height: 1.7; }
+.editor-preview {
+  background: var(--bg2); border: 1px solid rgba(232,232,216,0.08);
+  border-radius: 2px; padding: 20px; overflow-y: auto; min-height: 400px;
+  font-family: var(--f-body); font-size: 15px; line-height: 1.8; color: var(--fg);
+}
+.editor-preview h1, .editor-preview h2, .editor-preview h3 { font-family: var(--f-title); margin-bottom: 12px; margin-top: 20px; }
+.editor-preview p { margin-bottom: 14px; }
+.editor-preview a { color: var(--red); }
+.editor-preview blockquote { border-left: 2px solid var(--red); padding-left: 14px; color: var(--fg2); margin: 14px 0; }
+.editor-preview code { background: var(--bg3); padding: 2px 5px; border-radius: 2px; font-family: var(--f-ui); font-size: 12px; }
+.editor-preview pre { background: var(--bg3); padding: 12px; border-radius: 2px; overflow-x: auto; margin-bottom: 14px; }
+.editor-preview pre code { background: none; padding: 0; }
+
+/* ── MODAL ──────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(10,10,8,0.85);
+  z-index: 500; display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(2px);
+}
+.modal {
+  background: var(--bg2); border: 1px solid rgba(232,232,216,0.1);
+  border-radius: 2px; width: 640px; max-width: 95vw; max-height: 90vh;
+  overflow-y: auto; display: flex; flex-direction: column;
+}
+.modal-header {
+  padding: 20px 24px; border-bottom: 1px solid rgba(232,232,216,0.08);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.modal-title { font-family: var(--f-title); font-size: 16px; letter-spacing: 0.04em; }
+.modal-close { background: none; border: none; color: var(--fg2); font-size: 20px; cursor: crosshair; line-height: 1; }
+.modal-close:hover { color: var(--fg); }
+.modal-body { padding: 24px; flex: 1; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid rgba(232,232,216,0.08); display: flex; gap: 8px; justify-content: flex-end; flex-shrink: 0; }
+
+/* ── EMPTY STATE ────────────────────────────────────────── */
+.empty { text-align: center; padding: 64px 24px; color: var(--fg2); }
+.empty-icon { font-size: 40px; margin-bottom: 16px; }
+.empty h3 { font-family: var(--f-title); font-size: 18px; color: var(--fg); margin-bottom: 8px; }
+
+/* ── LOADING ────────────────────────────────────────────── */
+.loading { text-align: center; padding: 48px; color: var(--fg2); font-size: 12px; letter-spacing: 0.08em; }
+.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(232,50,10,0.3); border-top-color: var(--red); border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── STATS ──────────────────────────────────────────────── */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.stat-card {
+  background: var(--bg2); border: 1px solid rgba(232,232,216,0.06);
+  border-radius: 2px; padding: 20px 24px;
+}
+.stat-label { font-size: 10px; color: var(--fg2); letter-spacing: 0.08em; margin-bottom: 8px; }
+.stat-value { font-family: var(--f-title); font-size: 36px; letter-spacing: 0.02em; }
+.stat-card.drops .stat-value { color: var(--green); }
+.stat-card.livros .stat-value { color: var(--yellow); }
+.stat-card.obras .stat-value { color: var(--purple); }
+.stat-card.escritos .stat-value { color: var(--red); }
+.stat-sub { font-size: 10px; color: var(--fg2); margin-top: 6px; }
+
+@media (max-width: 900px) {
+  #sidebar { width: 160px; }
+  #main { margin-left: 160px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .form-grid { grid-template-columns: 1fr; }
+  .editor-wrap { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  #sidebar { display: none; }
+  #main { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="view-login">
+  <div class="login-box">
+    <div class="login-logo">WEIRD WIZ</div>
+    <div class="login-sub">ADMIN — ACESSO RESTRITO</div>
+    <div class="field">
+      <label>EMAIL</label>
+      <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>SENHA</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" id="login-btn" onclick="doLogin()">ENTRAR</button>
+    <div id="login-err" style="color:var(--red);font-size:11px;margin-top:12px;display:none;"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sidebar-logo">
+      WW<span>ADMIN</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-item" data-view="dashboard" onclick="navigate('dashboard')">
+        <div class="dot" style="background:var(--red)"></div>
+        DASHBOARD
+      </div>
+      <div class="sidebar-item" data-view="drops" onclick="navigate('drops')">
+        <div class="dot" style="background:var(--green)"></div>
+        DROPS
+        <span class="count" id="count-drops">—</span>
+      </div>
+      <div class="sidebar-item" data-view="livros" onclick="navigate('livros')">
+        <div class="dot" style="background:var(--yellow)"></div>
+        LIVROS
+        <span class="count" id="count-livros">—</span>
+      </div>
+      <div class="sidebar-item" data-view="obras" onclick="navigate('obras')">
+        <div class="dot" style="background:var(--purple)"></div>
+        OBRAS
+        <span class="count" id="count-obras">—</span>
+      </div>
+      <div class="sidebar-item" data-view="escritos" onclick="navigate('escritos')">
+        <div class="dot" style="background:var(--red)"></div>
+        ESCRITOS
+        <span class="count" id="count-escritos">—</span>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user" id="sidebar-user"></div>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()" style="width:100%;justify-content:center;">SAIR</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div id="topbar">
+      <div class="topbar-title" id="topbar-title">DASHBOARD</div>
+      <div class="topbar-actions" id="topbar-actions"></div>
+    </div>
+    <div id="content"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- MODAL CONTAINER -->
+<div id="modal-container"></div>
+
+<script>
+const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
+let token = sessionStorage.getItem('ww_token');
+let currentUser = null;
+let currentView = null;
+let collectionsCache = {};
+
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const btn   = document.getElementById('login-btn');
+  const err   = document.getElementById('login-err');
+  err.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'ENTRANDO…';
+  try {
+    const res = await fetch(`${DIRECTUS}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.errors?.[0]?.message || 'Erro ao entrar');
+    token = data.data.access_token;
+    sessionStorage.setItem('ww_token', token);
+    // get user info
+    const me = await api('GET', '/users/me?fields=email,first_name');
+    currentUser = me.data;
+    showApp();
+  } catch(e) {
+    err.textContent = e.message;
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'ENTRAR';
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('ww_token');
+  token = null;
+  location.reload();
+}
+
+async function checkAuth() {
+  if (!token) return false;
+  try {
+    const me = await api('GET', '/users/me?fields=email,first_name');
+    currentUser = me.data;
+    return true;
+  } catch {
+    sessionStorage.removeItem('ww_token');
+    return false;
+  }
+}
+
+document.getElementById('login-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+document.getElementById('login-email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('login-pass').focus();
+});
+
+// ── API ───────────────────────────────────────────────────────────────────────
+
+async function api(method, path, body = null, isFormData = false) {
+  const headers = { 'Authorization': `Bearer ${token}` };
+  if (body && !isFormData) headers['Content-Type'] = 'application/json';
+  const opts = { method, headers };
+  if (body) opts.body = isFormData ? body : JSON.stringify(body);
+  const res = await fetch(`${DIRECTUS}${path}`, opts);
+  if (res.status === 204) return null;
+  const data = await res.json();
+  if (!res.ok) {
+    const msg = data.errors?.[0]?.message || `Erro ${res.status}`;
+    throw new Error(msg);
+  }
+  return data;
+}
+
+async function uploadFile(file, onProgress) {
+  const fd = new FormData();
+  fd.append('file', file, file.name);
+  // using XMLHttpRequest for progress
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${DIRECTUS}/files`);
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    xhr.upload.onprogress = e => { if (onProgress && e.lengthComputable) onProgress(e.loaded / e.total); };
+    xhr.onload = () => {
+      try {
+        const d = JSON.parse(xhr.responseText);
+        if (xhr.status >= 200 && xhr.status < 300) resolve(d.data);
+        else reject(new Error(d.errors?.[0]?.message || 'Upload falhou'));
+      } catch { reject(new Error('Resposta inválida')); }
+    };
+    xhr.onerror = () => reject(new Error('Erro de rede'));
+    xhr.send(fd);
+  });
+}
+
+function directusImg(id, w = 80) {
+  if (!id) return null;
+  return `${DIRECTUS}/assets/${id}?width=${w}&quality=80&format=webp`;
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+
+function toast(msg, isErr = false) {
+  const div = document.createElement('div');
+  div.className = 'toast-item' + (isErr ? ' err' : '');
+  div.textContent = msg;
+  document.getElementById('toast').appendChild(div);
+  setTimeout(() => div.remove(), 3500);
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+
+function showModal({ title, body, footer }) {
+  closeModal();
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'active-modal';
+  overlay.innerHTML = `
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">${title}</div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">${body}</div>
+      ${footer ? `<div class="modal-footer">${footer}</div>` : ''}
+    </div>`;
+  overlay.addEventListener('click', closeModal);
+  document.getElementById('modal-container').appendChild(overlay);
+}
+
+function closeModal() {
+  const m = document.getElementById('active-modal');
+  if (m) m.remove();
+}
+
+// ── NAVIGATE ──────────────────────────────────────────────────────────────────
+
+function navigate(view) {
+  currentView = view;
+  document.querySelectorAll('.sidebar-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.view === view);
+  });
+  const titles = {
+    dashboard: 'DASHBOARD', drops: 'DROPS',
+    livros: 'LIVROS QUE DIRIGI', obras: 'OBRAS VISUAIS', escritos: 'ESCRITOS'
+  };
+  document.getElementById('topbar-title').textContent = titles[view] || view.toUpperCase();
+  const views = { dashboard: renderDashboard, drops: renderDrops, livros: renderLivros, obras: renderObras, escritos: renderEscritos };
+  if (views[view]) views[view]();
+}
+
+function showApp() {
+  document.getElementById('view-login').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  if (currentUser) document.getElementById('sidebar-user').textContent = currentUser.first_name || currentUser.email;
+  navigate('dashboard');
+  loadCounts();
+}
+
+async function loadCounts() {
+  try {
+    const colls = ['drops', 'livros', 'obras', 'escritos'];
+    const results = await Promise.allSettled(colls.map(c =>
+      api('GET', `/items/${c}?aggregate[count]=*&filter[status][_eq]=published`)
+    ));
+    colls.forEach((c, i) => {
+      if (results[i].status === 'fulfilled') {
+        const n = results[i].value?.data?.[0]?.count || '?';
+        document.getElementById(`count-${c}`).textContent = n;
+      }
+    });
+  } catch {}
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+
+async function renderDashboard() {
+  document.getElementById('topbar-actions').innerHTML = '';
+  const content = document.getElementById('content');
+  content.innerHTML = '<div class="loading"><span class="spinner"></span>CARREGANDO…</div>';
+  try {
+    const [drops, livros, obras, escritos] = await Promise.all([
+      api('GET', '/items/drops?aggregate[count]=*'),
+      api('GET', '/items/livros?aggregate[count]=*'),
+      api('GET', '/items/obras?aggregate[count]=*'),
+      api('GET', '/items/escritos?aggregate[count]=*'),
+    ]);
+    const dc = drops?.data?.[0]?.count || 0;
+    const lc = livros?.data?.[0]?.count || 0;
+    const oc = obras?.data?.[0]?.count || 0;
+    const ec = escritos?.data?.[0]?.count || 0;
+    content.innerHTML = `
+      <div class="stats-grid">
+        <div class="stat-card drops" onclick="navigate('drops')" style="cursor:crosshair">
+          <div class="stat-label">DROPS</div>
+          <div class="stat-value">${dc}</div>
+          <div class="stat-sub">livros, álbuns, filmes, pods</div>
+        </div>
+        <div class="stat-card livros" onclick="navigate('livros')" style="cursor:crosshair">
+          <div class="stat-label">LIVROS QUE DIRIGI</div>
+          <div class="stat-value">${lc}</div>
+          <div class="stat-sub">trabalho editorial</div>
+        </div>
+        <div class="stat-card obras" onclick="navigate('obras')" style="cursor:crosshair">
+          <div class="stat-label">OBRAS VISUAIS</div>
+          <div class="stat-value">${oc}</div>
+          <div class="stat-sub">desenhos, pinturas, vídeos</div>
+        </div>
+        <div class="stat-card escritos" onclick="navigate('escritos')" style="cursor:crosshair">
+          <div class="stat-label">ESCRITOS</div>
+          <div class="stat-value">${ec}</div>
+          <div class="stat-sub">posts e projetos</div>
+        </div>
+      </div>
+      <div style="color:var(--fg2);font-size:11px;line-height:1.8;">
+        <div style="margin-bottom:4px;">DIRECTUS → <span style="color:var(--fg)">${DIRECTUS}</span></div>
+        <div>USUÁRIO → <span style="color:var(--fg)">${currentUser?.email || '—'}</span></div>
+      </div>`;
+  } catch(e) {
+    content.innerHTML = `<div class="empty"><div class="empty-icon">⚠</div><h3>Erro ao carregar</h3><p>${e.message}</p></div>`;
+  }
+}
+
+// ── DROPS ─────────────────────────────────────────────────────────────────────
+
+let dropsData = [];
+
+async function renderDrops() {
+  document.getElementById('topbar-actions').innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="renderDrops()">↺ ATUALIZAR</button>`;
+
+  const content = document.getElementById('content');
+  content.innerHTML = `
+    <div class="tabs">
+      <div class="tab active" id="tab-drops-lista" onclick="dropsTab('lista')">LISTA</div>
+      <div class="tab" id="tab-drops-novo" onclick="dropsTab('novo')">+ NOVO</div>
+      <div class="tab" id="tab-drops-bulk" onclick="dropsTab('bulk')">⬆ BULK</div>
+    </div>
+    <div id="drops-panel"></div>`;
+  await dropsCarregarLista();
+}
+
+function dropsTab(tab) {
+  document.querySelectorAll('[id^="tab-drops-"]').forEach(t => t.classList.remove('active'));
+  document.getElementById(`tab-drops-${tab}`).classList.add('active');
+  if (tab === 'lista') dropsCarregarLista();
+  else if (tab === 'novo') dropsFormNovo();
+  else if (tab === 'bulk') dropsBulk();
+}
+
+async function dropsCarregarLista() {
+  const panel = document.getElementById('drops-panel');
+  panel.innerHTML = '<div class="loading"><span class="spinner"></span>CARREGANDO…</div>';
+  try {
+    const res = await api('GET', '/items/drops?sort[]=-date_created&limit=500&fields=id,title,author,type,status,featured,cover,order');
+    dropsData = res.data || [];
+    if (!dropsData.length) {
+      panel.innerHTML = `<div class="empty"><div class="empty-icon">◌</div><h3>Nenhum drop ainda</h3><p>Adicione o primeiro drop.</p></div>`;
+      return;
+    }
+    panel.innerHTML = `
+      <table class="items-table">
+        <thead><tr>
+          <th style="width:60px">CAPA</th>
+          <th>TÍTULO</th>
+          <th>AUTOR</th>
+          <th>TIPO</th>
+          <th>STATUS</th>
+          <th style="width:120px"></th>
+        </tr></thead>
+        <tbody>
+          ${dropsData.map(d => `
+            <tr>
+              <td>${d.cover ? `<img class="item-thumb" src="${directusImg(d.cover, 80)}" alt="">` : `<div class="item-thumb" style="background:var(--bg3)"></div>`}</td>
+              <td>${esc(d.title || '—')}</td>
+              <td style="color:var(--fg2)">${esc(d.author || '—')}</td>
+              <td><span class="badge badge-${d.type}">${d.type || '—'}</span></td>
+              <td><span class="badge ${d.status === 'published' ? 'badge-published' : 'badge-draft'}">${d.status === 'published' ? 'publicado' : 'rascunho'}</span></td>
+              <td class="row-actions">
+                <button class="btn btn-ghost btn-sm" onclick="dropsEditar(${d.id})">EDITAR</button>
+                <button class="btn btn-danger btn-sm" onclick="dropsDeletar(${d.id}, '${esc(d.title)}')">✕</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) {
+    panel.innerHTML = `<div class="empty"><div class="empty-icon">⚠</div><h3>Erro</h3><p>${e.message}</p></div>`;
+  }
+}
+
+function dropsFormNovo(item = null) {
+  const isEdit = !!item;
+  const panel = document.getElementById('drops-panel');
+  panel.innerHTML = `
+    <div style="max-width:640px">
+      <div class="form-grid">
+        <div class="field full">
+          <label>CAPA</label>
+          <div class="cover-upload-zone" id="cover-zone" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="coverDrop(event,'drops')">
+            <input type="file" id="cover-file" accept="image/*" onchange="coverPreview(event,'drops')">
+            <div id="cover-preview">${item?.cover ? `<img src="${directusImg(item.cover, 240)}" id="cover-img">` : `<div class="cover-upload-text">Arraste uma imagem ou clique aqui</div>`}</div>
+          </div>
+          <input type="hidden" id="cover-id" value="${item?.cover || ''}">
+        </div>
+        <div class="field">
+          <label>TÍTULO *</label>
+          <input type="text" id="f-title" value="${esc(item?.title || '')}" placeholder="Nome do livro, álbum…">
+        </div>
+        <div class="field">
+          <label>AUTOR</label>
+          <input type="text" id="f-author" value="${esc(item?.author || '')}" placeholder="Autor, artista…">
+        </div>
+        <div class="field">
+          <label>TIPO *</label>
+          <select id="f-type">
+            <option value="book" ${item?.type==='book'?'selected':''}>Livro</option>
+            <option value="album" ${item?.type==='album'?'selected':''}>Álbum</option>
+            <option value="podcast" ${item?.type==='podcast'?'selected':''}>Podcast</option>
+            <option value="film" ${item?.type==='film'?'selected':''}>Filme</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>LINK</label>
+          <input type="url" id="f-link" value="${esc(item?.link || '')}" placeholder="https://…">
+        </div>
+        <div class="field full">
+          <label>NOTA PESSOAL</label>
+          <textarea id="f-note" placeholder="O que você pensa sobre…">${esc(item?.note || '')}</textarea>
+        </div>
+        <div class="field">
+          <label>ORDEM</label>
+          <input type="number" id="f-order" value="${item?.order ?? ''}" placeholder="0">
+        </div>
+        <div class="field" style="justify-content:flex-end">
+          <div class="toggle-wrap" onclick="toggleEl('tog-featured')" style="margin-top:auto;padding-bottom:4px">
+            <div class="toggle ${item?.featured?'on':''}" id="tog-featured"></div>
+            <span class="toggle-label">DESTAQUE NO HERO</span>
+          </div>
+        </div>
+        <div class="field">
+          <div class="toggle-wrap" onclick="toggleEl('tog-status')" style="padding-top:4px">
+            <div class="toggle ${item?.status==='published'?'on':''}" id="tog-status"></div>
+            <span class="toggle-label">PUBLICADO</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:24px">
+        <button class="btn btn-primary" onclick="dropsSalvar(${item?.id || 'null'})">
+          ${isEdit ? 'SALVAR ALTERAÇÕES' : 'CRIAR DROP'}
+        </button>
+        <button class="btn btn-ghost" onclick="dropsTab('lista')">CANCELAR</button>
+      </div>
+    </div>`;
+}
+
+async function dropsEditar(id) {
+  const item = dropsData.find(d => d.id === id);
+  if (!item) return;
+  dropsTab('novo');
+  document.getElementById('tab-drops-novo').textContent = 'EDITAR';
+  dropsFormNovo(item);
+}
+
+async function dropsSalvar(id) {
+  const title = document.getElementById('f-title').value.trim();
+  if (!title) { toast('Título é obrigatório', true); return; }
+  const body = {
+    title,
+    author:   document.getElementById('f-author').value.trim() || null,
+    type:     document.getElementById('f-type').value,
+    link:     document.getElementById('f-link').value.trim() || null,
+    note:     document.getElementById('f-note').value.trim() || null,
+    order:    parseInt(document.getElementById('f-order').value) || null,
+    featured: document.getElementById('tog-featured').classList.contains('on'),
+    status:   document.getElementById('tog-status').classList.contains('on') ? 'published' : 'draft',
+  };
+  const covId = document.getElementById('cover-id').value;
+  if (covId) body.cover = covId;
+
+  // upload pending file
+  const fileInput = document.getElementById('cover-file');
+  if (fileInput.files[0] && !covId) {
+    try {
+      const f = await uploadFile(fileInput.files[0]);
+      body.cover = f.id;
+    } catch(e) { toast('Erro no upload da capa: ' + e.message, true); return; }
+  }
+
+  try {
+    if (id) await api('PATCH', `/items/drops/${id}`, body);
+    else    await api('POST',  '/items/drops', body);
+    toast(id ? 'Drop atualizado!' : 'Drop criado!');
+    dropsTab('lista');
+    loadCounts();
+  } catch(e) { toast('Erro: ' + e.message, true); }
+}
+
+async function dropsDeletar(id, title) {
+  if (!confirm(`Deletar "${title}"?`)) return;
+  try {
+    await api('DELETE', `/items/drops/${id}`);
+    toast('Drop deletado.');
+    dropsCarregarLista();
+    loadCounts();
+  } catch(e) { toast('Erro: ' + e.message, true); }
+}
+
+function dropsBulk() {
+  const panel = document.getElementById('drops-panel');
+  panel.innerHTML = `
+    <div class="bulk-drop-zone" id="bulk-zone"
+      ondragover="event.preventDefault();document.getElementById('bulk-zone').classList.add('drag')"
+      ondragleave="document.getElementById('bulk-zone').classList.remove('drag')"
+      ondrop="bulkDrop(event,'drops')">
+      <input type="file" id="bulk-files" multiple accept="image/*" onchange="bulkAdd(this.files,'drops')">
+      <div class="bulk-drop-icon">⬆</div>
+      <div class="bulk-drop-text"><strong>Arraste múltiplas capas</strong><br>ou clique para selecionar</div>
+    </div>
+    <div id="bulk-grid" class="bulk-grid"></div>
+    <div class="bulk-progress" id="bulk-progress">
+      <div class="bulk-progress-text" id="bulk-progress-text">Enviando 0/0…</div>
+      <div class="bulk-progress-bar"><div class="bulk-progress-fill" id="bulk-progress-fill"></div></div>
+    </div>
+    <div class="bulk-actions" id="bulk-actions" style="display:none">
+      <button class="btn btn-primary" onclick="bulkSubmit('drops')">PUBLICAR TODOS</button>
+      <button class="btn btn-ghost" onclick="bulkSubmit('drops',true)">SALVAR COMO RASCUNHO</button>
+      <button class="btn btn-danger" onclick="bulkClear()">LIMPAR</button>
+    </div>`;
+}
+
+let bulkItems = [];
+
+function bulkDrop(event, type) {
+  event.preventDefault();
+  document.getElementById('bulk-zone').classList.remove('drag');
+  bulkAdd(event.dataTransfer.files, type);
+}
+
+function bulkAdd(files, type) {
+  Array.from(files).forEach(file => {
+    if (!file.type.startsWith('image/')) return;
+    const id = Date.now() + Math.random();
+    const url = URL.createObjectURL(file);
+    bulkItems.push({ id, file, url, type });
+    renderBulkCard({ id, file, url, collType: type });
+  });
+  if (bulkItems.length > 0) {
+    document.getElementById('bulk-actions').style.display = 'flex';
+  }
+}
+
+function renderBulkCard({ id, url, collType }) {
+  const grid = document.getElementById('bulk-grid');
+  const card = document.createElement('div');
+  card.className = 'bulk-card';
+  card.id = `bulk-card-${id}`;
+  const typeOpts = collType === 'drops'
+    ? ['book','album','podcast','film'].map(t => `<option value="${t}">${t}</option>`).join('')
+    : '';
+  card.innerHTML = `
+    <img class="bulk-card-img" src="${url}" alt="">
+    <button class="bulk-card-remove" onclick="bulkRemove(${id})">×</button>
+    <div class="bulk-card-body">
+      <div class="field"><label>TÍTULO</label><input type="text" id="bi-title-${id}" placeholder="Título…"></div>
+      <div class="field"><label>AUTOR</label><input type="text" id="bi-author-${id}" placeholder="Autor…"></div>
+      ${typeOpts ? `<div class="field"><label>TIPO</label><select id="bi-type-${id}">${typeOpts}</select></div>` : ''}
+    </div>`;
+  grid.appendChild(card);
+}
+
+function bulkRemove(id) {
+  bulkItems = bulkItems.filter(b => b.id !== id);
+  document.getElementById(`bulk-card-${id}`)?.remove();
+  if (!bulkItems.length) document.getElementById('bulk-actions').style.display = 'none';
+}
+
+function bulkClear() {
+  bulkItems = [];
+  document.getElementById('bulk-grid').innerHTML = '';
+  document.getElementById('bulk-actions').style.display = 'none';
+}
+
+async function bulkSubmit(collType, asDraft = false) {
+  if (!bulkItems.length) return;
+  const prog = document.getElementById('bulk-progress');
+  const fill = document.getElementById('bulk-progress-fill');
+  const txt  = document.getElementById('bulk-progress-text');
+  prog.style.display = 'block';
+  const total = bulkItems.length;
+  let done = 0;
+
+  for (const item of bulkItems) {
+    try {
+      txt.textContent = `Enviando ${done+1}/${total}: ${item.file.name}`;
+      const uploaded = await uploadFile(item.file, p => {
+        fill.style.width = `${((done + p) / total * 100).toFixed(0)}%`;
+      });
+      const body = {
+        cover:  uploaded.id,
+        status: asDraft ? 'draft' : 'published',
+        title:  document.getElementById(`bi-title-${item.id}`)?.value.trim() || item.file.name.replace(/\.[^.]+$/, ''),
+        author: document.getElementById(`bi-author-${item.id}`)?.value.trim() || null,
+        type:   document.getElementById(`bi-type-${item.id}`)?.value || null,
+      };
+      if (collType === 'drops') await api('POST', '/items/drops', body);
+      else if (collType === 'livros') {
+        await api('POST', '/items/livros', { title: body.title, autor: body.author, Cover: body.cover, status: body.status });
+      } else if (collType === 'obras') {
+        await api('POST', '/items/obras', { title: body.title, image: body.cover, status: body.status });
+      }
+    } catch(e) {
+      toast(`Erro em ${item.file.name}: ${e.message}`, true);
+    }
+    done++;
+    fill.style.width = `${(done / total * 100).toFixed(0)}%`;
+  }
+  txt.textContent = `✓ ${done}/${total} enviados!`;
+  toast(`${done} itens criados!`);
+  bulkClear();
+  loadCounts();
+  setTimeout(() => { prog.style.display = 'none'; fill.style.width = '0%'; }, 3000);
+}
+
+// ── LIVROS ────────────────────────────────────────────────────────────────────
+
+let livrosData = [];
+
+async function renderLivros() {
+  document.getElementById('topbar-actions').innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="renderLivros()">↺ ATUALIZAR</button>`;
+  const content = document.getElementById('content');
+  content.innerHTML = `
+    <div class="tabs">
+      <div class="tab active" id="tab-livros-lista" onclick="livrosTab('lista')">LISTA</div>
+      <div class="tab" id="tab-livros-novo" onclick="livrosTab('novo')">+ NOVO</div>
+      <div class="tab" id="tab-livros-bulk" onclick="livrosTab('bulk')">⬆ BULK</div>
+    </div>
+    <div id="livros-panel"></div>`;
+  await livrosCarregarLista();
+}
+
+function livrosTab(tab) {
+  document.querySelectorAll('[id^="tab-livros-"]').forEach(t => t.classList.remove('active'));
+  document.getElementById(`tab-livros-${tab}`).classList.add('active');
+  if (tab === 'lista') livrosCarregarLista();
+  else if (tab === 'novo') livrosFormNovo();
+  else if (tab === 'bulk') livrosBulk();
+}
+
+async function livrosCarregarLista() {
+  const panel = document.getElementById('livros-panel');
+  panel.innerHTML = '<div class="loading"><span class="spinner"></span>CARREGANDO…</div>';
+  try {
+    const res = await api('GET', '/items/livros?sort[]=-date_created&limit=500&fields=id,title,autor,ano,status,Cover');
+    livrosData = res.data || [];
+    if (!livrosData.length) {
+      panel.innerHTML = `<div class="empty"><div class="empty-icon">◌</div><h3>Nenhum livro ainda</h3></div>`;
+      return;
+    }
+    panel.innerHTML = `
+      <table class="items-table">
+        <thead><tr>
+          <th style="width:60px">CAPA</th>
+          <th>TÍTULO</th>
+          <th>AUTOR</th>
+          <th>ANO</th>
+          <th>STATUS</th>
+          <th style="width:120px"></th>
+        </tr></thead>
+        <tbody>
+          ${livrosData.map(l => `
+            <tr>
+              <td>${l.Cover ? `<img class="item-thumb" src="${directusImg(l.Cover, 80)}" alt="">` : `<div class="item-thumb" style="background:var(--bg3)"></div>`}</td>
+              <td>${esc(l.title || '—')}</td>
+              <td style="color:var(--fg2)">${esc(l.autor || '—')}</td>
+              <td style="color:var(--fg2)">${l.ano || '—'}</td>
+              <td><span class="badge ${l.status === 'published' ? 'badge-published' : 'badge-draft'}">${l.status === 'published' ? 'publicado' : 'rascunho'}</span></td>
+              <td class="row-actions">
+                <button class="btn btn-ghost btn-sm" onclick="livrosEditar(${l.id})">EDITAR</button>
+                <button class="btn btn-danger btn-sm" onclick="livrosDeletar(${l.id},'${esc(l.title)}')">✕</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) {
+    panel.innerHTML = `<div class="empty"><div class="empty-icon">⚠</div><h3>Erro</h3><p>${e.message}</p></div>`;
+  }
+}
+
+function livrosFormNovo(item = null) {
+  const panel = document.getElementById('livros-panel');
+  panel.innerHTML = `
+    <div style="max-width:580px">
+      <div class="form-grid">
+        <div class="field full">
+          <label>CAPA</label>
+          <div class="cover-upload-zone" id="cover-zone" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="coverDrop(event,'livros')">
+            <input type="file" id="cover-file" accept="image/*" onchange="coverPreview(event,'livros')">
+            <div id="cover-preview">${item?.Cover ? `<img src="${directusImg(item.Cover, 240)}" id="cover-img">` : `<div class="cover-upload-text">Arraste a capa aqui</div>`}</div>
+          </div>
+          <input type="hidden" id="cover-id" value="${item?.Cover || ''}">
+        </div>
+        <div class="field">
+          <label>TÍTULO *</label>
+          <input type="text" id="f-title" value="${esc(item?.title || '')}" placeholder="Nome do livro">
+        </div>
+        <div class="field">
+          <label>AUTOR</label>
+          <input type="text" id="f-autor" value="${esc(item?.autor || '')}" placeholder="Autor(a)">
+        </div>
+        <div class="field">
+          <label>ANO</label>
+          <input type="number" id="f-ano" value="${item?.ano || ''}" placeholder="2024">
+        </div>
+        <div class="field">
+          <div class="toggle-wrap" onclick="toggleEl('tog-status')" style="padding-top:18px">
+            <div class="toggle ${item?.status==='published'?'on':''}" id="tog-status"></div>
+            <span class="toggle-label">PUBLICADO</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:24px">
+        <button class="btn btn-yellow" onclick="livrosSalvar(${item?.id || 'null'})">${item ? 'SALVAR' : 'CRIAR LIVRO'}</button>
+        <button class="btn btn-ghost" onclick="livrosTab('lista')">CANCELAR</button>
+      </div>
+    </div>`;
+}
+
+async function livrosEditar(id) {
+  const item = livrosData.find(l => l.id === id);
+  if (!item) return;
+  livrosTab('novo');
+  document.getElementById('tab-livros-novo').textContent = 'EDITAR';
+  livrosFormNovo(item);
+}
+
+async function livrosSalvar(id) {
+  const title = document.getElementById('f-title').value.trim();
+  if (!title) { toast('Título é obrigatório', true); return; }
+  const body = {
+    title,
+    autor:  document.getElementById('f-autor').value.trim() || null,
+    ano:    parseInt(document.getElementById('f-ano').value) || null,
+    status: document.getElementById('tog-status').classList.contains('on') ? 'published' : 'draft',
+  };
+  const covId = document.getElementById('cover-id').value;
+  if (covId) body.Cover = covId;
+  const fileInput = document.getElementById('cover-file');
+  if (fileInput.files[0] && !covId) {
+    try { const f = await uploadFile(fileInput.files[0]); body.Cover = f.id; }
+    catch(e) { toast('Erro no upload: ' + e.message, true); return; }
+  }
+  try {
+    if (id) await api('PATCH', `/items/livros/${id}`, body);
+    else    await api('POST',  '/items/livros', body);
+    toast(id ? 'Livro atualizado!' : 'Livro criado!');
+    livrosTab('lista');
+    loadCounts();
+  } catch(e) { toast('Erro: ' + e.message, true); }
+}
+
+async function livrosDeletar(id, title) {
+  if (!confirm(`Deletar "${title}"?`)) return;
+  try {
+    await api('DELETE', `/items/livros/${id}`);
+    toast('Livro deletado.');
+    livrosCarregarLista();
+    loadCounts();
+  } catch(e) { toast('Erro: ' + e.message, true); }
+}
+
+function livrosBulk() {
+  const panel = document.getElementById('livros-panel');
+  panel.innerHTML = `
+    <div class="bulk-drop-zone" id="bulk-zone"
+      ondragover="event.preventDefault();document.getElementById('bulk-zone').classList.add('drag')"
+      ondragleave="document.getElementById('bulk-zone').classList.remove('drag')"
+      ondrop="bulkDrop(event,'livros')">
+      <input type="file" id="bulk-files" multiple accept="image/*" onchange="bulkAdd(this.files,'livros')">
+      <div class="bulk-drop-icon">⬆</div>
+      <div class="bulk-drop-text"><strong>Arraste as capas dos livros</strong><br>uma imagem por livro</div>
+    </div>
+    <div id="bulk-grid" class="bulk-grid"></div>
+    <div class="bulk-progress" id="bulk-progress">
+      <div class="bulk-progress-text" id="bulk-progress-text">Enviando…</div>
+      <div class="bulk-progress-bar"><div class="bulk-progress-fill" id="bulk-progress-fill"></div></div>
+    </div>
+    <div class="bulk-actions" id="bulk-actions" style="display:none">
+      <button class="btn btn-yellow" onclick="bulkSubmit('livros')">PUBLICAR TODOS</button>
+      <button class="btn btn-ghost" onclick="bulkSubmit('livros',true)">SALVAR COMO RASCUNHO</button>
+      <button class="btn btn-danger" onclick="bulkClear()">LIMPAR</button>
+    </div>`;
+  bulkItems = [];
+}
+
+// ── OBRAS ─────────────────────────────────────────────────────────────────────
+
+let obrasData = [];
+
+async function renderObras() {
+  document.getElementById('topbar-actions').innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="renderObras()">↺ ATUALIZAR</button>`;
+  const content = document.getElementById('content');
+  content.innerHTML = `
+    <div class="tabs">
+      <div class="tab active" id="tab-obras-lista" onclick="obrasTab('lista')">LISTA</div>
+      <div class="tab" id="tab-obras-novo" onclick="obrasTab('novo')">+ NOVO</div>
+      <div class="tab" id="tab-obras-bulk" onclick="obrasTab('bulk')">⬆ BULK</div>
+    </div>
+    <div id="obras-panel"></div>`;
+  await obrasCarregarLista();
+}
+
+function obrasTab(tab) {
+  document.querySelectorAll('[id^="tab-obras-"]').forEach(t => t.classList.remove('active'));
+  document.getElementById(`tab-obras-${tab}`).classList.add('active');
+  if (tab === 'lista') obrasCarregarLista();
+  else if (tab === 'novo') obrasFormNovo();
+  else if (tab === 'bulk') obrasBulk();
+}
+
+async function obrasCarregarLista() {
+  const panel = document.getElementById('obras-panel');
+  panel.innerHTML = '<div class="loading"><span class="spinner"></span>CARREGANDO…</div>';
+  try {
+    const res = await api('GET', '/items/obras?sort[]=order&sort[]=-date_created&limit=500&fields=id,title,type,year,status,image,order');
+    obrasData = res.data || [];
+    if (!obrasData.length) {
+      panel.innerHTML = `<div class="empty"><div class="empty-icon">◌</div><h3>Nenhuma obra ainda</h3></div>`;
+      return;
+    }
+    panel.innerHTML = `
+      <table class="items-table">
+        <thead><tr>
+          <th style="width:60px">IMG</th>
+          <th>TÍTULO</th>
+          <th>TIPO</th>
+          <th>ANO</th>
+          <th>STATUS</th>
+          <th style="width:120px"></th>
+        </tr></thead>
+        <tbody>
+          ${obrasData.map(o => `
+            <tr>
+              <td>${o.image ? `<img class="item-thumb-sq" src="${directusImg(o.image, 80)}" alt="">` : `<div class="item-thumb-sq" style="background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--fg2);font-size:10px;">VÍD</div>`}</td>
+              <td>${esc(o.title || '—')}</td>
+              <td style="color:var(--fg2)">${esc(o.type || '—')}</td>
+              <td style="color:var(--fg2)">${o.year || '—'}</td>
+              <td><span class="badge ${o.status === 'published' ? 'badge-published' : 'badge-draft'}">${o.status === 'published' ? 'publicado' : 'rascunho'}</span></td>
+              <td class="row-actions">
+                <button class="btn btn-ghost btn-sm" onclick="obrasEditar(${o.id})">EDITAR</button>
+                <button class="btn btn-danger btn-sm" onclick="obrasDeletar(${o.id},'${esc(o.title)}')">✕</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) {
+    panel.innerHTML = `<div class="empty"><div class="empty-icon">⚠</div><h3>Erro</h3><p>${e.message}</p></div>`;
+  }
+}
+
+function obrasFormNovo(item = null) {
+  const panel = document.getElementById('obras-panel');
+  panel.innerHTML = `
+    <div style="max-width:640px">
+      <div class="form-grid">
+        <div class="field full">
+          <label>IMAGEM / THUMBNAIL</label>
+          <div class="cover-upload-zone" id="cover-zone" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="coverDrop(event,'obras')">
+            <input type="file" id="cover-file" accept="image/*,video/*" onchange="coverPreview(event,'obras')">
+            <div id="cover-preview">${item?.image ? `<img src="${directusImg(item.image, 240)}" id="cover-img">` : `<div class="cover-upload-text">Arraste imagem ou vídeo aqui</div>`}</div>
+          </div>
+          <input type="hidden" id="cover-id" value="${item?.image || ''}">
+        </div>
+        <div class="field">
+          <label>TÍTULO *</label>
+          <input type="text" id="f-title" value="${esc(item?.title || '')}" placeholder="Nome da obra">
+        </div>
+        <div class="field">
+          <label>TIPO</label>
+          <input type="text" id="f-type" value="${esc(item?.type || '')}" placeholder="desenho, pintura, animação…">
+        </div>
+        <div class="field">
+          <label>ANO</label>
+          <input type="text" id="f-year" value="${esc(item?.year || '')}" placeholder="2024">
+        </div>
+        <div class="field">
+          <label>ORDEM</label>
+          <input type="number" id="f-order" value="${item?.order ?? ''}" placeholder="0">
+        </div>
+        <div class="field full">
+          <label>DESCRIÇÃO</label>
+          <textarea id="f-desc" placeholder="Descrição opcional…">${esc(item?.description || '')}</textarea>
+        </div>
+        <div class="field">
+          <label>LINK</label>
+          <input type="url" id="f-link" value="${esc(item?.link || '')}" placeholder="https://…">
+        </div>
+        <div class="field">
+          <div class="toggle-wrap" onclick="toggleEl('tog-status')" style="padding-top:18px">
+            <div class="toggle ${item?.status==='published'?'on':''}" id="tog-status"></div>
+            <span class="toggle-label">PUBLICADO</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:24px">
+        <button class="btn btn-purple" onclick="obrasSalvar(${item?.id || 'null'})">${item ? 'SALVAR' : 'CRIAR OBRA'}</button>
+        <button class="btn btn-ghost" onclick="obrasTab('lista')">CANCELAR</button>
+      </div>
+    </div>`;
+}
+
+async function obrasEditar(id) {
+  const item = obrasData.find(o => o.id === id);
+  if (!item) return;
+  const full = await api('GET', `/items/obras/${id}?fields=*`);
+  obrasTab('novo');
+  document.getElementById('tab-obras-novo').textContent = 'EDITAR';
+  obrasFormNovo(full.data);
+}
+
+async function obrasSalvar(id) {
+  const title = document.getElementById('f-title').value.trim();
+  if (!title) { toast('Título é obrigatório', true); return; }
+  const body = {
+    title,
+    type:        document.getElementById('f-type').value.trim() || null,
+    year:        document.getElementById('f-year').value.trim() || null,
+    order:       parseInt(document.getElementById('f-order').value) || null,
+    description: document.getElementById('f-desc').value.trim() || null,
+    link:        document.getElementById('f-link').value.trim() || null,
+    status:      document.getElementById('tog-status').classList.contains('on') ? 'published' : 'draft',
+  };
+  const covId = document.getElementById('cover-id').value;
+  if (covId) body.image = covId;
+  const fileInput = document.getElementById('cover-file');
+  if (fileInput.files[0] && !covId) {
+    try { const f = await uploadFile(fileInput.files[0]); body.image = f.id; }
+    catch(e) { toast('Erro no upload: ' + e.message, true); return; }
+  }
+  try {
+    if (id) await api('PATCH', `/items/obras/${id}`, body);
+    else    await api('POST',  '/items/obras', body);
+    toast(id ? 'Obra atualizada!' : 'Obra criada!');
+    obrasTab('lista');
+    loadCounts();
+  } catch(e) { toast('Erro: ' + e.message, true); }
+}
+
+async function obrasDeletar(id, title) {
+  if (!confirm(`Deletar "${title}"?`)) return;
+  try {
+    await api('DELETE', `/items/obras/${id}`);
+    toast('Obra deletada.');
+    obrasCarregarLista();
+    loadCounts();
+  } catch(e) { toast('Erro: ' + e.message, true); }
+}
+
+function obrasBulk() {
+  const panel = document.getElementById('obras-panel');
+  bulkItems = [];
+  panel.innerHTML = `
+    <div class="bulk-drop-zone" id="bulk-zone"
+      ondragover="event.preventDefault();document.getElementById('bulk-zone').classList.add('drag')"
+      ondragleave="document.getElementById('bulk-zone').classList.remove('drag')"
+      ondrop="bulkDrop(event,'obras')">
+      <input type="file" id="bulk-files" multiple accept="image/*" onchange="bulkAdd(this.files,'obras')">
+      <div class="bulk-drop-icon">⬆</div>
+      <div class="bulk-drop-text"><strong>Arraste as imagens das obras</strong><br>uma por obra</div>
+    </div>
+    <div id="bulk-grid" class="bulk-grid"></div>
+    <div class="bulk-progress" id="bulk-progress">
+      <div class="bulk-progress-text" id="bulk-progress-text">Enviando…</div>
+      <div class="bulk-progress-bar"><div class="bulk-progress-fill" id="bulk-progress-fill"></div></div>
+    </div>
+    <div class="bulk-actions" id="bulk-actions" style="display:none">
+      <button class="btn btn-purple" onclick="bulkSubmit('obras')">PUBLICAR TODAS</button>
+      <button class="btn btn-ghost" onclick="bulkSubmit('obras',true)">SALVAR COMO RASCUNHO</button>
+      <button class="btn btn-danger" onclick="bulkClear()">LIMPAR</button>
+    </div>`;
+}
+
+// ── ESCRITOS ──────────────────────────────────────────────────────────────────
+
+let escritosData = [];
+
+async function renderEscritos() {
+  document.getElementById('topbar-actions').innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="renderEscritos()">↺ ATUALIZAR</button>`;
+  const content = document.getElementById('content');
+  content.innerHTML = `
+    <div class="tabs">
+      <div class="tab active" id="tab-esc-lista" onclick="escritosTab('lista')">LISTA</div>
+      <div class="tab" id="tab-esc-novo" onclick="escritosTab('novo')">+ NOVO</div>
+    </div>
+    <div id="escritos-panel"></div>`;
+  await escritosCarregarLista();
+}
+
+function escritosTab(tab) {
+  document.querySelectorAll('[id^="tab-esc-"]').forEach(t => t.classList.remove('active'));
+  document.getElementById(`tab-esc-${tab}`).classList.add('active');
+  if (tab === 'lista') escritosCarregarLista();
+  else if (tab === 'novo') escritosFormNovo();
+}
+
+async function escritosCarregarLista() {
+  const panel = document.getElementById('escritos-panel');
+  panel.innerHTML = '<div class="loading"><span class="spinner"></span>CARREGANDO…</div>';
+  try {
+    const res = await api('GET', '/items/escritos?sort[]=-date&limit=500&fields=id,title,date,status,featured,tipo');
+    escritosData = res.data || [];
+    if (!escritosData.length) {
+      panel.innerHTML = `<div class="empty"><div class="empty-icon">◌</div><h3>Nenhum escrito ainda</h3></div>`;
+      return;
+    }
+    panel.innerHTML = `
+      <table class="items-table">
+        <thead><tr>
+          <th>TÍTULO</th>
+          <th>DATA</th>
+          <th>TIPO</th>
+          <th>STATUS</th>
+          <th style="width:120px"></th>
+        </tr></thead>
+        <tbody>
+          ${escritosData.map(e => `
+            <tr>
+              <td>${esc(e.title || '—')}</td>
+              <td style="color:var(--fg2)">${e.date ? e.date.slice(0,10) : '—'}</td>
+              <td style="color:var(--fg2)">${e.tipo || 'post'}</td>
+              <td>
+                ${e.featured ? `<span class="badge" style="background:rgba(232,50,10,0.15);color:var(--red);margin-right:4px">★</span>` : ''}
+                <span class="badge ${e.status === 'published' ? 'badge-published' : 'badge-draft'}">${e.status === 'published' ? 'publicado' : 'rascunho'}</span>
+              </td>
+              <td class="row-actions">
+                <button class="btn btn-ghost btn-sm" onclick="escritosEditar(${e.id})">EDITAR</button>
+                <button class="btn btn-danger btn-sm" onclick="escritosDeletar(${e.id},'${esc(e.title)}')">✕</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) {
+    panel.innerHTML = `<div class="empty"><div class="empty-icon">⚠</div><h3>Erro</h3><p>${e.message}</p></div>`;
+  }
+}
+
+function escritosFormNovo(item = null) {
+  const panel = document.getElementById('escritos-panel');
+  panel.innerHTML = `
+    <div>
+      <div class="form-grid" style="margin-bottom:16px">
+        <div class="field">
+          <label>TÍTULO *</label>
+          <input type="text" id="f-title" value="${esc(item?.title || '')}" placeholder="Título do escrito">
+        </div>
+        <div class="field">
+          <label>DATA</label>
+          <input type="text" id="f-date" value="${item?.date?.slice(0,10) || new Date().toISOString().slice(0,10)}" placeholder="YYYY-MM-DD">
+        </div>
+        <div class="field full">
+          <label>EXCERPT / RESUMO</label>
+          <textarea id="f-excerpt" style="min-height:60px" placeholder="Texto curto para listagem…">${esc(item?.excerpt || '')}</textarea>
+        </div>
+        <div class="field">
+          <label>TIPO</label>
+          <select id="f-tipo">
+            <option value="" ${!item?.tipo?'selected':''}>post</option>
+            <option value="projeto" ${item?.tipo==='projeto'?'selected':''}>projeto</option>
+          </select>
+        </div>
+        <div class="field" style="display:flex;gap:24px;align-items:flex-end;padding-bottom:4px">
+          <div class="toggle-wrap" onclick="toggleEl('tog-featured')">
+            <div class="toggle ${item?.featured?'on':''}" id="tog-featured"></div>
+            <span class="toggle-label">DESTAQUE</span>
+          </div>
+          <div class="toggle-wrap" onclick="toggleEl('tog-status')">
+            <div class="toggle ${item?.status==='published'?'on':''}" id="tog-status"></div>
+            <span class="toggle-label">PUBLICADO</span>
+          </div>
+        </div>
+      </div>
+      <div class="editor-wrap">
+        <div class="field">
+          <label style="margin-bottom:6px">TEXTO (MARKDOWN)</label>
+          <textarea id="f-body" oninput="previewMd()" placeholder="# Título&#10;&#10;Escreva em markdown…">${esc(item?.body || '')}</textarea>
+        </div>
+        <div>
+          <label style="margin-bottom:6px">PREVIEW</label>
+          <div class="editor-preview" id="md-preview"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button class="btn btn-primary" onclick="escritosSalvar(${item?.id || 'null'})">${item ? 'SALVAR' : 'CRIAR ESCRITO'}</button>
+        <button class="btn btn-ghost" onclick="escritosTab('lista')">CANCELAR</button>
+      </div>
+    </div>`;
+  previewMd();
+}
+
+async function escritosEditar(id) {
+  const item = escritosData.find(e => e.id === id);
+  if (!item) return;
+  const full = await api('GET', `/items/escritos/${id}?fields=*`);
+  escritosTab('novo');
+  document.getElementById('tab-esc-novo').textContent = 'EDITAR';
+  escritosFormNovo(full.data);
+  previewMd();
+}
+
+async function escritosSalvar(id) {
+  const title = document.getElementById('f-title').value.trim();
+  if (!title) { toast('Título é obrigatório', true); return; }
+  const body = {
+    title,
+    date:     document.getElementById('f-date').value.trim() || null,
+    excerpt:  document.getElementById('f-excerpt').value.trim() || null,
+    body:     document.getElementById('f-body').value || null,
+    tipo:     document.getElementById('f-tipo').value || null,
+    featured: document.getElementById('tog-featured').classList.contains('on'),
+    status:   document.getElementById('tog-status').classList.contains('on') ? 'published' : 'draft',
+  };
+  try {
+    if (id) await api('PATCH', `/items/escritos/${id}`, body);
+    else    await api('POST',  '/items/escritos', body);
+    toast(id ? 'Escrito atualizado!' : 'Escrito criado!');
+    escritosTab('lista');
+    loadCounts();
+  } catch(e) { toast('Erro: ' + e.message, true); }
+}
+
+async function escritosDeletar(id, title) {
+  if (!confirm(`Deletar "${title}"?`)) return;
+  try {
+    await api('DELETE', `/items/escritos/${id}`);
+    toast('Escrito deletado.');
+    escritosCarregarLista();
+    loadCounts();
+  } catch(e) { toast('Erro: ' + e.message, true); }
+}
+
+// Preview markdown simples
+function previewMd() {
+  const el = document.getElementById('f-body');
+  const prev = document.getElementById('md-preview');
+  if (!el || !prev) return;
+  let txt = el.value;
+  txt = txt
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`(.+?)`/g,'<code>$1</code>')
+    .replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2">$1</a>')
+    .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
+    .replace(/^---$/gm,'<hr>')
+    .replace(/\n\n/g,'</p><p>')
+    .replace(/\n/g,'<br>');
+  prev.innerHTML = '<p>' + txt + '</p>';
+}
+
+// ── UTILITÁRIOS ───────────────────────────────────────────────────────────────
+
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function toggleEl(id) {
+  document.getElementById(id).classList.toggle('on');
+}
+
+function coverPreview(event, type) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  document.getElementById('cover-preview').innerHTML = `<img src="${url}" id="cover-img" style="max-height:120px;max-width:100%;object-fit:contain;display:block;margin:0 auto;">`;
+  document.getElementById('cover-id').value = ''; // reset stored id so we upload fresh
+}
+
+function coverDrop(event, type) {
+  event.preventDefault();
+  event.currentTarget.classList.remove('drag');
+  const file = event.dataTransfer.files[0];
+  if (!file) return;
+  const fakeEvt = { target: { files: [file] } };
+  coverPreview(fakeEvt, type);
+  // put file into input
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  document.getElementById('cover-file').files = dt.files;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+
+(async () => {
+  if (token) {
+    const ok = await checkAuth();
+    if (ok) { showApp(); return; }
+  }
+  document.getElementById('view-login').style.display = 'flex';
+})();
+</script>
+</body>
+</html>
