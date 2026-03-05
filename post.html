@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,7 +31,7 @@ body::before {
 
 /* NAV — igual à home */
 nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
   display: flex; justify-content: space-between; align-items: flex-start;
   padding: 16px 24px; background: var(--bg);
   border-bottom: 1px solid rgba(232,50,10,0.25);
@@ -429,7 +429,7 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
 
   <!-- COLUNA PRINCIPAL -->
   <main class="post-main" id="post-main">
-    <a href="index.html" class="back-btn">← back to home</a>
+    <a href="index.html" class="back-btn">← início</a>
     <div id="post-content">
       <div style="font-family:var(--f-ui);font-size:10px;letter-spacing:0.1em;color:rgba(232,232,216,0.3);padding-top:40px;">carregando...</div>
     </div>
@@ -484,21 +484,7 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
 </div>
 
 <footer>
-  <span>© 2025 Weird Wiz</span>
-  <div class="footer-nl">
-    <form id="nl-form-footer-post"
-          action="https://00bc7bfa.sibforms.com/serve/MUIFAP6Irrw--9y9roSCjipmIl4QR0T4wNHGL7l3E3UeY6kVH3b2sscz8ok4KT7n3UBxLtxBmrvtMMkSbyE9mfORmip7vX7y2z6PllCs5twrQmEg47eiJdgNP_mK__9s2-LLLtTCJA2qQO3fbMzyym_sdAkHL_0dMmGuC4JbQ0bTmFz11oDurorHHcJzHrxnEZEnT3V58kfQA_pSqQ=="
-          method="POST"
-          target="nl-iframe-footer-post">
-      <input type="email" name="EMAIL" class="footer-nl-input"
-             placeholder="receba novos posts por email" required autocomplete="email">
-      <input type="hidden" name="email_address_check" value="">
-      <input type="hidden" name="locale" value="pt">
-      <button type="submit" class="footer-nl-btn">→</button>
-    </form>
-    <iframe name="nl-iframe-footer-post" style="display:none;" title="newsletter footer"></iframe>
-    <span class="footer-nl-ok" id="nl-ok-footer-post">✓ inscrito</span>
-  </div>
+  <span>© 2026 Weird Wiz</span>
   <span>made by hand</span>
 </footer>
 
@@ -530,7 +516,7 @@ async function loadPost() {
     return;
   }
 
-  const collection = tipo === 'projeto' ? 'projetos' : 'escritos';
+  const collection = 'escritos';
 
   try {
     // Busca o post atual
@@ -571,10 +557,12 @@ async function loadPost() {
       <div class="post-nav" id="post-nav"></div>
     `;
 
-    // Busca todos para prev / next
-    const allRes = await fetch(`${DIRECTUS}/items/${collection}?filter[status][_eq]=published&sort[]=-date&limit=200&fields=id,title,date`);
+    // Busca todos para prev / next (filtra por tipo client-side)
+    const allRes = await fetch(`${DIRECTUS}/items/escritos?filter[status][_eq]=published&sort[]=-date&limit=200&fields=id,title,date,tipo`);
     const allData = await allRes.json();
-    const all = allData.data || [];
+    const all = (allData.data || []).filter(p =>
+      tipo === 'projeto' ? p.tipo === 'projeto' : p.tipo !== 'projeto'
+    );
     const idx = all.findIndex(p => String(p.id) === String(id));
     const navEl = document.getElementById('post-nav');
     const tipoParam = tipo ? `&tipo=${tipo}` : '';
@@ -603,12 +591,6 @@ document.getElementById('nl-form-post')?.addEventListener('submit', function() {
   setTimeout(() => {
     this.style.display = 'none';
     document.getElementById('nl-success-post').style.display = 'block';
-  }, 600);
-});
-document.getElementById('nl-form-footer-post')?.addEventListener('submit', function() {
-  setTimeout(() => {
-    this.style.display = 'none';
-    document.getElementById('nl-ok-footer-post').style.display = 'inline';
   }, 600);
 });
 </script>

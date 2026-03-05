@@ -31,7 +31,7 @@ body::before {
 
 /* NAV */
 nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
   display: flex; justify-content: space-between; align-items: flex-start;
   padding: 16px 24px; background: var(--bg);
   border-bottom: 1px solid rgba(232,50,10,0.25);
@@ -189,6 +189,12 @@ footer {
   display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
 }
 footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em; text-transform: uppercase; color: rgba(232,232,216,0.14); }
+
+@media (max-width: 760px) {
+  .drops-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+  .drop-note { display: none; }
+  .page-header-inner { flex-direction: column; align-items: flex-start; gap: 12px; }
+}
 </style>
 </head>
 <body>
@@ -239,21 +245,7 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
 </section>
 
 <footer>
-  <span>© 2025 Weird Wiz</span>
-  <div class="footer-nl">
-    <form id="nl-form-footer-drops"
-          action="https://00bc7bfa.sibforms.com/serve/MUIFAP6Irrw--9y9roSCjipmIl4QR0T4wNHGL7l3E3UeY6kVH3b2sscz8ok4KT7n3UBxLtxBmrvtMMkSbyE9mfORmip7vX7y2z6PllCs5twrQmEg47eiJdgNP_mK__9s2-LLLtTCJA2qQO3fbMzyym_sdAkHL_0dMmGuC4JbQ0bTmFz11oDurorHHcJzHrxnEZEnT3V58kfQA_pSqQ=="
-          method="POST"
-          target="nl-iframe-footer-drops">
-      <input type="email" name="EMAIL" class="footer-nl-input"
-             placeholder="receba novos posts por email" required autocomplete="email">
-      <input type="hidden" name="email_address_check" value="">
-      <input type="hidden" name="locale" value="pt">
-      <button type="submit" class="footer-nl-btn">→</button>
-    </form>
-    <iframe name="nl-iframe-footer-drops" style="display:none;" title="newsletter"></iframe>
-    <span class="footer-nl-ok" id="nl-ok-footer-drops">✓ inscrito</span>
-  </div>
+  <span>© 2026 Weird Wiz</span>
   <span>made by hand</span>
 </footer>
 
@@ -362,9 +354,6 @@ async function init() {
 init();
 document.getElementById('nl-form-drops')?.addEventListener('submit', function() {
   setTimeout(() => { this.style.display='none'; document.getElementById('nl-success-drops').style.display='block'; }, 600);
-});
-document.getElementById('nl-form-footer-drops')?.addEventListener('submit', function() {
-  setTimeout(() => { this.style.display='none'; document.getElementById('nl-ok-footer-drops').style.display='inline'; }, 600);
 });
 </script>
 </body>

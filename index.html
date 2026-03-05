@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -49,7 +49,7 @@ body::before {
 
 /* NAV */
 nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
   display: flex; justify-content: space-between; align-items: flex-start;
   padding: 16px 24px; background: var(--bg);
   border-bottom: 1px solid rgba(232,50,10,0.25);
@@ -318,6 +318,8 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
   .projeto-row { grid-template-columns: 56px 1fr; gap: 16px; }
   .books-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
   .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  .drops-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+  .drop-note { display: none; }
 }
 </style>
 </head>
@@ -450,21 +452,7 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
 </section>
 
 <footer>
-  <span>© 2025 Weird Wiz</span>
-  <div class="footer-nl">
-    <form id="nl-form-footer-home"
-          action="https://00bc7bfa.sibforms.com/serve/MUIFAP6Irrw--9y9roSCjipmIl4QR0T4wNHGL7l3E3UeY6kVH3b2sscz8ok4KT7n3UBxLtxBmrvtMMkSbyE9mfORmip7vX7y2z6PllCs5twrQmEg47eiJdgNP_mK__9s2-LLLtTCJA2qQO3fbMzyym_sdAkHL_0dMmGuC4JbQ0bTmFz11oDurorHHcJzHrxnEZEnT3V58kfQA_pSqQ=="
-          method="POST"
-          target="nl-iframe-footer-home">
-      <input type="email" name="EMAIL" class="footer-nl-input"
-             placeholder="receba novos posts por email" required autocomplete="email">
-      <input type="hidden" name="email_address_check" value="">
-      <input type="hidden" name="locale" value="pt">
-      <button type="submit" class="footer-nl-btn">→</button>
-    </form>
-    <iframe name="nl-iframe-footer-home" style="display:none;" title="newsletter"></iframe>
-    <span class="footer-nl-ok" id="nl-ok-footer-home">✓ inscrito</span>
-  </div>
+  <span>© 2026 Weird Wiz</span>
   <span>made by hand</span>
 </footer>
 
@@ -683,6 +671,95 @@ function renderObras(obras) {
   });
 }
 
+// ── RENDER HERO FLOATS ────────────────────────────────────────────────────
+function renderHeroFloats(drops, livros, obras) {
+  const floats = document.querySelectorAll('.float-img');
+  if (!floats.length) return;
+
+  const typeMap = { livro: 'book', album: 'album', podcast: 'podcast', filme: 'film' };
+  const typeLabels = {
+    book: 'LIVRO', album: 'ÁLBUM', podcast: 'PODCAST', film: 'FILME',
+    directed: 'LIVRO QUE DIRIGI', visual: 'OBRA VISUAL'
+  };
+
+  const sources = [];
+
+  // Featured drops primeiro (até 3)
+  drops.filter(d => d.featured).slice(0, 3).forEach(drop => {
+    const cssType = typeMap[drop.type] || 'book';
+    sources.push({
+      type: cssType,
+      imgId: drop.cover,
+      title: drop.title,
+      href: `drop.html?id=${drop.id}`,
+      label: typeLabels[cssType] || (drop.type || '').toUpperCase()
+    });
+  });
+
+  // Complementa com livro dirigido se necessário
+  if (sources.length < 3 && livros.length > 0) {
+    const l = livros[0];
+    sources.push({
+      type: 'directed',
+      imgId: l.Cover || l.cover,
+      title: l.title,
+      href: `livro.html?id=${l.id}`,
+      label: 'LIVRO QUE DIRIGI'
+    });
+  }
+
+  // Complementa com obra visual se necessário
+  if (sources.length < 3 && obras.length > 0) {
+    const o = obras[0];
+    sources.push({
+      type: 'visual',
+      imgId: o.image,
+      title: o.title,
+      href: `obra.html?id=${o.id}`,
+      label: 'OBRA VISUAL'
+    });
+  }
+
+  // Terceiro fallback: segundo livro dirigido
+  if (sources.length < 3 && livros.length > 1) {
+    const l2 = livros[1];
+    sources.push({
+      type: 'directed',
+      imgId: l2.Cover || l2.cover,
+      title: l2.title,
+      href: `livro.html?id=${l2.id}`,
+      label: 'LIVRO QUE DIRIGI'
+    });
+  }
+
+  // Quarto fallback: primeiro drop (não-featured)
+  if (sources.length < 3 && drops.length > 0) {
+    const d0 = drops[0];
+    const cssType = typeMap[d0.type] || 'book';
+    sources.push({
+      type: cssType,
+      imgId: d0.cover,
+      title: d0.title,
+      href: `drop.html?id=${d0.id}`,
+      label: typeLabels[cssType] || (d0.type || '').toUpperCase()
+    });
+  }
+
+  floats.forEach((el, i) => {
+    if (i >= sources.length) return;
+    const src = sources[i];
+    el.dataset.type = src.type;
+    const imgUrl = src.imgId ? directusImg(src.imgId, 400) : null;
+    const imgHtml = imgUrl
+      ? `<img src="${imgUrl}" alt="${src.title || ''}" style="width:100%;height:100%;object-fit:cover;display:block;">`
+      : `<div class="cover-placeholder">${src.label}</div>`;
+    el.innerHTML = `${imgHtml}<div class="cover-label">${src.label}<br>${(src.title || '').toUpperCase()}</div>`;
+    if (src.href) {
+      el.addEventListener('click', () => window.location.href = src.href);
+    }
+  });
+}
+
 // ── RENDER ABOUT ─────────────────────────────────────────────────────────
 async function renderAbout() {
   try {
@@ -723,6 +800,7 @@ async function init() {
   renderDrops(drops);
   renderLivros(livros);
   renderObras(obras);
+  renderHeroFloats(drops, livros, obras);
   await renderAbout();
   initObserver();
 }
@@ -732,12 +810,6 @@ init();
 // ── NEWSLETTER ────────────────────────────────────────────────────────────
 document.getElementById('nl-form-index')?.addEventListener('submit', function() {
   setTimeout(() => { this.style.display='none'; document.getElementById('nl-success-index').style.display='block'; }, 600);
-});
-document.getElementById('nl-form-footer-home')?.addEventListener('submit', function() {
-  setTimeout(() => {
-    this.style.display = 'none';
-    document.getElementById('nl-ok-footer-home').style.display = 'inline';
-  }, 600);
 });
 </script>
 
