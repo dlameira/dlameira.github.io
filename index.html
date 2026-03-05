@@ -715,13 +715,14 @@ function renderHeroFloats(drops, livros, obras) {
     });
   }
 
-  // Complementa com obra visual se necessário (só obras com imagem estática)
-  const obrasComImagem = obras.filter(o => o.image);
-  if (sources.length < 3 && obrasComImagem.length > 0) {
-    const o = obrasComImagem[0];
+  // Complementa com obra visual se necessário (imagem ou vídeo)
+  const obrasComMedia = obras.filter(o => o.image || o.video);
+  if (sources.length < 3 && obrasComMedia.length > 0) {
+    const o = obrasComMedia[0];
     sources.push({
       type: 'visual',
       imgId: o.image,
+      videoId: o.video,
       title: o.title,
       href: `obra.html?id=${o.id}`,
       label: 'OBRA VISUAL'
@@ -758,10 +759,18 @@ function renderHeroFloats(drops, livros, obras) {
     const src = sources[i];
     el.dataset.type = src.type;
     const imgUrl = src.imgId ? directusImg(src.imgId, px(185)) : null;
-    const imgHtml = imgUrl
-      ? `<img src="${imgUrl}" alt="${src.title || ''}" style="width:100%;height:100%;object-fit:cover;display:block;">`
-      : `<div class="cover-placeholder">${src.label}</div>`;
-    el.innerHTML = `${imgHtml}<div class="cover-label">${src.label}<br>${(src.title || '').toUpperCase()}</div>`;
+    let mediaHtml;
+    if (src.videoId) {
+      const posterAttr = imgUrl ? `poster="${imgUrl}"` : '';
+      mediaHtml = `<video autoplay muted loop playsinline ${posterAttr} style="width:100%;height:100%;object-fit:cover;display:block;">
+        <source src="${DIRECTUS}/assets/${src.videoId}" type="video/mp4">
+      </video>`;
+    } else if (imgUrl) {
+      mediaHtml = `<img src="${imgUrl}" alt="${src.title || ''}" style="width:100%;height:100%;object-fit:cover;display:block;">`;
+    } else {
+      mediaHtml = `<div class="cover-placeholder">${src.label}</div>`;
+    }
+    el.innerHTML = `${mediaHtml}<div class="cover-label">${src.label}<br>${(src.title || '').toUpperCase()}</div>`;
     if (src.href) {
       el.addEventListener('click', () => window.location.href = src.href);
     }
