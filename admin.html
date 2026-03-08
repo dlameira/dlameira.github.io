@@ -863,16 +863,33 @@ function renderBulkCard({ id, url, collType }) {
   const card = document.createElement('div');
   card.className = 'bulk-card';
   card.id = `bulk-card-${id}`;
-  const typeOpts = collType === 'drops'
-    ? ['book','album','podcast','film'].map(t => `<option value="${t}">${t}</option>`).join('')
-    : '';
+
+  let extraFields = '';
+  if (collType === 'drops') {
+    extraFields = `
+      <div class="field"><label>AUTOR</label><input type="text" id="bi-author-${id}" placeholder="Autor…"></div>
+      <div class="field"><label>TIPO</label><select id="bi-type-${id}">
+        <option value="book">Livro</option>
+        <option value="album">Álbum</option>
+        <option value="podcast">Podcast</option>
+        <option value="film">Filme</option>
+      </select></div>`;
+  } else if (collType === 'livros') {
+    extraFields = `
+      <div class="field"><label>AUTOR</label><input type="text" id="bi-author-${id}" placeholder="Autor(a)…"></div>
+      <div class="field"><label>ANO</label><input type="number" id="bi-ano-${id}" placeholder="2024"></div>`;
+  } else if (collType === 'obras') {
+    extraFields = `
+      <div class="field"><label>TIPO</label><input type="text" id="bi-type-${id}" placeholder="desenho, pintura…"></div>
+      <div class="field"><label>ANO</label><input type="text" id="bi-ano-${id}" placeholder="2024"></div>`;
+  }
+
   card.innerHTML = `
     <img class="bulk-card-img" src="${url}" alt="">
     <button class="bulk-card-remove" onclick="bulkRemove(${id})">×</button>
     <div class="bulk-card-body">
       <div class="field"><label>TÍTULO</label><input type="text" id="bi-title-${id}" placeholder="Título…"></div>
-      <div class="field"><label>AUTOR</label><input type="text" id="bi-author-${id}" placeholder="Autor…"></div>
-      ${typeOpts ? `<div class="field"><label>TIPO</label><select id="bi-type-${id}">${typeOpts}</select></div>` : ''}
+      ${extraFields}
     </div>`;
   grid.appendChild(card);
 }
@@ -904,18 +921,26 @@ async function bulkSubmit(collType, asDraft = false) {
       const uploaded = await uploadFile(item.file, p => {
         fill.style.width = `${((done + p) / total * 100).toFixed(0)}%`;
       });
-      const body = {
-        cover:  uploaded.id,
-        status: asDraft ? 'draft' : 'published',
-        title:  document.getElementById(`bi-title-${item.id}`)?.value.trim() || item.file.name.replace(/\.[^.]+$/, ''),
-        author: document.getElementById(`bi-author-${item.id}`)?.value.trim() || null,
-        type:   document.getElementById(`bi-type-${item.id}`)?.value || null,
-      };
-      if (collType === 'drops') await api('POST', '/items/drops', body);
-      else if (collType === 'livros') {
-        await api('POST', '/items/livros', { title: body.title, autor: body.author, Cover: body.cover, status: body.status });
+      const title  = document.getElementById(`bi-title-${item.id}`)?.value.trim() || item.file.name.replace(/\.[^.]+$/, '');
+      const status = asDraft ? 'draft' : 'published';
+      if (collType === 'drops') {
+        await api('POST', '/items/drops', {
+          title, status, cover: uploaded.id,
+          author: document.getElementById(`bi-author-${item.id}`)?.value.trim() || null,
+          type:   document.getElementById(`bi-type-${item.id}`)?.value || 'book',
+        });
+      } else if (collType === 'livros') {
+        await api('POST', '/items/livros', {
+          title, status, Cover: uploaded.id,
+          autor: document.getElementById(`bi-author-${item.id}`)?.value.trim() || null,
+          ano:   parseInt(document.getElementById(`bi-ano-${item.id}`)?.value) || null,
+        });
       } else if (collType === 'obras') {
-        await api('POST', '/items/obras', { title: body.title, image: body.cover, status: body.status });
+        await api('POST', '/items/obras', {
+          title, status, image: uploaded.id,
+          type: document.getElementById(`bi-type-${item.id}`)?.value.trim() || null,
+          year: document.getElementById(`bi-ano-${item.id}`)?.value.trim() || null,
+        });
       }
     } catch(e) {
       toast(`Erro em ${item.file.name}: ${e.message}`, true);
