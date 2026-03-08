@@ -89,8 +89,6 @@ nav {
 .fi-1 { width: clamp(115px, 13vw, 200px); top: 108px; left: clamp(300px, 32vw, 600px); transform: rotate(1.5deg); border: 2px solid; }
 .fi-2 { width: clamp(105px, 12vw, 180px); top: 290px; right: clamp(50px, 7vw, 140px); transform: rotate(-2.5deg); border: 2px solid; }
 .fi-3 { width: clamp(95px, 10vw, 160px); bottom: 100px; left: clamp(16px, 2.5vw, 45px); transform: rotate(1deg); border: 2px solid; }
-.fi-4 { display: none; width: 13vw; top: 160px; right: 14vw; transform: rotate(2deg); border: 2px solid; }
-@media (min-width: 1700px) { .fi-4 { display: block; } }
 
 .float-img[data-type="book"]     { border-color: var(--yellow); aspect-ratio: 2/3; }
 .float-img[data-type="album"]    { border-color: var(--green);  aspect-ratio: 1/1; }
@@ -359,11 +357,6 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
     <div class="cover-placeholder" style="background:#08121a; color:rgba(0,255,65,0.18);">drop</div>
     <div class="cover-label">DROP<br>placeholder</div>
   </div>
-  <div class="float-img fi-4" data-type="directed">
-    <div class="cover-placeholder" style="background:#0a100a; color:rgba(0,255,65,0.12);">drop</div>
-    <div class="cover-label">DROP<br>placeholder</div>
-  </div>
-
   <!-- headlines injetadas pelo JS via renderHeroPosts() -->
 </section>
 
@@ -757,29 +750,6 @@ function renderHeroFloats(drops, livros, obras) {
       title: d0.title,
       href: `drop.html?id=${d0.id}`,
       label: typeLabels[cssType] || (d0.type || '').toUpperCase()
-    });
-  }
-
-  // fi-4 (só visível em wide): outro drop ou livro
-  const usedHrefs = new Set(sources.map(s => s.href));
-  const extraDrop = drops.find(d => !usedHrefs.has(`drop.html?id=${d.id}`));
-  if (extraDrop) {
-    const cssType = typeMap[extraDrop.type] || 'book';
-    sources.push({
-      type: cssType,
-      imgId: extraDrop.cover,
-      title: extraDrop.title,
-      href: `drop.html?id=${extraDrop.id}`,
-      label: typeLabels[cssType] || (extraDrop.type || '').toUpperCase()
-    });
-  } else if (livros.length > 0) {
-    const lExtra = livros.find(l => !usedHrefs.has(`livro.html?id=${l.id}`));
-    if (lExtra) sources.push({
-      type: 'directed',
-      imgId: lExtra.Cover || lExtra.cover,
-      title: lExtra.title,
-      href: `livro.html?id=${lExtra.id}`,
-      label: 'LIVRO QUE DIRIGI'
     });
   }
 
