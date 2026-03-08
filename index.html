@@ -63,7 +63,7 @@ nav {
 .nav-links a:hover { color: var(--red); }
 
 /* HOME */
-.home { min-height: 100vh; padding: 90px 0 60px; position: relative; overflow: hidden; }
+.home { min-height: 100vh; padding: 90px 0 60px; position: relative; overflow: hidden; max-width: 1700px; margin-left: auto; margin-right: auto; }
 
 /* imagens flutuantes */
 .float-img {
@@ -126,6 +126,7 @@ nav {
 
 /* SEÇÕES */
 .section { padding: 72px 24px; border-top: 1px solid rgba(232,50,10,0.2); }
+.section-inner { max-width: 1700px; margin-left: auto; margin-right: auto; }
 .section-header { display: flex; align-items: flex-end; gap: 20px; margin-bottom: 48px; }
 .section-title { font-family: var(--f-title); font-size: clamp(44px, 7vw, 90px); letter-spacing: 0.05em; color: var(--red); line-height: 1; }
 .section-title.col-yellow { color: var(--yellow); }
@@ -362,57 +363,68 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
 
 <!-- ── ESCRITOS ───────────────────────────────────────────────────────────── -->
 <section class="section" id="escritos">
-  <div class="section-header r">
-    <h2 class="section-title">ESCRITOS</h2>
-    <p class="section-desc">ensaios · poesia · artigos · notas</p>
+  <div class="section-inner">
+    <div class="section-header r">
+      <h2 class="section-title">ESCRITOS</h2>
+      <p class="section-desc">ensaios · poesia · artigos · notas</p>
+    </div>
+    <!-- linhas injetadas pelo JS via renderPostList() -->
   </div>
-  <!-- linhas injetadas pelo JS via renderPostList() -->
 </section>
 
 <!-- ── DROPS ─────────────────────────────────────────────────────────────── -->
 <section class="section" id="drops">
-  <div class="section-header r">
-    <h2 class="section-title">DROPS</h2>
-    <p class="section-desc">livros, álbuns, podcasts, filmes</p>
+  <div class="section-inner">
+    <div class="section-header r">
+      <h2 class="section-title">DROPS</h2>
+      <p class="section-desc">livros, álbuns, podcasts, filmes</p>
+    </div>
+    <!-- cards injetados pelo JS via renderDrops() -->
+    <div class="drops-grid"></div>
   </div>
-  <!-- cards injetados pelo JS via renderDrops() -->
-  <div class="drops-grid"></div>
 </section>
 
 <!-- ── LIVROS QUE DIRIGI ──────────────────────────────────────────────────── -->
 <section class="section" id="livros">
-  <div class="section-header r">
-    <h2 class="section-title col-yellow">LIVROS QUE DIRIGI</h2>
-    <p class="section-desc" style="border-color:rgba(242,224,74,0.25); color:rgba(242,224,74,0.4);">~200 títulos · desde 2003</p>
+  <div class="section-inner">
+    <div class="section-header r">
+      <h2 class="section-title col-yellow">LIVROS QUE DIRIGI</h2>
+      <p class="section-desc" style="border-color:rgba(242,224,74,0.25); color:rgba(242,224,74,0.4);">~200 títulos · desde 2003</p>
+    </div>
+    <div class="books-grid" id="books-grid">
+      <!-- preenchido dinamicamente pelo Directus -->
+    </div>
+    <a href="livros.html" class="see-all r">ver todos os livros →</a>
   </div>
-  <div class="books-grid" id="books-grid">
-    <!-- preenchido dinamicamente pelo Directus -->
-  </div>
-  <a href="livros.html" class="see-all r">ver todos os livros →</a>
 </section>
 
 <!-- ── OBRAS VISUAIS ──────────────────────────────────────────────────────── -->
 <section class="section" id="obras">
-  <div class="section-header r">
-    <h2 class="section-title col-purple">OBRAS VISUAIS</h2>
-    <p class="section-desc" style="border-color:rgba(204,68,255,0.25); color:rgba(204,68,255,0.4);">desenhos · pinturas · animações · vídeos</p>
-  </div>
-  <div class="gallery-grid" id="obras-grid">
-    <!-- preenchido dinamicamente pelo Directus -->
+  <div class="section-inner">
+    <div class="section-header r">
+      <h2 class="section-title col-purple">OBRAS VISUAIS</h2>
+      <p class="section-desc" style="border-color:rgba(204,68,255,0.25); color:rgba(204,68,255,0.4);">desenhos · pinturas · animações · vídeos</p>
+    </div>
+    <div class="gallery-grid" id="obras-grid">
+      <!-- preenchido dinamicamente pelo Directus -->
+    </div>
   </div>
 </section>
 
 <!-- ── PROJETOS ───────────────────────────────────────────────────────────── -->
 <section class="section" id="projetos">
-  <div class="section-header r">
-    <h2 class="section-title col-blue">PROJETOS</h2>
-    <p class="section-desc" style="border-color:rgba(51,85,255,0.25); color:rgba(51,85,255,0.4);">histórias longas sobre o que construí</p>
+  <div class="section-inner">
+    <div class="section-header r">
+      <h2 class="section-title col-blue">PROJETOS</h2>
+      <p class="section-desc" style="border-color:rgba(51,85,255,0.25); color:rgba(51,85,255,0.4);">histórias longas sobre o que construí</p>
+    </div>
+    <!-- linhas injetadas pelo JS via renderProjetos() -->
   </div>
-  <!-- linhas injetadas pelo JS via renderProjetos() -->
 </section>
 
 <!-- ── ME ─────────────────────────────────────────────────────────────────── -->
 <section class="section" id="me">
+  <div class="section-inner">
   <div class="me-grid">
     <div class="r">
       <h2 class="me-name">WEIRD<br><span>WIZ</span></h2>
@@ -431,6 +443,7 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
       </div>
     </div>
   </div>
+  </div><!-- /section-inner -->
 </section>
 
 <section class="newsletter-section">
