@@ -1039,6 +1039,10 @@ function livrosFormNovo(item = null) {
           <input type="text" id="f-title" value="${esc(item?.title || '')}" placeholder="Nome do livro">
         </div>
         <div class="field">
+          <label>SUBTÍTULO</label>
+          <input type="text" id="f-subtitle" value="${esc(item?.subtitle || '')}" placeholder="Subtítulo (opcional)">
+        </div>
+        <div class="field">
           <label>TÍTULO EM INGLÊS</label>
           <input type="text" id="f-title-en" value="${esc(item?.title_en || '')}" placeholder="Book title in English">
         </div>
@@ -1047,8 +1051,44 @@ function livrosFormNovo(item = null) {
           <input type="text" id="f-autor" value="${esc(item?.autor || '')}" placeholder="Autor(a)">
         </div>
         <div class="field">
+          <label>EDITORA</label>
+          <input type="text" id="f-editora" value="${esc(item?.editora || '')}" placeholder="Nome da editora">
+        </div>
+        <div class="field">
           <label>ANO</label>
           <input type="number" id="f-ano" value="${item?.ano || ''}" placeholder="2024">
+        </div>
+        <div class="field">
+          <label>PÁGINAS</label>
+          <input type="number" id="f-paginas" value="${item?.paginas || ''}" placeholder="256">
+        </div>
+        <div class="field">
+          <label>FORMATO</label>
+          <input type="text" id="f-formato" value="${esc(item?.formato || '')}" placeholder="ex: 14x21cm">
+        </div>
+        <div class="field">
+          <label>ISBN FÍSICO</label>
+          <input type="text" id="f-isbn-fisico" value="${esc(item?.isbn_fisico || '')}" placeholder="978-...">
+        </div>
+        <div class="field">
+          <label>ISBN EBOOK</label>
+          <input type="text" id="f-isbn-ebook" value="${esc(item?.isbn_ebook || '')}" placeholder="978-...">
+        </div>
+        <div class="field">
+          <label>LINK DE COMPRA</label>
+          <input type="url" id="f-link-compra" value="${esc(item?.link_compra || '')}" placeholder="https://...">
+        </div>
+        <div class="field">
+          <label>TRADUÇÃO</label>
+          <input type="text" id="f-tradutor" value="${esc(item?.tradutor || '')}" placeholder="Nome do(a) tradutor(a)">
+        </div>
+        <div class="field">
+          <label>CAPA (designer)</label>
+          <input type="text" id="f-capista" value="${esc(item?.capista || '')}" placeholder="Nome do(a) capista">
+        </div>
+        <div class="field full">
+          <label>SINOPSE</label>
+          <textarea id="f-sinopse" rows="5" placeholder="Texto da sinopse…" style="width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--fg);padding:10px;font-family:var(--f-body);font-size:14px;resize:vertical;">${esc(item?.sinopse || '')}</textarea>
         </div>
         <div class="field">
           <div class="toggle-wrap" onclick="toggleEl('tog-status')" style="padding-top:18px">
@@ -1077,10 +1117,20 @@ async function livrosSalvar(id) {
   if (!title) { toast('Título é obrigatório', true); return; }
   const body = {
     title,
-    title_en: document.getElementById('f-title-en').value.trim() || null,
-    autor:  document.getElementById('f-autor').value.trim() || null,
-    ano:    parseInt(document.getElementById('f-ano').value) || null,
-    status: document.getElementById('tog-status').classList.contains('on') ? 'published' : 'draft',
+    subtitle:    document.getElementById('f-subtitle').value.trim() || null,
+    title_en:    document.getElementById('f-title-en').value.trim() || null,
+    autor:       document.getElementById('f-autor').value.trim() || null,
+    editora:     document.getElementById('f-editora').value.trim() || null,
+    ano:         parseInt(document.getElementById('f-ano').value) || null,
+    paginas:     parseInt(document.getElementById('f-paginas').value) || null,
+    formato:     document.getElementById('f-formato').value.trim() || null,
+    isbn_fisico: document.getElementById('f-isbn-fisico').value.trim() || null,
+    isbn_ebook:  document.getElementById('f-isbn-ebook').value.trim() || null,
+    link_compra: document.getElementById('f-link-compra').value.trim() || null,
+    tradutor:    document.getElementById('f-tradutor').value.trim() || null,
+    capista:     document.getElementById('f-capista').value.trim() || null,
+    sinopse:     document.getElementById('f-sinopse').value.trim() || null,
+    status:      document.getElementById('tog-status').classList.contains('on') ? 'published' : 'draft',
   };
   const covId = document.getElementById('cover-id').value;
   if (covId) body.Cover = covId;
