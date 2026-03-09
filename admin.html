@@ -763,11 +763,12 @@ function dropsFormNovo(item = null) {
 }
 
 async function dropsEditar(id) {
-  const item = dropsData.find(d => d.id === id);
-  if (!item) return;
-  dropsTab('novo');
-  document.getElementById('tab-drops-novo').textContent = 'EDITAR';
-  dropsFormNovo(item);
+  try {
+    const res = await api('GET', `/items/drops/${id}?fields=*`);
+    dropsTab('novo');
+    document.getElementById('tab-drops-novo').textContent = 'EDITAR';
+    dropsFormNovo(res.data);
+  } catch(e) { toast('Erro ao carregar drop: ' + e.message, true); }
 }
 
 async function dropsSalvar(id) {
@@ -1094,12 +1095,24 @@ function livrosFormNovo(item = null) {
           <label>ARTES INTERNAS</label>
           <input type="text" id="f-artes-internas" value="${esc(item?.artes_internas || '')}" placeholder="Artista do miolo">
         </div>
+        <div class="field">
+          <label>COLEÇÃO</label>
+          <input type="text" id="f-colecao" value="${esc(item?.colecao || '')}" placeholder="Nome da coleção (opcional)">
+        </div>
         <div class="field full">
           <label>SINOPSE</label>
           <textarea id="f-sinopse" rows="5" placeholder="Texto da sinopse…" style="width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--fg);padding:10px;font-family:var(--f-body);font-size:14px;resize:vertical;">${esc(item?.sinopse || '')}</textarea>
         </div>
-        <div class="field">
-          <div class="toggle-wrap" onclick="toggleEl('tog-status')" style="padding-top:18px">
+        <div class="field full">
+          <label>NOTAS / BASTIDORES</label>
+          <textarea id="f-notas" rows="4" placeholder="Notas internas sobre o livro…" style="width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--fg);padding:10px;font-family:var(--f-body);font-size:14px;resize:vertical;">${esc(item?.notas || '')}</textarea>
+        </div>
+        <div class="field" style="display:flex;gap:24px;align-items:flex-end;padding-bottom:4px">
+          <div class="toggle-wrap" onclick="toggleEl('tog-featured')">
+            <div class="toggle ${item?.featured?'on':''}" id="tog-featured"></div>
+            <span class="toggle-label">DESTAQUE</span>
+          </div>
+          <div class="toggle-wrap" onclick="toggleEl('tog-status')">
             <div class="toggle ${item?.status==='published'?'on':''}" id="tog-status"></div>
             <span class="toggle-label">PUBLICADO</span>
           </div>
@@ -1113,11 +1126,12 @@ function livrosFormNovo(item = null) {
 }
 
 async function livrosEditar(id) {
-  const item = livrosData.find(l => l.id === id);
-  if (!item) return;
-  livrosTab('novo');
-  document.getElementById('tab-livros-novo').textContent = 'EDITAR';
-  livrosFormNovo(item);
+  try {
+    const res = await api('GET', `/items/livros/${id}?fields=*`);
+    livrosTab('novo');
+    document.getElementById('tab-livros-novo').textContent = 'EDITAR';
+    livrosFormNovo(res.data);
+  } catch(e) { toast('Erro ao carregar livro: ' + e.message, true); }
 }
 
 async function livrosSalvar(id) {
@@ -1139,8 +1153,11 @@ async function livrosSalvar(id) {
     capista:       document.getElementById('f-capista').value.trim() || null,
     arte_de_capa:  document.getElementById('f-arte-de-capa').value.trim() || null,
     artes_internas: document.getElementById('f-artes-internas').value.trim() || null,
+    colecao:       document.getElementById('f-colecao').value.trim() || null,
     sinopse:       document.getElementById('f-sinopse').value.trim() || null,
-    status:      document.getElementById('tog-status').classList.contains('on') ? 'published' : 'draft',
+    notas:         document.getElementById('f-notas').value.trim() || null,
+    featured:      document.getElementById('tog-featured').classList.contains('on'),
+    status:        document.getElementById('tog-status').classList.contains('on') ? 'published' : 'draft',
   };
   const covId = document.getElementById('cover-id').value;
   if (covId) body.Cover = covId;
@@ -1266,10 +1283,18 @@ function obrasFormNovo(item = null) {
         <div class="field full">
           <label>IMAGEM / THUMBNAIL</label>
           <div class="cover-upload-zone" id="cover-zone" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="coverDrop(event,'obras')">
-            <input type="file" id="cover-file" accept="image/*,video/*" onchange="coverPreview(event,'obras')">
-            <div id="cover-preview">${item?.image ? `<img src="${directusImg(item.image, 240)}" id="cover-img">` : `<div class="cover-upload-text">Arraste imagem ou vídeo aqui</div>`}</div>
+            <input type="file" id="cover-file" accept="image/*" onchange="coverPreview(event,'obras')">
+            <div id="cover-preview">${item?.image ? `<img src="${directusImg(item.image, 240)}" id="cover-img">` : `<div class="cover-upload-text">Arraste a imagem aqui</div>`}</div>
           </div>
           <input type="hidden" id="cover-id" value="${item?.image || ''}">
+        </div>
+        <div class="field full">
+          <label>VÍDEO</label>
+          <div class="cover-upload-zone" id="video-zone" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="videoDrop(event)">
+            <input type="file" id="video-file" accept="video/*" onchange="videoPreview(event)">
+            <div id="video-preview">${item?.video ? `<video src="${DIRECTUS}/assets/${item.video}" style="max-width:100%;max-height:180px" controls></video>` : `<div class="cover-upload-text">Arraste o vídeo aqui (opcional)</div>`}</div>
+          </div>
+          <input type="hidden" id="video-id" value="${item?.video || ''}">
         </div>
         <div class="field">
           <label>TÍTULO *</label>
@@ -1335,7 +1360,14 @@ async function obrasSalvar(id) {
   const fileInput = document.getElementById('cover-file');
   if (fileInput.files[0] && !covId) {
     try { const f = await uploadFile(fileInput.files[0]); body.image = f.id; }
-    catch(e) { toast('Erro no upload: ' + e.message, true); return; }
+    catch(e) { toast('Erro no upload da imagem: ' + e.message, true); return; }
+  }
+  const vidId = document.getElementById('video-id').value;
+  if (vidId) body.video = vidId;
+  const videoInput = document.getElementById('video-file');
+  if (videoInput.files[0] && !vidId) {
+    try { const f = await uploadFile(videoInput.files[0]); body.video = f.id; }
+    catch(e) { toast('Erro no upload do vídeo: ' + e.message, true); return; }
   }
   try {
     if (id) await api('PATCH', `/items/obras/${id}`, body);
@@ -1455,12 +1487,12 @@ function escritosFormNovo(item = null) {
           <input type="text" id="f-title" value="${esc(item?.title || '')}" placeholder="Título do escrito">
         </div>
         <div class="field">
+          <label>SLUG</label>
+          <input type="text" id="f-slug" value="${esc(item?.slug || '')}" placeholder="titulo-do-escrito (gerado auto se vazio)">
+        </div>
+        <div class="field">
           <label>DATA</label>
           <input type="text" id="f-date" value="${item?.date?.slice(0,10) || new Date().toISOString().slice(0,10)}" placeholder="YYYY-MM-DD">
-        </div>
-        <div class="field full">
-          <label>EXCERPT / RESUMO</label>
-          <textarea id="f-excerpt" style="min-height:60px" placeholder="Texto curto para listagem…">${esc(item?.excerpt || '')}</textarea>
         </div>
         <div class="field">
           <label>TIPO</label>
@@ -1468,6 +1500,18 @@ function escritosFormNovo(item = null) {
             <option value="" ${!item?.tipo?'selected':''}>post</option>
             <option value="projeto" ${item?.tipo==='projeto'?'selected':''}>projeto</option>
           </select>
+        </div>
+        <div class="field full">
+          <label>EXCERPT / RESUMO</label>
+          <textarea id="f-excerpt" style="min-height:60px" placeholder="Texto curto para listagem…">${esc(item?.excerpt || '')}</textarea>
+        </div>
+        <div class="field full">
+          <label>CAPA (imagem de destaque)</label>
+          <div class="cover-upload-zone" id="cover-zone" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="coverDrop(event,'escritos')">
+            <input type="file" id="cover-file" accept="image/*" onchange="coverPreview(event,'escritos')">
+            <div id="cover-preview">${item?.cover ? `<img src="${directusImg(item.cover, 240)}" id="cover-img">` : `<div class="cover-upload-text">Arraste a imagem de capa aqui (opcional)</div>`}</div>
+          </div>
+          <input type="hidden" id="cover-id" value="${item?.cover || ''}">
         </div>
         <div class="field" style="display:flex;gap:24px;align-items:flex-end;padding-bottom:4px">
           <div class="toggle-wrap" onclick="toggleEl('tog-featured')">
@@ -1483,7 +1527,7 @@ function escritosFormNovo(item = null) {
       <div class="editor-wrap">
         <div class="field">
           <label style="margin-bottom:6px">TEXTO (MARKDOWN)</label>
-          <textarea id="f-body" oninput="previewMd()" placeholder="# Título&#10;&#10;Escreva em markdown…">${esc(item?.body || '')}</textarea>
+          <textarea id="f-body" oninput="previewMd()" placeholder="# Título&#10;&#10;Escreva em markdown…">${esc(item?.content || '')}</textarea>
         </div>
         <div>
           <label style="margin-bottom:6px">PREVIEW</label>
@@ -1511,15 +1555,25 @@ async function escritosEditar(id) {
 async function escritosSalvar(id) {
   const title = document.getElementById('f-title').value.trim();
   if (!title) { toast('Título é obrigatório', true); return; }
+  const slugVal = document.getElementById('f-slug').value.trim()
+    || title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   const body = {
     title,
+    slug:     slugVal,
     date:     document.getElementById('f-date').value.trim() || null,
     excerpt:  document.getElementById('f-excerpt').value.trim() || null,
-    body:     document.getElementById('f-body').value || null,
+    content:  document.getElementById('f-body').value || null,
     tipo:     document.getElementById('f-tipo').value || null,
     featured: document.getElementById('tog-featured').classList.contains('on'),
     status:   document.getElementById('tog-status').classList.contains('on') ? 'published' : 'draft',
   };
+  const covId = document.getElementById('cover-id').value;
+  if (covId) body.cover = covId;
+  const fileInput = document.getElementById('cover-file');
+  if (fileInput.files[0] && !covId) {
+    try { const f = await uploadFile(fileInput.files[0]); body.cover = f.id; }
+    catch(e) { toast('Erro no upload da capa: ' + e.message, true); return; }
+  }
   try {
     if (id) await api('PATCH', `/items/escritos/${id}`, body);
     else    await api('POST',  '/items/escritos', body);
@@ -1587,10 +1641,28 @@ function coverDrop(event, type) {
   if (!file) return;
   const fakeEvt = { target: { files: [file] } };
   coverPreview(fakeEvt, type);
-  // put file into input
   const dt = new DataTransfer();
   dt.items.add(file);
   document.getElementById('cover-file').files = dt.files;
+}
+
+function videoPreview(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  document.getElementById('video-preview').innerHTML = `<video src="${url}" style="max-width:100%;max-height:180px;display:block;margin:0 auto;" controls></video>`;
+  document.getElementById('video-id').value = '';
+}
+
+function videoDrop(event) {
+  event.preventDefault();
+  event.currentTarget.classList.remove('drag');
+  const file = event.dataTransfer.files[0];
+  if (!file) return;
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  document.getElementById('video-file').files = dt.files;
+  videoPreview({ target: { files: [file] } });
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
