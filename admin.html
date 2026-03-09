@@ -1039,6 +1039,10 @@ function livrosFormNovo(item = null) {
           <input type="text" id="f-title" value="${esc(item?.title || '')}" placeholder="Nome do livro">
         </div>
         <div class="field">
+          <label>TÍTULO EM INGLÊS</label>
+          <input type="text" id="f-title-en" value="${esc(item?.title_en || '')}" placeholder="Book title in English">
+        </div>
+        <div class="field">
           <label>AUTOR</label>
           <input type="text" id="f-autor" value="${esc(item?.autor || '')}" placeholder="Autor(a)">
         </div>
@@ -1073,6 +1077,7 @@ async function livrosSalvar(id) {
   if (!title) { toast('Título é obrigatório', true); return; }
   const body = {
     title,
+    title_en: document.getElementById('f-title-en').value.trim() || null,
     autor:  document.getElementById('f-autor').value.trim() || null,
     ano:    parseInt(document.getElementById('f-ano').value) || null,
     status: document.getElementById('tog-status').classList.contains('on') ? 'published' : 'draft',
