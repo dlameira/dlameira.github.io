@@ -1086,6 +1086,14 @@ function livrosFormNovo(item = null) {
           <label>CAPA (designer)</label>
           <input type="text" id="f-capista" value="${esc(item?.capista || '')}" placeholder="Nome do(a) capista">
         </div>
+        <div class="field">
+          <label>ARTE DE CAPA</label>
+          <input type="text" id="f-arte-de-capa" value="${esc(item?.arte_de_capa || '')}" placeholder="Artista da capa">
+        </div>
+        <div class="field">
+          <label>ARTES INTERNAS</label>
+          <input type="text" id="f-artes-internas" value="${esc(item?.artes_internas || '')}" placeholder="Artista do miolo">
+        </div>
         <div class="field full">
           <label>SINOPSE</label>
           <textarea id="f-sinopse" rows="5" placeholder="Texto da sinopse…" style="width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--fg);padding:10px;font-family:var(--f-body);font-size:14px;resize:vertical;">${esc(item?.sinopse || '')}</textarea>
@@ -1127,9 +1135,11 @@ async function livrosSalvar(id) {
     isbn_fisico: document.getElementById('f-isbn-fisico').value.trim() || null,
     isbn_ebook:  document.getElementById('f-isbn-ebook').value.trim() || null,
     link_compra: document.getElementById('f-link-compra').value.trim() || null,
-    tradutor:    document.getElementById('f-tradutor').value.trim() || null,
-    capista:     document.getElementById('f-capista').value.trim() || null,
-    sinopse:     document.getElementById('f-sinopse').value.trim() || null,
+    tradutor:      document.getElementById('f-tradutor').value.trim() || null,
+    capista:       document.getElementById('f-capista').value.trim() || null,
+    arte_de_capa:  document.getElementById('f-arte-de-capa').value.trim() || null,
+    artes_internas: document.getElementById('f-artes-internas').value.trim() || null,
+    sinopse:       document.getElementById('f-sinopse').value.trim() || null,
     status:      document.getElementById('tog-status').classList.contains('on') ? 'published' : 'draft',
   };
   const covId = document.getElementById('cover-id').value;
