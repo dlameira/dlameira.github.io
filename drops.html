@@ -312,7 +312,9 @@ function renderDrops(drops) {
     a.className = `drop-card r${delay}`;
     a.dataset.type = drop.type || 'livro';
 
-    const imgSrc = drop.cover ? directusImgSquare(drop.cover, px(260)) : null;
+    const imgSrc = drop.thumbnail
+      ? directusImg(drop.thumbnail, px(260))
+      : drop.cover ? directusImgSquare(drop.cover, px(260)) : null;
     const coverHtml = imgSrc
       ? `<img src="${imgSrc}" alt="${drop.title || ''}">`
       : `<div class="drop-cover-bg">${typeLabel(drop.type)}</div>`;
@@ -366,7 +368,7 @@ function initObserver() {
 
 async function init() {
   try {
-    const res = await fetch(`${DIRECTUS}/items/drops?filter[status][_eq]=published&sort[]=order&limit=200&fields=id,title,author,type,cover,note`);
+    const res = await fetch(`${DIRECTUS}/items/drops?filter[status][_eq]=published&sort[]=order&limit=200&fields=id,title,author,type,cover,thumbnail,note`);
     const data = await res.json();
     allDrops = data.data || [];
   } catch(e) { allDrops = []; }

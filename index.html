@@ -669,7 +669,9 @@ function renderDrops(drops) {
     a.href = `drop.html?id=${drop.id}`;
     a.className = `drop-card r${delay}`;
     a.dataset.type = drop.type || 'livro';
-    const coverUrl  = drop.cover ? directusImgSquare(drop.cover, px(260)) : null;
+    const coverUrl  = drop.thumbnail
+      ? directusImg(drop.thumbnail, px(260))
+      : drop.cover ? directusImgSquare(drop.cover, px(260)) : null;
     const coverHtml = coverUrl
       ? `<img src="${coverUrl}" alt="${drop.title}" style="width:100%;height:100%;object-fit:cover;">`
       : `<div class="drop-cover-bg">${drop.type || ''}</div>`;
