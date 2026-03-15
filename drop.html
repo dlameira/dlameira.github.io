@@ -114,6 +114,12 @@ nav {
 .drop-cover-placeholder.type-album   { background: #08121a; aspect-ratio: 1; }
 .drop-cover-placeholder.type-podcast { background: #120a1a; aspect-ratio: 1; }
 .drop-cover-placeholder.type-film    { background: #0a1a0a; aspect-ratio: 16/10; }
+.drop-cover-placeholder.type-musica  { background: #081a1a; }
+.drop-cover-placeholder.type-video   { background: #1a0c00; aspect-ratio: 16/10; }
+.drop-cover-placeholder.type-canal   { background: #1a0404; aspect-ratio: 16/10; }
+.drop-cover-placeholder.type-jogo    { background: #0a1a04; aspect-ratio: 1; }
+.drop-cover-placeholder.type-artista { background: #1a0410; }
+.drop-cover-placeholder.type-ensaio  { background: #14120a; }
 
 .drop-header-info {
   display: flex;
@@ -135,6 +141,12 @@ nav {
 .drop-type-badge.type-album   { color: var(--green);  border: 1px solid var(--green);  }
 .drop-type-badge.type-podcast { color: var(--purple); border: 1px solid var(--purple); }
 .drop-type-badge.type-film    { color: var(--blue);   border: 1px solid var(--blue);   }
+.drop-type-badge.type-musica  { color: #00ccff; border: 1px solid #00ccff; }
+.drop-type-badge.type-video   { color: #ff6600; border: 1px solid #ff6600; }
+.drop-type-badge.type-canal   { color: #ff2020; border: 1px solid #ff2020; }
+.drop-type-badge.type-jogo    { color: #7dff4f; border: 1px solid #7dff4f; }
+.drop-type-badge.type-artista { color: #ff44bb; border: 1px solid #ff44bb; }
+.drop-type-badge.type-ensaio  { color: #e0c090; border: 1px solid #e0c090; }
 
 .drop-detail-title {
   font-family: var(--f-title);
@@ -150,6 +162,9 @@ nav {
   text-transform: uppercase;
   color: rgba(232,232,216,0.4);
 }
+
+.drop-author-link { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(232,232,216,0.2); transition: border-color 0.15s, color 0.15s; }
+.drop-author-link:hover { color: var(--fg); border-color: var(--fg); }
 
 .drop-detail-note {
   font-family: var(--f-body);
@@ -237,11 +252,17 @@ nav {
   transition: all 0.15s;
 }
 .sidebar-filter-btn:hover { border-color: var(--red); color: var(--red); }
-.sidebar-filter-btn[data-type="all"].active    { border-color: var(--fg);     color: var(--fg); }
-.sidebar-filter-btn[data-type="book"].active   { border-color: var(--yellow); color: var(--yellow); }
-.sidebar-filter-btn[data-type="album"].active  { border-color: var(--green);  color: var(--green); }
-.sidebar-filter-btn[data-type="podcast"].active{ border-color: var(--purple); color: var(--purple); }
-.sidebar-filter-btn[data-type="film"].active   { border-color: var(--blue);   color: var(--blue); }
+.sidebar-filter-btn[data-type="all"].active     { border-color: var(--fg);     color: var(--fg); }
+.sidebar-filter-btn[data-type="book"].active    { border-color: var(--yellow); color: var(--yellow); }
+.sidebar-filter-btn[data-type="album"].active   { border-color: var(--green);  color: var(--green); }
+.sidebar-filter-btn[data-type="podcast"].active { border-color: var(--purple); color: var(--purple); }
+.sidebar-filter-btn[data-type="film"].active    { border-color: var(--blue);   color: var(--blue); }
+.sidebar-filter-btn[data-type="musica"].active  { border-color: #00ccff; color: #00ccff; }
+.sidebar-filter-btn[data-type="video"].active   { border-color: #ff6600; color: #ff6600; }
+.sidebar-filter-btn[data-type="canal"].active   { border-color: #ff2020; color: #ff2020; }
+.sidebar-filter-btn[data-type="jogo"].active    { border-color: #7dff4f; color: #7dff4f; }
+.sidebar-filter-btn[data-type="artista"].active { border-color: #ff44bb; color: #ff44bb; }
+.sidebar-filter-btn[data-type="ensaio"].active  { border-color: #e0c090; color: #e0c090; }
 
 /* lista de drops na sidebar */
 .sidebar-drop-list {
@@ -289,6 +310,12 @@ nav {
 .sidebar-drop-thumb-placeholder.type-album   { background: #08121a; }
 .sidebar-drop-thumb-placeholder.type-podcast { background: #120a1a; }
 .sidebar-drop-thumb-placeholder.type-film    { background: #0a1a0a; }
+.sidebar-drop-thumb-placeholder.type-musica  { background: #081a1a; }
+.sidebar-drop-thumb-placeholder.type-video   { background: #1a0c00; }
+.sidebar-drop-thumb-placeholder.type-canal   { background: #1a0404; }
+.sidebar-drop-thumb-placeholder.type-jogo    { background: #0a1a04; }
+.sidebar-drop-thumb-placeholder.type-artista { background: #1a0410; }
+.sidebar-drop-thumb-placeholder.type-ensaio  { background: #14120a; }
 
 .sidebar-drop-info {}
 .sidebar-drop-title {
@@ -389,18 +416,18 @@ function directusImg(id, width) {
   return `${DIRECTUS}/assets/${id}?${width ? 'width=' + width + '&' : ''}quality=90&format=webp&transforms=${transforms}`;
 }
 
-// Mapeia tipos do Directus (português) para classes CSS (inglês)
+// Mapeia tipos do Directus (português) para classes CSS
 function typeClass(type) {
-  const map = { livro: 'book', album: 'album', podcast: 'podcast', filme: 'film', outro: 'book' };
+  const map = { livro: 'book', album: 'album', podcast: 'podcast', filme: 'film', outro: 'book', musica: 'musica', video: 'video', canal: 'canal', jogo: 'jogo', artista: 'artista', ensaio: 'ensaio' };
   return 'type-' + (map[type] || 'book');
 }
 
 function typeLabel(type) {
-  const map = { livro: 'Livro', album: 'Álbum', podcast: 'Podcast', filme: 'Filme', outro: 'Outro' };
+  const map = { livro: 'Livro', album: 'Álbum', podcast: 'Podcast', filme: 'Filme', outro: 'Outro', musica: 'Música', video: 'Vídeo', canal: 'Canal', jogo: 'Jogo', artista: 'Artista', ensaio: 'Ensaio' };
   return map[type] || type || '';
 }
 
-const TYPE_LABELS = { all: 'Todos', livro: 'Livros', album: 'Álbuns', podcast: 'Podcasts', filme: 'Filmes', outro: 'Outros' };
+const TYPE_LABELS = { all: 'Todos', livro: 'Livros', album: 'Álbuns', podcast: 'Podcasts', filme: 'Filmes', outro: 'Outros', musica: 'Músicas', video: 'Vídeos', canal: 'Canais', jogo: 'Jogos', artista: 'Artistas', ensaio: 'Ensaios' };
 
 let allDrops = [];
 let currentId = '';
@@ -476,7 +503,7 @@ async function loadDrop() {
   }
 
   try {
-    const res = await fetch(`${DIRECTUS}/items/drops/${currentId}`);
+    const res = await fetch(`${DIRECTUS}/items/drops/${currentId}?fields=*,colaboradores.papel,colaboradores.colaboradores_id.name,colaboradores.colaboradores_id.website`);
     if (!res.ok) throw new Error('not found');
     const data = await res.json();
     const drop = data.data;
@@ -497,13 +524,24 @@ async function loadDrop() {
       ? `<img src="${directusImg(drop.cover, 400)}" alt="${drop.title || ''}" class="drop-cover-img">`
       : `<div class="drop-cover-placeholder ${tc}">${typeLabel(drop.type)}</div>`;
 
+    // Autor: colaboradores M2M com fallback para campo texto
+    const colabs = drop.colaboradores || [];
+    const authorHtml = colabs.length > 0
+      ? colabs.map(c => {
+          const p = c.colaboradores_id || {};
+          return p.name
+            ? (p.website ? `<a href="${p.website}" target="_blank" rel="noopener" class="drop-author-link">${p.name}</a>` : p.name)
+            : '';
+        }).filter(Boolean).join(', ')
+      : (drop.author || '');
+
     document.getElementById('drop-content').innerHTML = `
       <div class="drop-header">
         <div class="drop-cover-large">${coverEl}</div>
         <div class="drop-header-info">
           <span class="drop-type-badge ${tc}">${typeLabel(drop.type)}</span>
           <h1 class="drop-detail-title">${(drop.title || '').toUpperCase()}</h1>
-          <div class="drop-detail-author">${drop.author || ''}</div>
+          <div class="drop-detail-author">${authorHtml}</div>
           ${externalBtn}
         </div>
       </div>

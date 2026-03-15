@@ -100,12 +100,18 @@ nav {
   transition: all 0.15s;
 }
 .filter-btn:hover { border-color: var(--red); color: var(--red); }
-.filter-btn[data-type="all"].active     { border-color: var(--fg); color: var(--fg); }
+.filter-btn[data-type="all"].active     { border-color: var(--fg);     color: var(--fg); }
 .filter-btn[data-type="livro"].active   { border-color: var(--yellow); color: var(--yellow); }
-.filter-btn[data-type="album"].active   { border-color: var(--green); color: var(--green); }
+.filter-btn[data-type="album"].active   { border-color: var(--green);  color: var(--green); }
 .filter-btn[data-type="podcast"].active { border-color: var(--purple); color: var(--purple); }
-.filter-btn[data-type="filme"].active   { border-color: var(--blue); color: var(--blue); }
-.filter-btn[data-type="outro"].active   { border-color: var(--fg); color: var(--fg); }
+.filter-btn[data-type="filme"].active   { border-color: var(--blue);   color: var(--blue); }
+.filter-btn[data-type="outro"].active   { border-color: var(--fg);     color: var(--fg); }
+.filter-btn[data-type="musica"].active  { border-color: #00ccff; color: #00ccff; }
+.filter-btn[data-type="video"].active   { border-color: #ff6600; color: #ff6600; }
+.filter-btn[data-type="canal"].active   { border-color: #ff2020; color: #ff2020; }
+.filter-btn[data-type="jogo"].active    { border-color: #7dff4f; color: #7dff4f; }
+.filter-btn[data-type="artista"].active { border-color: #ff44bb; color: #ff44bb; }
+.filter-btn[data-type="ensaio"].active  { border-color: #e0c090; color: #e0c090; }
 
 /* GRID */
 .drops-wrap {
@@ -134,11 +140,23 @@ nav {
 .drop-card[data-type="podcast"] .drop-cover-bg { background: #120a1a; }
 .drop-card[data-type="filme"]   .drop-cover-bg { background: #0a1a0a; }
 .drop-card[data-type="outro"]   .drop-cover-bg { background: #111109; }
+.drop-card[data-type="musica"]  .drop-cover-bg { background: #081a1a; }
+.drop-card[data-type="video"]   .drop-cover-bg { background: #1a0c00; }
+.drop-card[data-type="canal"]   .drop-cover-bg { background: #1a0404; }
+.drop-card[data-type="jogo"]    .drop-cover-bg { background: #0a1a04; }
+.drop-card[data-type="artista"] .drop-cover-bg { background: #1a0410; }
+.drop-card[data-type="ensaio"]  .drop-cover-bg { background: #14120a; }
 .drop-card[data-type="livro"]   .drop-type-badge { color: var(--yellow); border: 1px solid var(--yellow); }
 .drop-card[data-type="album"]   .drop-type-badge { color: var(--green);  border: 1px solid var(--green);  }
 .drop-card[data-type="podcast"] .drop-type-badge { color: var(--purple); border: 1px solid var(--purple); }
 .drop-card[data-type="filme"]   .drop-type-badge { color: var(--blue);   border: 1px solid var(--blue);   }
 .drop-card[data-type="outro"]   .drop-type-badge { color: var(--fg);     border: 1px solid rgba(232,232,216,0.3); }
+.drop-card[data-type="musica"]  .drop-type-badge { color: #00ccff; border: 1px solid #00ccff; }
+.drop-card[data-type="video"]   .drop-type-badge { color: #ff6600; border: 1px solid #ff6600; }
+.drop-card[data-type="canal"]   .drop-type-badge { color: #ff2020; border: 1px solid #ff2020; }
+.drop-card[data-type="jogo"]    .drop-type-badge { color: #7dff4f; border: 1px solid #7dff4f; }
+.drop-card[data-type="artista"] .drop-type-badge { color: #ff44bb; border: 1px solid #ff44bb; }
+.drop-card[data-type="ensaio"]  .drop-type-badge { color: #e0c090; border: 1px solid #e0c090; }
 .drop-info { padding: 14px; display: flex; flex-direction: column; gap: 4px; }
 .drop-title { font-family: var(--f-ui); font-size: 12.5px; font-weight: 700; line-height: 1.2; }
 .drop-author { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.08em; color: rgba(232,232,216,0.35); text-transform: uppercase; }
@@ -216,7 +234,7 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
 <header class="page-header">
   <div class="page-header-inner">
     <h1 class="page-title r">DROPS</h1>
-    <p class="page-desc r d1">livros, álbuns, podcasts e filmes que valem a pena</p>
+    <p class="page-desc r d1">livros, álbuns, filmes, jogos e tudo mais que vale a pena</p>
   </div>
 </header>
 
@@ -262,11 +280,11 @@ function px(cssMax) { return Math.round(cssMax * (window.devicePixelRatio || 1))
 }
 
 function typeLabel(type) {
-  const map = { livro: 'Livro', album: 'Álbum', podcast: 'Podcast', filme: 'Filme', outro: 'Outro' };
+  const map = { livro: 'Livro', album: 'Álbum', podcast: 'Podcast', filme: 'Filme', outro: 'Outro', musica: 'Música', video: 'Vídeo', canal: 'Canal', jogo: 'Jogo', artista: 'Artista', ensaio: 'Ensaio' };
   return map[type] || type || '';
 }
 
-const TYPE_LABELS = { all: 'Todos', livro: 'Livros', album: 'Álbuns', podcast: 'Podcasts', filme: 'Filmes', outro: 'Outros' };
+const TYPE_LABELS = { all: 'Todos', livro: 'Livros', album: 'Álbuns', podcast: 'Podcasts', filme: 'Filmes', outro: 'Outros', musica: 'Músicas', video: 'Vídeos', canal: 'Canais', jogo: 'Jogos', artista: 'Artistas', ensaio: 'Ensaios' };
 
 let allDrops = [];
 let activeType = 'all';

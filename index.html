@@ -82,6 +82,12 @@ nav {
 .float-img[data-type="album"]    .cover-label { background: var(--green);  color: var(--bg); }
 .float-img[data-type="podcast"]  .cover-label { background: var(--purple); color: var(--fg); }
 .float-img[data-type="film"]     .cover-label { background: var(--blue);   color: var(--fg); }
+.float-img[data-type="musica"]   .cover-label { background: #00ccff; color: var(--bg); }
+.float-img[data-type="video"]    .cover-label { background: #ff6600; color: var(--fg); }
+.float-img[data-type="canal"]    .cover-label { background: #ff2020; color: var(--fg); }
+.float-img[data-type="jogo"]     .cover-label { background: #7dff4f; color: var(--bg); }
+.float-img[data-type="artista"]  .cover-label { background: #ff44bb; color: var(--fg); }
+.float-img[data-type="ensaio"]   .cover-label { background: #e0c090; color: var(--bg); }
 .float-img[data-type="directed"] .cover-label { background: var(--yellow); color: var(--bg); }
 .float-img[data-type="visual"]   .cover-label { background: var(--purple); color: var(--fg); }
 .float-img:hover .cover-label { opacity: 1; }
@@ -94,6 +100,12 @@ nav {
 .float-img[data-type="album"]    { border-color: var(--green);  aspect-ratio: 1/1; }
 .float-img[data-type="podcast"]  { border-color: var(--purple); aspect-ratio: 1/1; }
 .float-img[data-type="film"]     { border-color: var(--blue);   aspect-ratio: 2/3; }
+.float-img[data-type="musica"]   { border-color: #00ccff; aspect-ratio: 1/1; }
+.float-img[data-type="video"]    { border-color: #ff6600; aspect-ratio: 16/9; }
+.float-img[data-type="canal"]    { border-color: #ff2020; aspect-ratio: 16/9; }
+.float-img[data-type="jogo"]     { border-color: #7dff4f; aspect-ratio: 1/1; }
+.float-img[data-type="artista"]  { border-color: #ff44bb; aspect-ratio: 2/3; }
+.float-img[data-type="ensaio"]   { border-color: #e0c090; aspect-ratio: 2/3; }
 .float-img[data-type="directed"] { border-color: var(--yellow); aspect-ratio: 2/3; }
 .float-img[data-type="visual"]   { border-color: var(--purple); aspect-ratio: 4/3; }
 
@@ -153,14 +165,26 @@ nav {
 .drop-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .drop-card[data-type="book"] .drop-cover img { object-fit: contain; }
 .drop-type-badge { position: absolute; top: 8px; left: 8px; font-family: var(--f-ui); font-size: 7.5px; letter-spacing: 0.16em; text-transform: uppercase; padding: 3px 6px; }
-.drop-card[data-type="book"]    .drop-cover-bg { background: #1a1208; }
+.drop-card[data-type="livro"]   .drop-cover-bg { background: #1a1208; }
 .drop-card[data-type="album"]   .drop-cover-bg { background: #08121a; }
 .drop-card[data-type="podcast"] .drop-cover-bg { background: #120a1a; }
-.drop-card[data-type="film"]    .drop-cover-bg { background: #0a1a0a; }
-.drop-card[data-type="book"]    .drop-type-badge { color: var(--yellow); border: 1px solid var(--yellow); }
+.drop-card[data-type="filme"]   .drop-cover-bg { background: #0a1a0a; }
+.drop-card[data-type="musica"]  .drop-cover-bg { background: #081a1a; }
+.drop-card[data-type="video"]   .drop-cover-bg { background: #1a0c00; }
+.drop-card[data-type="canal"]   .drop-cover-bg { background: #1a0404; }
+.drop-card[data-type="jogo"]    .drop-cover-bg { background: #0a1a04; }
+.drop-card[data-type="artista"] .drop-cover-bg { background: #1a0410; }
+.drop-card[data-type="ensaio"]  .drop-cover-bg { background: #14120a; }
+.drop-card[data-type="livro"]   .drop-type-badge { color: var(--yellow); border: 1px solid var(--yellow); }
 .drop-card[data-type="album"]   .drop-type-badge { color: var(--green);  border: 1px solid var(--green);  }
 .drop-card[data-type="podcast"] .drop-type-badge { color: var(--purple); border: 1px solid var(--purple); }
-.drop-card[data-type="film"]    .drop-type-badge { color: var(--blue);   border: 1px solid var(--blue);   }
+.drop-card[data-type="filme"]   .drop-type-badge { color: var(--blue);   border: 1px solid var(--blue);   }
+.drop-card[data-type="musica"]  .drop-type-badge { color: #00ccff; border: 1px solid #00ccff; }
+.drop-card[data-type="video"]   .drop-type-badge { color: #ff6600; border: 1px solid #ff6600; }
+.drop-card[data-type="canal"]   .drop-type-badge { color: #ff2020; border: 1px solid #ff2020; }
+.drop-card[data-type="jogo"]    .drop-type-badge { color: #7dff4f; border: 1px solid #7dff4f; }
+.drop-card[data-type="artista"] .drop-type-badge { color: #ff44bb; border: 1px solid #ff44bb; }
+.drop-card[data-type="ensaio"]  .drop-type-badge { color: #e0c090; border: 1px solid #e0c090; }
 .drop-info { padding: 14px; display: flex; flex-direction: column; gap: 4px; }
 .drop-title { font-family: var(--f-ui); font-size: 12.5px; font-weight: 700; line-height: 1.2; }
 .drop-author { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.08em; color: rgba(232,232,216,0.35); text-transform: uppercase; }
@@ -695,9 +719,10 @@ function renderHeroFloats(drops, livros, obras) {
   const floats = document.querySelectorAll('.float-img');
   if (!floats.length) return;
 
-  const typeMap = { livro: 'book', album: 'album', podcast: 'podcast', filme: 'film' };
+  const typeMap = { livro: 'book', album: 'album', podcast: 'podcast', filme: 'film', musica: 'musica', video: 'video', canal: 'canal', jogo: 'jogo', artista: 'artista', ensaio: 'ensaio' };
   const typeLabels = {
     book: 'LIVRO', album: 'ÁLBUM', podcast: 'PODCAST', film: 'FILME',
+    musica: 'MÚSICA', video: 'VÍDEO', canal: 'CANAL', jogo: 'JOGO', artista: 'ARTISTA', ensaio: 'ENSAIO',
     directed: 'LIVRO QUE DIRIGI', visual: 'OBRA VISUAL'
   };
 

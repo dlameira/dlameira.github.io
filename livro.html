@@ -177,6 +177,9 @@ nav {
   color: rgba(232,232,216,0.55);
 }
 
+.colab-link { color: var(--yellow); text-decoration: none; border-bottom: 1px solid rgba(242,224,74,0.3); transition: border-color 0.15s; }
+.colab-link:hover { border-color: var(--yellow); }
+
 .livro-buy-btn {
   display: inline-flex;
   align-items: center;
@@ -319,7 +322,7 @@ function directusImg(id, width) {
 }
 
 async function fetchLivro(id) {
-  const res = await fetch(`${DIRECTUS}/items/livros/${id}`);
+  const res = await fetch(`${DIRECTUS}/items/livros/${id}?fields=*,colaboradores.papel,colaboradores.colaboradores_id.name,colaboradores.colaboradores_id.website`);
   const data = await res.json();
   return data.data;
 }
@@ -347,12 +350,40 @@ function formatMeta(livro) {
     </div>`).join('');
 }
 
+const PAPEL_LABEL = { tradutor: 'Tradução', capista: 'Capa', arte_de_capa: 'Arte de capa', artes_internas: 'Artes internas', autor: 'Autor' };
+
+function colabLink(c) {
+  const p = c.colaboradores_id || {};
+  if (!p.name) return '';
+  return p.website
+    ? `<a href="${p.website}" target="_blank" rel="noopener" class="colab-link">${p.name}</a>`
+    : p.name;
+}
+
 function formatFichaTecnica(livro) {
-  const items = [];
-  if (livro.tradutor)       items.push({ label: 'Tradução',       val: livro.tradutor });
-  if (livro.capista)        items.push({ label: 'Capa',           val: livro.capista });
-  if (livro.arte_de_capa)   items.push({ label: 'Arte de capa',   val: livro.arte_de_capa });
-  if (livro.artes_internas) items.push({ label: 'Artes internas', val: livro.artes_internas });
+  const colabs = livro.colaboradores || [];
+  let items = [];
+
+  if (colabs.length > 0) {
+    // Agrupar por papel
+    const byPapel = {};
+    colabs.forEach(c => {
+      const p = c.papel || 'colaborador';
+      if (!byPapel[p]) byPapel[p] = [];
+      byPapel[p].push(c);
+    });
+    items = Object.entries(byPapel).map(([papel, cs]) => ({
+      label: PAPEL_LABEL[papel] || papel,
+      val: cs.map(colabLink).filter(Boolean).join(', ')
+    }));
+  } else {
+    // Fallback: campos texto antigos
+    if (livro.tradutor)       items.push({ label: 'Tradução',       val: livro.tradutor });
+    if (livro.capista)        items.push({ label: 'Capa',           val: livro.capista });
+    if (livro.arte_de_capa)   items.push({ label: 'Arte de capa',   val: livro.arte_de_capa });
+    if (livro.artes_internas) items.push({ label: 'Artes internas', val: livro.artes_internas });
+  }
+
   if (items.length === 0) return '';
   return `
     <div style="padding-top:16px;border-top:1px solid rgba(232,50,10,0.12);">
