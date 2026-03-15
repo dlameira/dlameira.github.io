@@ -377,6 +377,11 @@ label { font-size: 11px; color: var(--fg2); letter-spacing: 0.05em; display: blo
         ESCRITOS
         <span class="count" id="count-escritos">—</span>
       </div>
+      <div class="sidebar-item" data-view="colaboradores" onclick="navigate('colaboradores')">
+        <div class="dot" style="background:#ff44bb"></div>
+        COLABORADORES
+        <span class="count" id="count-colaboradores">—</span>
+      </div>
     </nav>
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="sidebar-user"></div>
@@ -551,10 +556,11 @@ function navigate(view) {
   });
   const titles = {
     dashboard: 'DASHBOARD', drops: 'DROPS',
-    livros: 'LIVROS QUE DIRIGI', obras: 'OBRAS VISUAIS', escritos: 'ESCRITOS'
+    livros: 'LIVROS QUE DIRIGI', obras: 'OBRAS VISUAIS', escritos: 'ESCRITOS',
+    colaboradores: 'COLABORADORES'
   };
   document.getElementById('topbar-title').textContent = titles[view] || view.toUpperCase();
-  const views = { dashboard: renderDashboard, drops: renderDrops, livros: renderLivros, obras: renderObras, escritos: renderEscritos };
+  const views = { dashboard: renderDashboard, drops: renderDrops, livros: renderLivros, obras: renderObras, escritos: renderEscritos, colaboradores: renderColaboradores };
   if (views[view]) views[view]();
 }
 
@@ -568,7 +574,7 @@ function showApp() {
 
 async function loadCounts() {
   try {
-    const colls = ['drops', 'livros', 'obras', 'escritos'];
+    const colls = ['drops', 'livros', 'obras', 'escritos', 'colaboradores'];
     const results = await Promise.allSettled(colls.map(c =>
       api('GET', `/items/${c}?aggregate[count]=*&filter[status][_eq]=published`)
     ));
@@ -1666,6 +1672,128 @@ function videoDrop(event) {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
+
+// ── COLABORADORES ─────────────────────────────────────────────────────────────
+
+let colaboradoresData = [];
+
+async function renderColaboradores() {
+  document.getElementById('topbar-actions').innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="renderColaboradores()">↺ ATUALIZAR</button>`;
+  const content = document.getElementById('content');
+  content.innerHTML = `
+    <div class="tabs">
+      <div class="tab active" id="tab-colab-lista" onclick="colaboradoresTab('lista')">LISTA</div>
+      <div class="tab" id="tab-colab-novo" onclick="colaboradoresTab('novo')">+ NOVO</div>
+    </div>
+    <div id="colab-panel"></div>`;
+  await colaboradoresCarregarLista();
+}
+
+function colaboradoresTab(tab) {
+  document.querySelectorAll('[id^="tab-colab-"]').forEach(t => t.classList.remove('active'));
+  document.getElementById(`tab-colab-${tab}`).classList.add('active');
+  if (tab === 'lista') colaboradoresCarregarLista();
+  else if (tab === 'novo') colaboradoresFormNovo();
+}
+
+async function colaboradoresCarregarLista() {
+  const panel = document.getElementById('colab-panel');
+  panel.innerHTML = '<div class="loading"><span class="spinner"></span>CARREGANDO…</div>';
+  try {
+    const res = await api('GET', '/items/colaboradores?sort[]=name&limit=500&fields=id,name,website,status');
+    colaboradoresData = res.data || [];
+    if (!colaboradoresData.length) {
+      panel.innerHTML = `<div class="empty"><div class="empty-icon">◌</div><h3>Nenhum colaborador ainda</h3></div>`;
+      return;
+    }
+    panel.innerHTML = `
+      <table class="items-table">
+        <thead><tr>
+          <th>NOME</th>
+          <th>WEBSITE</th>
+          <th>STATUS</th>
+          <th style="width:120px"></th>
+        </tr></thead>
+        <tbody>
+          ${colaboradoresData.map(c => `
+            <tr>
+              <td>${esc(c.name || '—')}</td>
+              <td style="color:var(--fg2)">${c.website ? `<a href="${esc(c.website)}" target="_blank" style="color:var(--fg2);border-bottom:1px solid rgba(232,232,216,0.2)">${esc(c.website)}</a>` : '—'}</td>
+              <td><span class="badge ${c.status === 'published' ? 'badge-published' : 'badge-draft'}">${c.status === 'published' ? 'publicado' : 'rascunho'}</span></td>
+              <td class="row-actions">
+                <button class="btn btn-ghost btn-sm" onclick="colaboradoresEditar(${c.id})">EDITAR</button>
+                <button class="btn btn-danger btn-sm" onclick="colaboradoresDeletar(${c.id},'${esc(c.name)}')">✕</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) {
+    panel.innerHTML = `<div class="empty"><div class="empty-icon">⚠</div><h3>Erro</h3><p>${e.message}</p></div>`;
+  }
+}
+
+function colaboradoresFormNovo(item = null) {
+  const panel = document.getElementById('colab-panel');
+  panel.innerHTML = `
+    <div style="max-width:480px">
+      <div class="form-grid">
+        <div class="field full">
+          <label>NOME *</label>
+          <input type="text" id="f-name" value="${esc(item?.name || '')}" placeholder="Nome completo">
+        </div>
+        <div class="field full">
+          <label>WEBSITE</label>
+          <input type="url" id="f-website" value="${esc(item?.website || '')}" placeholder="https://…">
+        </div>
+        <div class="field">
+          <div class="toggle-wrap" onclick="toggleEl('tog-status')" style="padding-top:18px">
+            <div class="toggle ${item?.status === 'published' ? 'on' : ''}" id="tog-status"></div>
+            <span class="toggle-label">PUBLICADO</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:24px">
+        <button class="btn btn-primary" onclick="colaboradoresSalvar(${item?.id || 'null'})" style="background:#ff44bb">${item ? 'SALVAR' : 'CRIAR COLABORADOR'}</button>
+        <button class="btn btn-ghost" onclick="colaboradoresTab('lista')">CANCELAR</button>
+      </div>
+    </div>`;
+}
+
+async function colaboradoresEditar(id) {
+  const item = colaboradoresData.find(c => c.id === id);
+  if (!item) return;
+  colaboradoresTab('novo');
+  document.getElementById('tab-colab-novo').textContent = 'EDITAR';
+  colaboradoresFormNovo(item);
+}
+
+async function colaboradoresSalvar(id) {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { toast('Nome é obrigatório', true); return; }
+  const body = {
+    name,
+    website: document.getElementById('f-website').value.trim() || null,
+    status:  document.getElementById('tog-status').classList.contains('on') ? 'published' : 'draft',
+  };
+  try {
+    if (id) await api('PATCH', `/items/colaboradores/${id}`, body);
+    else    await api('POST',  '/items/colaboradores', body);
+    toast(id ? 'Colaborador atualizado!' : 'Colaborador criado!');
+    colaboradoresTab('lista');
+    loadCounts();
+  } catch(e) { toast('Erro: ' + e.message, true); }
+}
+
+async function colaboradoresDeletar(id, name) {
+  if (!confirm(`Deletar "${name}"?`)) return;
+  try {
+    await api('DELETE', `/items/colaboradores/${id}`);
+    toast('Colaborador deletado.');
+    colaboradoresCarregarLista();
+    loadCounts();
+  } catch(e) { toast('Erro: ' + e.message, true); }
+}
 
 (async () => {
   if (token) {
