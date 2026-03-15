@@ -277,7 +277,6 @@ function directusImg(id, width) {
   return `${DIRECTUS}/assets/${id}?${width ? 'width=' + width + '&' : ''}quality=90&format=webp&transforms=${transforms}`;
 }
 function px(cssMax) { return Math.round(cssMax * (window.devicePixelRatio || 1)); }
-}
 
 function typeLabel(type) {
   const map = { livro: 'Livro', album: 'Álbum', podcast: 'Podcast', filme: 'Filme', outro: 'Outro', musica: 'Música', video: 'Vídeo', canal: 'Canal', jogo: 'Jogo', artista: 'Artista', ensaio: 'Ensaio' };
