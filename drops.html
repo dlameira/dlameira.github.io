@@ -276,6 +276,11 @@ function directusImg(id, width) {
   const transforms = encodeURIComponent(JSON.stringify([['sharpen']]));
   return `${DIRECTUS}/assets/${id}?${width ? 'width=' + width + '&' : ''}quality=90&format=webp&transforms=${transforms}`;
 }
+function directusImgSquare(id, size) {
+  if (!id) return null;
+  const transforms = encodeURIComponent(JSON.stringify([['sharpen']]));
+  return `${DIRECTUS}/assets/${id}?fit=cover&width=${size}&height=${size}&quality=90&format=webp&transforms=${transforms}`;
+}
 function px(cssMax) { return Math.round(cssMax * (window.devicePixelRatio || 1)); }
 
 function typeLabel(type) {
@@ -307,7 +312,7 @@ function renderDrops(drops) {
     a.className = `drop-card r${delay}`;
     a.dataset.type = drop.type || 'livro';
 
-    const imgSrc = drop.cover ? directusImg(drop.cover, px(260)) : null;
+    const imgSrc = drop.cover ? directusImgSquare(drop.cover, px(260)) : null;
     const coverHtml = imgSrc
       ? `<img src="${imgSrc}" alt="${drop.title || ''}">`
       : `<div class="drop-cover-bg">${typeLabel(drop.type)}</div>`;

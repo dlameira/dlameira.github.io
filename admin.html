@@ -717,6 +717,19 @@ function dropsFormNovo(item = null) {
           </div>
           <input type="hidden" id="cover-id" value="${item?.cover || ''}">
         </div>
+        <div class="field full" id="focal-field" style="${item?.cover ? '' : 'display:none'}">
+          <label>CROP / PONTO FOCAL</label>
+          <div style="border:1px solid rgba(232,232,216,0.15);padding:12px;background:var(--bg3);border-radius:2px">
+            <div style="font-size:10px;color:var(--fg2);margin-bottom:8px">Clique na imagem abaixo para definir onde o thumbnail quadrado deve focar</div>
+            <div id="focal-target" style="position:relative;display:inline-block;cursor:crosshair;outline:2px dashed rgba(232,232,216,0.2)" onclick="setFocalPoint(event)">
+              <img id="focal-img" src="${item?.cover ? directusImg(item.cover, 400) : ''}" style="max-width:280px;max-height:200px;display:block">
+              <div id="focal-dot" style="position:absolute;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 4px rgba(0,0,0,0.8);background:var(--red);transform:translate(-50%,-50%);pointer-events:none;display:none"></div>
+            </div>
+            <div id="focal-hint" style="font-size:10px;color:var(--fg2);margin-top:6px">${item?.cover ? 'Nenhum ponto focal definido' : ''}</div>
+          </div>
+          <input type="hidden" id="focal-x" value="">
+          <input type="hidden" id="focal-y" value="">
+        </div>
         <div class="field">
           <label>TÍTULO *</label>
           <input type="text" id="f-title" value="${esc(item?.title || '')}" placeholder="Nome do livro, álbum…">
@@ -728,10 +741,16 @@ function dropsFormNovo(item = null) {
         <div class="field">
           <label>TIPO *</label>
           <select id="f-type">
-            <option value="book" ${item?.type==='book'?'selected':''}>Livro</option>
-            <option value="album" ${item?.type==='album'?'selected':''}>Álbum</option>
+            <option value="livro"   ${item?.type==='livro'  ?'selected':''}>Livro</option>
+            <option value="album"   ${item?.type==='album'  ?'selected':''}>Álbum</option>
             <option value="podcast" ${item?.type==='podcast'?'selected':''}>Podcast</option>
-            <option value="film" ${item?.type==='film'?'selected':''}>Filme</option>
+            <option value="filme"   ${item?.type==='filme'  ?'selected':''}>Filme</option>
+            <option value="musica"  ${item?.type==='musica' ?'selected':''}>Música</option>
+            <option value="video"   ${item?.type==='video'  ?'selected':''}>Vídeo</option>
+            <option value="canal"   ${item?.type==='canal'  ?'selected':''}>Canal</option>
+            <option value="jogo"    ${item?.type==='jogo'   ?'selected':''}>Jogo</option>
+            <option value="artista" ${item?.type==='artista'?'selected':''}>Artista</option>
+            <option value="ensaio"  ${item?.type==='ensaio' ?'selected':''}>Ensaio</option>
           </select>
         </div>
         <div class="field">
@@ -774,6 +793,23 @@ async function dropsEditar(id) {
     dropsTab('novo');
     document.getElementById('tab-drops-novo').textContent = 'EDITAR';
     dropsFormNovo(res.data);
+    if (res.data.cover) {
+      try {
+        const fileRes = await api('GET', `/files/${res.data.cover}?fields=focal_point_x,focal_point_y`);
+        const fx = fileRes.data.focal_point_x;
+        const fy = fileRes.data.focal_point_y;
+        if (fx != null && fy != null) {
+          document.getElementById('focal-x').value = fx;
+          document.getElementById('focal-y').value = fy;
+          const dot = document.getElementById('focal-dot');
+          dot.style.left = (fx / 10) + '%';
+          dot.style.top  = (fy / 10) + '%';
+          dot.style.display = 'block';
+          const hint = document.getElementById('focal-hint');
+          if (hint) hint.textContent = `Foco salvo (${fx}, ${fy}) — clique para alterar`;
+        }
+      } catch(e) { /* non-fatal */ }
+    }
   } catch(e) { toast('Erro ao carregar drop: ' + e.message, true); }
 }
 
@@ -805,6 +841,20 @@ async function dropsSalvar(id) {
   try {
     if (id) await api('PATCH', `/items/drops/${id}`, body);
     else    await api('POST',  '/items/drops', body);
+    // Save focal point on the file if set
+    const finalCoverId = body.cover;
+    if (finalCoverId) {
+      const fxEl = document.getElementById('focal-x');
+      const fyEl = document.getElementById('focal-y');
+      if (fxEl && fyEl && fxEl.value !== '' && fyEl.value !== '') {
+        try {
+          await api('PATCH', `/files/${finalCoverId}`, {
+            focal_point_x: parseInt(fxEl.value),
+            focal_point_y: parseInt(fyEl.value),
+          });
+        } catch(e) { /* non-fatal */ }
+      }
+    }
     toast(id ? 'Drop atualizado!' : 'Drop criado!');
     dropsTab('lista');
     loadCounts();
@@ -1123,6 +1173,28 @@ function livrosFormNovo(item = null) {
             <span class="toggle-label">PUBLICADO</span>
           </div>
         </div>
+        ${item ? `
+        <div class="field full" style="margin-top:8px">
+          <label>COLABORADORES COM LINKS</label>
+          <div id="colab-list" style="margin-bottom:8px;font-size:12px;color:var(--fg2)">Carregando…</div>
+          <div id="colab-add-row" style="display:none;gap:8px;align-items:flex-end;flex-wrap:wrap">
+            <div style="flex:1;min-width:180px"><label>COLABORADOR</label><select id="colab-select"><option value="">—</option></select></div>
+            <div style="width:180px"><label>PAPEL</label><select id="colab-papel">
+              <option value="autor">Autor(a)</option>
+              <option value="tradutor">Tradução</option>
+              <option value="capista">Capa</option>
+              <option value="arte_de_capa">Arte de Capa</option>
+              <option value="artes_internas">Artes Internas</option>
+              <option value="prefacio">Prefácio</option>
+              <option value="posfacio">Posfácio</option>
+              <option value="organizacao">Organização</option>
+            </select></div>
+            <button class="btn btn-ghost btn-sm" onclick="colabAdicionar(${item.id})">ADICIONAR</button>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('colab-add-row').style.display='none'">✕</button>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="colabMostrarForm()">+ COLABORADOR</button>
+        </div>` : `
+        <div class="field full"><div style="font-size:11px;color:var(--fg2)">Colaboradores com links ficam disponíveis após salvar o livro.</div></div>`}
       </div>
       <div style="display:flex;gap:10px;margin-top:24px">
         <button class="btn btn-yellow" onclick="livrosSalvar(${item?.id || 'null'})">${item ? 'SALVAR' : 'CRIAR LIVRO'}</button>
@@ -1137,6 +1209,7 @@ async function livrosEditar(id) {
     livrosTab('novo');
     document.getElementById('tab-livros-novo').textContent = 'EDITAR';
     livrosFormNovo(res.data);
+    livrosCarregarColaboradores(id);
   } catch(e) { toast('Erro ao carregar livro: ' + e.message, true); }
 }
 
@@ -1173,10 +1246,15 @@ async function livrosSalvar(id) {
     catch(e) { toast('Erro no upload: ' + e.message, true); return; }
   }
   try {
-    if (id) await api('PATCH', `/items/livros/${id}`, body);
-    else    await api('POST',  '/items/livros', body);
-    toast(id ? 'Livro atualizado!' : 'Livro criado!');
-    livrosTab('lista');
+    if (id) {
+      await api('PATCH', `/items/livros/${id}`, body);
+      toast('Livro atualizado!');
+      livrosTab('lista');
+    } else {
+      const created = await api('POST', '/items/livros', body);
+      toast('Livro criado! Adicione colaboradores abaixo.');
+      livrosEditar(created.data.id);
+    }
     loadCounts();
   } catch(e) { toast('Erro: ' + e.message, true); }
 }
@@ -1188,6 +1266,65 @@ async function livrosDeletar(id, title) {
     toast('Livro deletado.');
     livrosCarregarLista();
     loadCounts();
+  } catch(e) { toast('Erro: ' + e.message, true); }
+}
+
+const PAPEIS = { autor:'Autor(a)', tradutor:'Tradução', capista:'Capa', arte_de_capa:'Arte de Capa', artes_internas:'Artes Internas', prefacio:'Prefácio', posfacio:'Posfácio', organizacao:'Organização' };
+
+async function livrosCarregarColaboradores(livroId) {
+  const list = document.getElementById('colab-list');
+  if (!list) return;
+  try {
+    const res = await api('GET', `/items/livros_colaboradores?filter[livros_id][_eq]=${livroId}&fields=id,papel,colaboradores_id.id,colaboradores_id.name,colaboradores_id.website&sort=id`);
+    const items = res.data || [];
+    if (!items.length) {
+      list.innerHTML = `<span style="color:var(--fg2)">Nenhum colaborador vinculado.</span>`;
+    } else {
+      list.innerHTML = items.map(r => {
+        const c = r.colaboradores_id;
+        const nome = c?.website ? `<a href="${esc(c.website)}" target="_blank" style="color:var(--fg)">${esc(c.name)}</a>` : esc(c?.name || '?');
+        const papel = PAPEIS[r.papel] || r.papel || '—';
+        return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(232,232,216,0.06)">
+          <span style="flex:1">${nome}</span>
+          <span style="color:var(--fg2);font-size:11px">${papel}</span>
+          <button class="btn btn-danger btn-sm" onclick="colabRemover(${r.id},${livroId})">✕</button>
+        </div>`;
+      }).join('');
+    }
+  } catch(e) { if(list) list.innerHTML = `<span style="color:var(--red)">Erro: ${e.message}</span>`; }
+}
+
+async function colabMostrarForm() {
+  const row = document.getElementById('colab-add-row');
+  if (!row) return;
+  row.style.display = 'flex';
+  const sel = document.getElementById('colab-select');
+  if (sel.options.length <= 1) {
+    try {
+      const res = await api('GET', '/items/colaboradores?sort=name&limit=200&fields=id,name');
+      sel.innerHTML = `<option value="">Selecione…</option>` + (res.data || []).map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+    } catch(e) { toast('Erro ao carregar colaboradores: ' + e.message, true); }
+  }
+}
+
+async function colabAdicionar(livroId) {
+  const colabId = document.getElementById('colab-select').value;
+  const papel   = document.getElementById('colab-papel').value;
+  if (!colabId) { toast('Selecione um colaborador', true); return; }
+  try {
+    await api('POST', '/items/livros_colaboradores', { livros_id: livroId, colaboradores_id: colabId, papel });
+    document.getElementById('colab-add-row').style.display = 'none';
+    await livrosCarregarColaboradores(livroId);
+    toast('Colaborador adicionado!');
+  } catch(e) { toast('Erro: ' + e.message, true); }
+}
+
+async function colabRemover(junctionId, livroId) {
+  if (!confirm('Remover colaborador?')) return;
+  try {
+    await api('DELETE', `/items/livros_colaboradores/${junctionId}`);
+    await livrosCarregarColaboradores(livroId);
+    toast('Removido.');
   } catch(e) { toast('Erro: ' + e.message, true); }
 }
 
@@ -1638,6 +1775,30 @@ function coverPreview(event, type) {
   const url = URL.createObjectURL(file);
   document.getElementById('cover-preview').innerHTML = `<img src="${url}" id="cover-img" style="max-height:120px;max-width:100%;object-fit:contain;display:block;margin:0 auto;">`;
   document.getElementById('cover-id').value = ''; // reset stored id so we upload fresh
+  if (type === 'drops') {
+    const field = document.getElementById('focal-field');
+    if (field) {
+      field.style.display = '';
+      document.getElementById('focal-img').src = url;
+      document.getElementById('focal-x').value = '';
+      document.getElementById('focal-y').value = '';
+      document.getElementById('focal-dot').style.display = 'none';
+    }
+  }
+}
+
+function setFocalPoint(event) {
+  const rect = event.currentTarget.getBoundingClientRect();
+  const x = Math.round((event.clientX - rect.left) / rect.width  * 1000);
+  const y = Math.round((event.clientY - rect.top)  / rect.height * 1000);
+  document.getElementById('focal-x').value = x;
+  document.getElementById('focal-y').value = y;
+  const dot = document.getElementById('focal-dot');
+  dot.style.left = ((event.clientX - rect.left) / rect.width  * 100) + '%';
+  dot.style.top  = ((event.clientY - rect.top)  / rect.height * 100) + '%';
+  dot.style.display = 'block';
+  const hint = document.getElementById('focal-hint');
+  if (hint) hint.textContent = `Foco definido (${x}, ${y}) — salve para aplicar`;
 }
 
 function coverDrop(event, type) {

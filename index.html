@@ -514,6 +514,11 @@ function directusImg(id, width = 400) {
   const transforms = encodeURIComponent(JSON.stringify([['sharpen']]));
   return `${DIRECTUS}/assets/${id}?width=${width}&quality=90&format=webp&transforms=${transforms}`;
 }
+function directusImgSquare(id, size) {
+  if (!id) return null;
+  const transforms = encodeURIComponent(JSON.stringify([['sharpen']]));
+  return `${DIRECTUS}/assets/${id}?fit=cover&width=${size}&height=${size}&quality=90&format=webp&transforms=${transforms}`;
+}
 
 // Retorna largura em px adequada ao DPR do dispositivo
 function px(cssMax) {
@@ -664,7 +669,7 @@ function renderDrops(drops) {
     a.href = `drop.html?id=${drop.id}`;
     a.className = `drop-card r${delay}`;
     a.dataset.type = drop.type || 'livro';
-    const coverUrl  = drop.cover ? directusImg(drop.cover, px(260)) : null;
+    const coverUrl  = drop.cover ? directusImgSquare(drop.cover, px(260)) : null;
     const coverHtml = coverUrl
       ? `<img src="${coverUrl}" alt="${drop.title}" style="width:100%;height:100%;object-fit:cover;">`
       : `<div class="drop-cover-bg">${drop.type || ''}</div>`;
