@@ -1818,23 +1818,23 @@ function initCropOverlay(fxVal, fyVal) {
   if (!img?.src) return;
   const run = () => {
     const W = img.clientWidth, H = img.clientHeight;
-    if (!W || !H) return;
+    if (!W || !H) { requestAnimationFrame(run); return; }
     const overlay = document.getElementById('crop-overlay');
     if (!overlay) return;
     const cropSize = Math.min(W, H);
     overlay.style.width  = cropSize + 'px';
     overlay.style.height = cropSize + 'px';
     overlay.style.display = 'block';
-    // Position from saved focal or default to center
     const cx = fxVal != null ? (fxVal / 1000 * W) : W / 2;
     const cy = fyVal != null ? (fyVal / 1000 * H) : H / 2;
     cropMoveTo(cx - cropSize / 2, cy - cropSize / 2, W, H, cropSize);
+    // Load actual Directus thumbnail as preview if cover already exists
+    const covId = document.getElementById('cover-id')?.value;
+    if (covId) loadDirectusPreview(covId);
     const hint = document.getElementById('focal-hint');
-    if (hint) hint.textContent = fxVal != null
-      ? `Crop salvo — arraste para alterar`
-      : `Crop centrado — arraste para ajustar`;
+    if (hint) hint.textContent = fxVal != null ? 'Crop salvo — arraste para alterar' : 'Crop centrado — arraste para ajustar';
   };
-  if (img.complete && img.naturalWidth) run();
+  if (img.complete && img.naturalWidth) requestAnimationFrame(run);
   else img.addEventListener('load', run, { once: true });
 }
 
@@ -1849,54 +1849,72 @@ function cropMoveTo(left, top, W, H, cropSize) {
   const fy = Math.round((t + cropSize / 2) / H * 1000);
   document.getElementById('focal-x').value = fx;
   document.getElementById('focal-y').value = fy;
-  cropUpdatePreview(l, t, W, H, cropSize);
+  // Live JS preview while dragging
+  const pImg = document.getElementById('crop-preview-img');
+  const img  = document.getElementById('focal-img');
+  if (pImg && img && pImg.dataset.mode !== 'directus') {
+    const scale = 100 / cropSize;
+    pImg.src           = img.src;
+    pImg.style.cssText = `position:absolute;display:block;width:${W*scale}px;height:${H*scale}px;left:${-l*scale}px;top:${-t*scale}px`;
+  }
   return { fx, fy };
 }
 
-function cropUpdatePreview(left, top, W, H, cropSize) {
+function loadDirectusPreview(covId) {
   const pImg = document.getElementById('crop-preview-img');
-  const img  = document.getElementById('focal-img');
-  if (!pImg || !img) return;
-  const scale = 100 / cropSize;
-  pImg.src = img.src;
-  pImg.style.width   = (W * scale) + 'px';
-  pImg.style.height  = (H * scale) + 'px';
-  pImg.style.left    = (-left * scale) + 'px';
-  pImg.style.top     = (-top  * scale) + 'px';
-  pImg.style.display = 'block';
+  if (!pImg) return;
+  const url = `${DIRECTUS}/assets/${covId}?fit=cover&width=200&height=200&quality=90&format=webp&_t=${Date.now()}`;
+  pImg.dataset.mode  = 'directus';
+  pImg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block';
+  pImg.src = url;
+  const hint = document.getElementById('focal-hint');
+  if (hint && hint.textContent.includes('Salvando')) hint.textContent = 'Preview real — arraste para ajustar';
+}
+
+async function scheduleFocalPreview(covId, fx, fy) {
+  clearTimeout(_focalPreviewTimer);
+  const hint = document.getElementById('focal-hint');
+  if (hint) hint.textContent = 'Salvando crop...';
+  _focalPreviewTimer = setTimeout(async () => {
+    try {
+      await api('PATCH', `/files/${covId}`, { focal_point_x: fx, focal_point_y: fy });
+      loadDirectusPreview(covId);
+      document.getElementById('focal-x').value = fx;
+      document.getElementById('focal-y').value = fy;
+    } catch(e) {
+      const h = document.getElementById('focal-hint');
+      if (h) h.textContent = 'Erro ao salvar crop';
+    }
+  }, 400);
 }
 
 function setupCropDrag() {
   const overlay = document.getElementById('crop-overlay');
   if (!overlay) return;
-  overlay.onmousedown = e => {
-    const startX = e.clientX, startY = e.clientY;
+  const startDrag = (clientX, clientY) => {
+    const startX = clientX, startY = clientY;
     const startL = overlay.offsetLeft, startT = overlay.offsetTop;
     const img = document.getElementById('focal-img');
     const W = img.clientWidth, H = img.clientHeight;
-    const cropSize = overlay.clientWidth;
+    const cropSize = Math.min(W, H);
+    // Switch preview to JS mode while dragging
+    const pImg = document.getElementById('crop-preview-img');
+    if (pImg) pImg.dataset.mode = '';
     _cropMove = mv => {
-      const { fx, fy } = cropMoveTo(startL + mv.clientX - startX, startT + mv.clientY - startY, W, H, cropSize);
-      const hint = document.getElementById('focal-hint');
-      if (hint) hint.textContent = `Crop ajustado — salve para aplicar`;
+      const cx = (mv.touches ? mv.touches[0].clientX : mv.clientX);
+      const cy = (mv.touches ? mv.touches[0].clientY : mv.clientY);
+      cropMoveTo(startL + cx - startX, startT + cy - startY, W, H, cropSize);
     };
-    _cropEnd = () => { _cropMove = null; _cropEnd = null; };
-    e.preventDefault();
-  };
-  overlay.ontouchstart = e => {
-    const t0 = e.touches[0];
-    const startX = t0.clientX, startY = t0.clientY;
-    const startL = overlay.offsetLeft, startT = overlay.offsetTop;
-    const img = document.getElementById('focal-img');
-    const W = img.clientWidth, H = img.clientHeight;
-    const cropSize = overlay.clientWidth;
-    _cropMove = mv => {
-      const t = mv.touches[0];
-      cropMoveTo(startL + t.clientX - startX, startT + t.clientY - startY, W, H, cropSize);
+    _cropEnd = () => {
+      const covId = document.getElementById('cover-id')?.value;
+      const fx = parseInt(document.getElementById('focal-x')?.value);
+      const fy = parseInt(document.getElementById('focal-y')?.value);
+      if (covId && !isNaN(fx) && !isNaN(fy)) scheduleFocalPreview(covId, fx, fy);
+      _cropMove = null; _cropEnd = null;
     };
-    _cropEnd = () => { _cropMove = null; _cropEnd = null; };
-    e.preventDefault();
   };
+  overlay.onmousedown  = e => { startDrag(e.clientX, e.clientY); e.preventDefault(); };
+  overlay.ontouchstart = e => { startDrag(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); };
 }
 
 function thumbPreview(event) {
@@ -2076,7 +2094,7 @@ async function colaboradoresDeletar(id, name) {
 }
 
 // ── CROP DRAG STATE ───────────────────────────────────────────────────────────
-let _cropMove = null, _cropEnd = null;
+let _cropMove = null, _cropEnd = null, _focalPreviewTimer = null;
 document.addEventListener('mousemove', e => { if (_cropMove) _cropMove(e); });
 document.addEventListener('mouseup',   () => { if (_cropEnd) _cropEnd(); });
 document.addEventListener('touchmove', e => { if (_cropMove) { _cropMove(e); e.preventDefault(); } }, { passive: false });
