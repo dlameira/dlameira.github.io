@@ -25,7 +25,8 @@ Blog pessoal de Daniel Lameira sobre arte, criatividade, tecnologia, livros e co
 └─────────────────────────────────────────────────────────┘
 ```
 
-> **Sveltia CMS** (`/admin`) foi abandonado. Pode ser ignorado.
+**Admin customizado:** `dlameira.github.io/admin` → `admin.html`
+Login com email/senha do Directus. Gerencia: drops, livros, obras, escritos, colaboradores.
 
 ---
 
@@ -49,7 +50,7 @@ drops.html           drops                   Lista completa de drops
 drop.html            drops                   Detalhe de drop + sidebar
 
 livros.html          livros                  Lista completa de livros
-livro.html           livros                  Detalhe de livro
+livro.html           livros                  Detalhe de livro (com ficha técnica)
 
 obra.html            obras                   Detalhe de obra + sidebar
 ```
@@ -71,30 +72,68 @@ obra.html            obras                   Detalhe de obra + sidebar
 | cover     | Image   | opcional, usado quando tipo="projeto"                    |
 
 > ⚠️ Não existe collection `projetos` separada. A seção PROJETOS na home
-> filtra `escritos` onde `tipo === "projeto"`. Campos extras úteis para projetos:
-> `tipo` (String) e `cover` (Image).
+> filtra `escritos` onde `tipo === "projeto"`.
 
 ### `drops`
-| Campo   | Tipo    | Obs                                        |
-|---------|---------|--------------------------------------------|
-| title   | String  |                                            |
-| author  | String  |                                            |
-| type    | String  | book / album / podcast / film              |
-| cover   | Image   |                                            |
-| note    | Text    | nota pessoal (aparece no detalhe)          |
-| link    | String  | link externo (opcional)                    |
-| order   | Integer | ordem de exibição                          |
-| status  | String  | published / draft                          |
-| featured| Boolean | aparece como imagem flutuante no hero (máx 3) |
+| Campo         | Tipo    | Obs                                                   |
+|---------------|---------|-------------------------------------------------------|
+| title         | String  |                                                       |
+| author        | String  | fallback quando não há colaboradores vinculados       |
+| type          | String  | **valores em português:** livro / album / podcast / filme / musica / video / canal / jogo / artista / ensaio |
+| cover         | Image   |                                                       |
+| note          | Text    | nota pessoal (aparece no detalhe)                     |
+| link          | String  | link externo (opcional)                               |
+| order         | Integer | ordem de exibição                                     |
+| status        | String  | published / draft                                     |
+| featured      | Boolean | aparece como imagem flutuante no hero (máx 3)         |
+| colaboradores | M2M     | via `drops_colaboradores` (campos: papel, colaboradores_id) |
 
 ### `livros`
-| Campo   | Tipo    | Obs                              |
-|---------|---------|----------------------------------|
-| title   | String  |                                  |
-| autor   | String  |                                  |
-| Cover   | Image   | atenção: campo com C maiúsculo   |
-| ano     | Integer |                                  |
-| status  | String  | published / draft                |
+| Campo          | Tipo    | Obs                                  |
+|----------------|---------|--------------------------------------|
+| title          | String  |                                      |
+| subtitle       | String  | opcional                             |
+| autor          | String  | autor original (campo texto)         |
+| Cover          | Image   | **atenção: C maiúsculo**             |
+| ano            | Integer |                                      |
+| editora        | String  |                                      |
+| paginas        | Integer |                                      |
+| sinopse        | Text    |                                      |
+| colecao        | String  |                                      |
+| formato        | String  | ex: 14x21                            |
+| notas          | Text    | notas internas                       |
+| link_compra    | String  |                                      |
+| isbn_fisico    | String  |                                      |
+| isbn_ebook     | String  |                                      |
+| title_en       | String  | título em inglês (opcional)          |
+| featured       | Boolean |                                      |
+| status         | String  | published / draft                    |
+| tradutor       | String  | campo texto legado (usar colaboradores) |
+| capista        | String  | campo texto legado (usar colaboradores) |
+| arte_de_capa   | String  | campo texto legado (usar colaboradores) |
+| artes_internas | String  | campo texto legado (usar colaboradores) |
+| colaboradores  | M2M     | via `livros_colaboradores` (campos: papel, colaboradores_id) |
+
+### `colaboradores`
+| Campo   | Tipo   | Obs                                        |
+|---------|--------|--------------------------------------------|
+| name    | String | obrigatório                                |
+| website | String | opcional — exibido como link na ficha técnica |
+| status  | String | published / draft                          |
+
+### `livros_colaboradores` (junction M2M)
+| Campo             | Tipo    | Obs                                                  |
+|-------------------|---------|------------------------------------------------------|
+| livros_id         | FK      | → livros                                             |
+| colaboradores_id  | FK      | → colaboradores                                      |
+| papel             | String  | tradutor / capista / arte_de_capa / artes_internas / autor / prefacio / posfacio / organizador |
+
+### `drops_colaboradores` (junction M2M)
+| Campo             | Tipo    | Obs                                  |
+|-------------------|---------|--------------------------------------|
+| drops_id          | FK      | → drops                              |
+| colaboradores_id  | FK      | → colaboradores                      |
+| papel             | String  | autor / diretor / artista / criador / designer |
 
 ### `obras`
 | Campo       | Tipo    | Obs                                          |
@@ -108,8 +147,8 @@ obra.html            obras                   Detalhe de obra + sidebar
 | order       | Integer |                                              |
 | status      | String  | published / draft                            |
 
-> Permissão pública de leitura já configurada via API.
-> `works.html` foi removido — trabalho profissional está em `livros` e em `escritos[tipo=projeto]`.
+> Permissão pública de leitura configurada para: escritos, drops, livros, obras,
+> colaboradores, livros_colaboradores, drops_colaboradores.
 
 ---
 
@@ -120,7 +159,7 @@ obra.html            obras                   Detalhe de obra + sidebar
 --fg:     #e8e8d8   /* texto */
 --red:    #E8320A   /* cor principal / nav */
 --green:  #00ff41   /* álbuns */
---blue:   #3355ff   /* projetos */
+--blue:   #3355ff   /* projetos / filmes */
 --purple: #cc44ff   /* obras visuais / podcasts */
 --yellow: #f2e04a   /* livros */
 
@@ -129,12 +168,31 @@ obra.html            obras                   Detalhe de obra + sidebar
 --f-body:   'MyriadPro', sans-serif
 ```
 
-Cores por seção/tipo:
-- ESCRITOS / nav → vermelho (`--red`)
-- DROPS livro → amarelo, álbum → verde, podcast → roxo, filme → azul
-- LIVROS QUE DIRIGI → amarelo
-- OBRAS VISUAIS → roxo
-- PROJETOS → azul
+Cores por seção/tipo de drop:
+| tipo      | cor        |
+|-----------|------------|
+| livro     | `--yellow` #f2e04a |
+| album     | `--green`  #00ff41 |
+| podcast   | `--purple` #cc44ff |
+| filme     | `--blue`   #3355ff |
+| musica    | #00ccff    |
+| video     | #ff6600    |
+| canal     | #ff2020    |
+| jogo      | #7dff4f    |
+| artista   | #ff44bb    |
+| ensaio    | #e0c090    |
+
+---
+
+## Scripts utilitários (raiz do projeto)
+
+| Arquivo                          | Uso                                                      |
+|----------------------------------|----------------------------------------------------------|
+| `import-livros.mjs`              | Importa livros em bulk via CSV para o Directus           |
+| `migrate-colaboradores.mjs`      | **JÁ RODOU** — migrou nomes dos campos texto para a collection colaboradores |
+| `fix-colaboradores-duplicatas.mjs` | **JÁ RODOU** — corrigiu duplicatas e separou "Bruno Abbati & Pedro Inoue" |
+| `config-admin-colaboradores.mjs` | **JÁ RODOU** — configurou UI do Directus para campos M2M |
+| `livros-template.csv`            | Template CSV para bulk import de livros                  |
 
 ---
 
