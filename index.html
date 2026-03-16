@@ -570,7 +570,7 @@ async function fetchEscritos() {
 
 async function fetchDrops() {
   try {
-    const res = await fetch(`${DIRECTUS}/items/drops?filter[status][_eq]=published&sort[]=order&limit=100&fields=id,title,author,type,cover,thumbnail,focal_x,focal_y,note,featured,order`);
+    const res = await fetch(`${DIRECTUS}/items/drops?filter[status][_eq]=published&sort[]=order&limit=100&fields=id,title,author,type,cover.id,cover.focal_point_x,cover.focal_point_y,thumbnail,focal_x,focal_y,note,featured,order`);
     if (!res.ok) return [];
     const data = await res.json();
     return data.data || [];
@@ -669,11 +669,14 @@ function renderDrops(drops) {
     a.href = `drop.html?id=${drop.id}`;
     a.className = `drop-card r${delay}`;
     a.dataset.type = drop.type || 'livro';
+    const coverId   = drop.cover?.id ?? drop.cover;
     const coverUrl  = drop.thumbnail
       ? directusImg(drop.thumbnail, px(260))
-      : drop.cover ? directusImg(drop.cover, px(260)) : null;
-    const fpPos = (!drop.thumbnail && drop.focal_x != null)
-      ? `object-position:${drop.focal_x/10}% ${drop.focal_y/10}%`
+      : coverId ? directusImg(coverId, px(260)) : null;
+    const fpX = drop.cover?.focal_point_x ?? drop.focal_x ?? null;
+    const fpY = drop.cover?.focal_point_y ?? drop.focal_y ?? null;
+    const fpPos = (!drop.thumbnail && fpX != null)
+      ? `object-position:${fpX/10}% ${fpY/10}%`
       : 'object-position:50% 50%';
     const coverHtml = coverUrl
       ? `<img src="${coverUrl}" alt="${drop.title}" style="width:100%;height:100%;object-fit:cover;${fpPos}">`
@@ -743,7 +746,7 @@ function renderHeroFloats(drops, livros, obras) {
     const cssType = typeMap[drop.type] || 'book';
     sources.push({
       type: cssType,
-      imgId: drop.cover,
+      imgId: drop.cover?.id ?? drop.cover,
       title: drop.title,
       href: `drop.html?id=${drop.id}`,
       label: typeLabels[cssType] || (drop.type || '').toUpperCase()

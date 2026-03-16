@@ -312,11 +312,14 @@ function renderDrops(drops) {
     a.className = `drop-card r${delay}`;
     a.dataset.type = drop.type || 'livro';
 
+    const coverId = drop.cover?.id ?? drop.cover;
     const imgSrc = drop.thumbnail
       ? directusImg(drop.thumbnail, px(260))
-      : drop.cover ? directusImg(drop.cover, px(260)) : null;
-    const fpStyle = (!drop.thumbnail && drop.focal_x != null)
-      ? ` style="object-position:${drop.focal_x/10}% ${drop.focal_y/10}%"`
+      : coverId ? directusImg(coverId, px(260)) : null;
+    const fpX = drop.cover?.focal_point_x ?? drop.focal_x ?? null;
+    const fpY = drop.cover?.focal_point_y ?? drop.focal_y ?? null;
+    const fpStyle = (!drop.thumbnail && fpX != null)
+      ? ` style="object-position:${fpX/10}% ${fpY/10}%"`
       : '';
     const coverHtml = imgSrc
       ? `<img src="${imgSrc}"${fpStyle} alt="${drop.title || ''}">`
@@ -371,7 +374,7 @@ function initObserver() {
 
 async function init() {
   try {
-    const res = await fetch(`${DIRECTUS}/items/drops?filter[status][_eq]=published&sort[]=order&limit=200&fields=id,title,author,type,cover,thumbnail,focal_x,focal_y,note`);
+    const res = await fetch(`${DIRECTUS}/items/drops?filter[status][_eq]=published&sort[]=order&limit=200&fields=id,title,author,type,cover.id,cover.focal_point_x,cover.focal_point_y,thumbnail,focal_x,focal_y,note`);
     const data = await res.json();
     allDrops = data.data || [];
   } catch(e) { allDrops = []; }
