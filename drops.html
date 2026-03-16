@@ -314,9 +314,12 @@ function renderDrops(drops) {
 
     const imgSrc = drop.thumbnail
       ? directusImg(drop.thumbnail, px(260))
-      : drop.cover ? directusImgSquare(drop.cover, px(260)) : null;
+      : drop.cover ? directusImg(drop.cover, px(260)) : null;
+    const fpStyle = (!drop.thumbnail && drop.focal_x != null)
+      ? ` style="object-position:${drop.focal_x/10}% ${drop.focal_y/10}%"`
+      : '';
     const coverHtml = imgSrc
-      ? `<img src="${imgSrc}" alt="${drop.title || ''}">`
+      ? `<img src="${imgSrc}"${fpStyle} alt="${drop.title || ''}">`
       : `<div class="drop-cover-bg">${typeLabel(drop.type)}</div>`;
 
     // Note: strip HTML tags for the hover overlay text
@@ -368,7 +371,7 @@ function initObserver() {
 
 async function init() {
   try {
-    const res = await fetch(`${DIRECTUS}/items/drops?filter[status][_eq]=published&sort[]=order&limit=200&fields=id,title,author,type,cover,thumbnail,note`);
+    const res = await fetch(`${DIRECTUS}/items/drops?filter[status][_eq]=published&sort[]=order&limit=200&fields=id,title,author,type,cover,thumbnail,focal_x,focal_y,note`);
     const data = await res.json();
     allDrops = data.data || [];
   } catch(e) { allDrops = []; }
