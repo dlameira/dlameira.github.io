@@ -276,10 +276,12 @@ function directusImg(id, width) {
   const transforms = encodeURIComponent(JSON.stringify([['sharpen']]));
   return `${DIRECTUS}/assets/${id}?${width ? 'width=' + width + '&' : ''}quality=90&format=webp&transforms=${transforms}`;
 }
-function directusImgSquare(id, size) {
+function directusImgSquare(id, size, fpX, fpY) {
   if (!id) return null;
   const transforms = encodeURIComponent(JSON.stringify([['sharpen']]));
-  return `${DIRECTUS}/assets/${id}?fit=cover&width=${size}&height=${size}&quality=90&format=webp&transforms=${transforms}`;
+  let url = `${DIRECTUS}/assets/${id}?fit=cover&width=${size}&height=${size}&quality=90&format=webp&transforms=${transforms}`;
+  if (fpX != null && fpY != null) url += `&_fp=${fpX}-${fpY}`;
+  return url;
 }
 function px(cssMax) { return Math.round(cssMax * (window.devicePixelRatio || 1)); }
 
@@ -313,16 +315,13 @@ function renderDrops(drops) {
     a.dataset.type = drop.type || 'livro';
 
     const coverId = drop.cover?.id ?? drop.cover;
-    const imgSrc = drop.thumbnail
-      ? directusImg(drop.thumbnail, px(260))
-      : coverId ? directusImg(coverId, px(260)) : null;
     const fpX = drop.cover?.focal_point_x ?? drop.focal_x ?? null;
     const fpY = drop.cover?.focal_point_y ?? drop.focal_y ?? null;
-    const fpStyle = (!drop.thumbnail && fpX != null)
-      ? ` style="object-position:${fpX/10}% ${fpY/10}%"`
-      : '';
+    const imgSrc = drop.thumbnail
+      ? directusImg(drop.thumbnail, px(260))
+      : coverId ? directusImgSquare(coverId, px(260), fpX, fpY) : null;
     const coverHtml = imgSrc
-      ? `<img src="${imgSrc}"${fpStyle} alt="${drop.title || ''}">`
+      ? `<img src="${imgSrc}" alt="${drop.title || ''}">`
       : `<div class="drop-cover-bg">${typeLabel(drop.type)}</div>`;
 
     // Note: strip HTML tags for the hover overlay text
