@@ -172,6 +172,7 @@ async function run() {
     if (row.ano)     livro.ano     = Number(row.ano);
     if (row.paginas) livro.paginas = Number(row.paginas);
     if (coverId)     livro.Cover   = coverId;
+    if (row.aquisicao_sem_direcao_arte) livro.aquisicao_sem_direcao_arte = row.aquisicao_sem_direcao_arte.trim().toLowerCase() === 'true';
 
     // 3. Cria no Directus
     try {

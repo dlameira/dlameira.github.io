@@ -150,9 +150,38 @@ nav {
 .post-row { display: grid; grid-template-columns: 72px 1fr; gap: 20px; padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.05); text-decoration: none; color: var(--fg); cursor: crosshair; transition: padding-left 0.2s, border-color 0.2s; align-items: start; }
 .post-row:hover { padding-left: 10px; border-color: rgba(232,50,10,0.3); }
 .post-row-num { font-family: var(--f-ui); font-size: 9px; letter-spacing: 0.15em; color: rgba(232,50,10,0.4); padding-top: 5px; }
-.post-row-tag { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--red); opacity: 0.65; margin-bottom: 7px; }
+.post-row-tag { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--red); opacity: 0; max-height: 0; overflow: hidden; margin-bottom: 0; transition: opacity 0.22s, max-height 0.22s, margin-bottom 0.22s; }
+.post-row:hover .post-row-tag { opacity: 0.65; max-height: 20px; margin-bottom: 7px; }
 .post-row-title { font-family: var(--f-title); font-size: clamp(22px, 3.5vw, 48px); letter-spacing: 0.03em; line-height: 1.05; }
-.post-row-excerpt { margin-top: 8px; font-family: var(--f-body); font-size: 13px; color: rgba(232,232,216,0.42); line-height: 1.6; max-width: 560px; }
+.post-row-excerpt { margin-top: 0; max-height: 0; overflow: hidden; opacity: 0; font-family: var(--f-body); font-size: 13px; color: rgba(232,232,216,0.42); line-height: 1.6; max-width: 560px; transition: opacity 0.25s 0.05s, max-height 0.3s, margin-top 0.2s; }
+.post-row:hover .post-row-excerpt { opacity: 1; max-height: 120px; margin-top: 8px; }
+
+/* LAYOUT ESCRITOS + DROPS (desktop) */
+@media (min-width: 900px) {
+  #escritos-drops-wrap {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 0;
+    border-top: 1px solid rgba(232,50,10,0.2);
+  }
+  #escritos-drops-wrap #escritos {
+    border-top: none;
+    border-right: 1px solid rgba(232,50,10,0.2);
+    padding-right: 32px;
+  }
+  #escritos-drops-wrap #drops {
+    border-top: none;
+    padding-left: 28px;
+  }
+  #escritos-drops-wrap .drops-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+  #escritos-drops-wrap .drop-info { padding: 8px 10px; }
+  #escritos-drops-wrap .drop-title { font-size: 10.5px; }
+  #escritos-drops-wrap .drop-author { font-size: 7.5px; }
+  #escritos-drops-wrap .drop-note { display: none; }
+  #escritos-drops-wrap .section-title { font-size: clamp(32px, 4vw, 56px); }
+}
 
 /* DROPS */
 .drops-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(188px, 1fr)); gap: 2px; }
@@ -346,6 +375,11 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
   .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
   .drops-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
   .drop-note { display: none; }
+  /* mobile: escritos/drops empilhados normalmente */
+  #escritos-drops-wrap { display: block; }
+  /* mobile: mostrar data e excerpt sempre (sem hover) */
+  .post-row-tag { opacity: 0.65 !important; max-height: 20px !important; margin-bottom: 7px !important; }
+  .post-row-excerpt { opacity: 1 !important; max-height: none !important; margin-top: 8px !important; }
 }
 </style>
 </head>
@@ -385,6 +419,9 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
   <!-- headlines injetadas pelo JS via renderHeroPosts() -->
 </section>
 
+<!-- ── ESCRITOS + DROPS (wrapper para layout desktop 2 colunas) ───────────── -->
+<div id="escritos-drops-wrap">
+
 <!-- ── ESCRITOS ───────────────────────────────────────────────────────────── -->
 <section class="section" id="escritos">
   <div class="section-inner">
@@ -407,6 +444,8 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
     <div class="drops-grid"></div>
   </div>
 </section>
+
+</div><!-- /escritos-drops-wrap -->
 
 <!-- ── LIVROS QUE DIRIGI ──────────────────────────────────────────────────── -->
 <section class="section" id="livros">

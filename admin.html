@@ -1200,6 +1200,12 @@ function livrosFormNovo(item = null) {
             <span class="toggle-label">PUBLICADO</span>
           </div>
         </div>
+        <div class="field full" style="padding-bottom:4px">
+          <div class="toggle-wrap" onclick="toggleEl('tog-aquisicao')">
+            <div class="toggle ${item?.aquisicao_sem_direcao_arte?'on':''}" id="tog-aquisicao"></div>
+            <span class="toggle-label">FIZ A AQUISIÇÃO, NÃO DIRIGI ARTE</span>
+          </div>
+        </div>
         ${item ? `
         <div class="field full" style="margin-top:8px">
           <label>COLABORADORES COM LINKS</label>
@@ -1264,6 +1270,7 @@ async function livrosSalvar(id) {
     notas:         document.getElementById('f-notas').value.trim() || null,
     featured:      document.getElementById('tog-featured').classList.contains('on'),
     status:        document.getElementById('tog-status').classList.contains('on') ? 'published' : 'draft',
+    aquisicao_sem_direcao_arte: document.getElementById('tog-aquisicao').classList.contains('on'),
   };
   const covId = document.getElementById('cover-id').value;
   if (covId) body.Cover = covId;
