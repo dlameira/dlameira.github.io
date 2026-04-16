@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WEIRD WIZ</title>
+<title>daniel lameira</title>
 <style>
 @font-face {
   font-family: 'OffBit';
@@ -68,8 +68,12 @@ nav {
 /* imagens flutuantes */
 .float-img {
   position: absolute; z-index: 4; cursor: crosshair;
-  transition: transform 0.35s cubic-bezier(.23,1,.32,1); overflow: hidden;
+  transition: transform 0.35s cubic-bezier(.23,1,.32,1);
+  /* sem overflow:hidden — as imagens preservam a proporção original */
+  aspect-ratio: 2/3; /* fallback só enquanto o placeholder está visível */
 }
+.float-img.natural-ratio { aspect-ratio: auto; height: auto; }
+.float-img > img, .float-img > video { width: 100%; height: auto; display: block; }
 .float-img:hover { z-index: 6; }
 .cover-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-family: var(--f-ui); font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; }
 .cover-label {
@@ -96,18 +100,31 @@ nav {
 .fi-2 { width: clamp(105px, 12vw, 180px); top: 290px; right: clamp(50px, 7vw, 140px); transform: rotate(-2.5deg); border: 2px solid; }
 .fi-3 { width: clamp(95px, 10vw, 160px); bottom: 100px; left: clamp(16px, 2.5vw, 45px); transform: rotate(1deg); border: 2px solid; }
 
-.float-img[data-type="book"]     { border-color: var(--yellow); aspect-ratio: 2/3; }
-.float-img[data-type="album"]    { border-color: var(--green);  aspect-ratio: 1/1; }
-.float-img[data-type="podcast"]  { border-color: var(--purple); aspect-ratio: 1/1; }
-.float-img[data-type="film"]     { border-color: var(--blue);   aspect-ratio: 2/3; }
-.float-img[data-type="musica"]   { border-color: #00ccff; aspect-ratio: 1/1; }
-.float-img[data-type="video"]    { border-color: #ff6600; aspect-ratio: 16/9; }
-.float-img[data-type="canal"]    { border-color: #ff2020; aspect-ratio: 16/9; }
-.float-img[data-type="jogo"]     { border-color: #7dff4f; aspect-ratio: 1/1; }
-.float-img[data-type="artista"]  { border-color: #ff44bb; aspect-ratio: 2/3; }
-.float-img[data-type="ensaio"]   { border-color: #e0c090; aspect-ratio: 2/3; }
-.float-img[data-type="directed"] { border-color: var(--yellow); aspect-ratio: 2/3; }
-.float-img[data-type="visual"]   { border-color: var(--purple); aspect-ratio: 4/3; }
+.float-img[data-type="book"]     { border-color: var(--yellow); }
+.float-img[data-type="album"]    { border-color: var(--green);  }
+.float-img[data-type="podcast"]  { border-color: var(--purple); }
+.float-img[data-type="film"]     { border-color: var(--blue);   }
+.float-img[data-type="musica"]   { border-color: #00ccff; }
+.float-img[data-type="video"]    { border-color: #ff6600; }
+.float-img[data-type="canal"]    { border-color: #ff2020; }
+.float-img[data-type="jogo"]     { border-color: #7dff4f; }
+.float-img[data-type="artista"]  { border-color: #ff44bb; }
+.float-img[data-type="ensaio"]   { border-color: #e0c090; }
+.float-img[data-type="directed"] { border-color: var(--yellow); }
+.float-img[data-type="visual"]   { border-color: var(--purple); }
+/* aspect-ratio default por tipo só é usado quando cai no placeholder */
+.float-img[data-type="book"]:not(.natural-ratio),
+.float-img[data-type="film"]:not(.natural-ratio),
+.float-img[data-type="artista"]:not(.natural-ratio),
+.float-img[data-type="ensaio"]:not(.natural-ratio),
+.float-img[data-type="directed"]:not(.natural-ratio) { aspect-ratio: 2/3; }
+.float-img[data-type="album"]:not(.natural-ratio),
+.float-img[data-type="podcast"]:not(.natural-ratio),
+.float-img[data-type="musica"]:not(.natural-ratio),
+.float-img[data-type="jogo"]:not(.natural-ratio) { aspect-ratio: 1/1; }
+.float-img[data-type="video"]:not(.natural-ratio),
+.float-img[data-type="canal"]:not(.natural-ratio) { aspect-ratio: 16/9; }
+.float-img[data-type="visual"]:not(.natural-ratio) { aspect-ratio: 4/3; }
 
 /* headlines */
 .headline {
@@ -387,8 +404,8 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
 
 <nav>
   <div class="nav-logo">
-    <a href="index.html" class="nav-logo-title">WEIRD WIZ</a>
-    <span class="nav-logo-sub">a blog about art creativity<br>tech books and consciousness</span>
+    <a href="index.html" class="nav-logo-title">daniel lameira</a>
+    <span class="nav-logo-sub">arte, criatividade, livros,<br>tecnologia e consciência</span>
   </div>
   <ul class="nav-links">
     <li><span class="nav-sep">..·</span><a href="#escritos">Escritos</a></li>
@@ -490,7 +507,7 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
   <div class="section-inner">
   <div class="me-grid">
     <div class="r">
-      <h2 class="me-name">WEIRD<br><span>WIZ</span></h2>
+      <h2 class="me-name">DANIEL<br><span>LAMEIRA</span></h2>
       <div class="me-tags">
         <span class="me-tag">arte</span><span class="me-tag">criatividade</span>
         <span class="me-tag">tecnologia</span><span class="me-tag">livros</span><span class="me-tag">consciência</span>
@@ -528,7 +545,7 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
 </section>
 
 <footer>
-  <span>© 2026 Weird Wiz</span>
+  <span>© 2026 Daniel Lameira</span>
   <span>made by hand</span>
 </footer>
 
@@ -766,6 +783,15 @@ function renderObras(obras) {
 }
 
 // ── RENDER HERO FLOATS ────────────────────────────────────────────────────
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function renderHeroFloats(drops, livros, obras) {
   const floats = document.querySelectorAll('.float-img');
   if (!floats.length) return;
@@ -777,10 +803,16 @@ function renderHeroFloats(drops, livros, obras) {
     directed: 'LIVRO QUE DIRIGI', visual: 'OBRA VISUAL'
   };
 
+  // Embaralha as listas pra variar a cada visita
+  const featuredDrops = shuffle(drops.filter(d => d.featured));
+  const livrosShuffled = shuffle(livros);
+  const obrasShuffled = shuffle(obras.filter(o => o.image || o.video));
+  const dropsShuffled = shuffle(drops);
+
   const sources = [];
 
-  // Featured drops primeiro (até 3)
-  drops.filter(d => d.featured).slice(0, 3).forEach(drop => {
+  // Featured drops primeiro (até 3, embaralhados)
+  featuredDrops.slice(0, 3).forEach(drop => {
     const cssType = typeMap[drop.type] || 'book';
     sources.push({
       type: cssType,
@@ -792,8 +824,8 @@ function renderHeroFloats(drops, livros, obras) {
   });
 
   // Complementa com livro dirigido se necessário
-  if (sources.length < 3 && livros.length > 0) {
-    const l = livros[0];
+  if (sources.length < 3 && livrosShuffled.length > 0) {
+    const l = livrosShuffled[0];
     sources.push({
       type: 'directed',
       imgId: l.Cover || l.cover,
@@ -804,9 +836,8 @@ function renderHeroFloats(drops, livros, obras) {
   }
 
   // Complementa com obra visual se necessário (imagem ou vídeo)
-  const obrasComMedia = obras.filter(o => o.image || o.video);
-  if (sources.length < 3 && obrasComMedia.length > 0) {
-    const o = obrasComMedia[0];
+  if (sources.length < 3 && obrasShuffled.length > 0) {
+    const o = obrasShuffled[0];
     sources.push({
       type: 'visual',
       imgId: o.image,
@@ -817,9 +848,9 @@ function renderHeroFloats(drops, livros, obras) {
     });
   }
 
-  // Terceiro fallback: segundo livro dirigido
-  if (sources.length < 3 && livros.length > 1) {
-    const l2 = livros[1];
+  // Terceiro fallback: outro livro dirigido
+  if (sources.length < 3 && livrosShuffled.length > 1) {
+    const l2 = livrosShuffled[1];
     sources.push({
       type: 'directed',
       imgId: l2.Cover || l2.cover,
@@ -829,9 +860,9 @@ function renderHeroFloats(drops, livros, obras) {
     });
   }
 
-  // Quarto fallback: primeiro drop (não-featured)
-  if (sources.length < 3 && drops.length > 0) {
-    const d0 = drops[0];
+  // Quarto fallback: drop aleatório
+  if (sources.length < 3 && dropsShuffled.length > 0) {
+    const d0 = dropsShuffled[0];
     const cssType = typeMap[d0.type] || 'book';
     sources.push({
       type: cssType,
@@ -842,23 +873,30 @@ function renderHeroFloats(drops, livros, obras) {
     });
   }
 
+  // Embaralha a ordem dos slots pra posição dos floats variar também
+  const finalSources = shuffle(sources.slice(0, 3));
+
   floats.forEach((el, i) => {
-    if (i >= sources.length) return;
-    const src = sources[i];
+    if (i >= finalSources.length) return;
+    const src = finalSources[i];
     el.dataset.type = src.type;
     const imgUrl = src.imgId ? directusImg(src.imgId, px(185)) : null;
     let mediaHtml;
+    let hasMedia = false;
     if (src.videoId) {
       const posterAttr = imgUrl ? `poster="${imgUrl}"` : '';
-      mediaHtml = `<video autoplay muted loop playsinline ${posterAttr} style="width:100%;height:100%;object-fit:cover;display:block;">
+      mediaHtml = `<video autoplay muted loop playsinline ${posterAttr} style="width:100%;height:auto;display:block;">
         <source src="${DIRECTUS}/assets/${src.videoId}" type="video/mp4">
       </video>`;
+      hasMedia = true;
     } else if (imgUrl) {
-      mediaHtml = `<img src="${imgUrl}" alt="${src.title || ''}" style="width:100%;height:100%;object-fit:cover;display:block;">`;
+      mediaHtml = `<img src="${imgUrl}" alt="${src.title || ''}" style="width:100%;height:auto;display:block;">`;
+      hasMedia = true;
     } else {
       mediaHtml = `<div class="cover-placeholder">${src.label}</div>`;
     }
     el.innerHTML = `${mediaHtml}<div class="cover-label">${src.label}<br>${(src.title || '').toUpperCase()}</div>`;
+    el.classList.toggle('natural-ratio', hasMedia);
     if (src.href) {
       el.addEventListener('click', () => window.location.href = src.href);
     }
