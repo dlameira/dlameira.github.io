@@ -189,9 +189,16 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   position: absolute;
   font-family: 'Times New Roman', Times, serif;
   color: var(--fg);
-  width: 420px;
-  padding: 8px;
+  width: 440px;
+  padding: 22px 24px 24px;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(0.5px);
   pointer-events: none;
+}
+html.dark .poem {
+  background: rgba(20,19,17,0.35);
 }
 .poem .poem-tag {
   font-family: 'Courier New', monospace;
@@ -312,8 +319,8 @@ const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
 
 const POEM_FONT = '16px "Times New Roman", Times, serif';
 const POEM_LINE_H = 22;
-const POEM_WIDTH = 404; // width menos padding horizontal
-const POEM_MAX_LINES = 40;
+const POEM_WIDTH = 392; // 440 (card) - 48 (padding total)
+const POEM_MAX_LINES = 200; // texto inteiro
 const CANVAS_PAD = 140;
 const BOOK_W = 120;
 
@@ -351,7 +358,13 @@ function nextZ() { zCounter += 1; try { localStorage.setItem(Z_KEY, String(zCoun
 
 /* ── helpers ─────────────────────────────── */
 function escHtml(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function stripHtml(s) { return String(s || '').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(); }
+function stripHtml(s) {
+  if (!s) return '';
+  // usa DOM pra stripar tags E decodificar entities (&uacute; → ú, etc.)
+  const tmp = document.createElement('div');
+  tmp.innerHTML = String(s);
+  return (tmp.textContent || tmp.innerText || '').replace(/\s+/g, ' ').trim();
+}
 function directusImg(id, w) {
   if (!id) return null;
   const tx = encodeURIComponent(JSON.stringify([['sharpen']]));
@@ -416,7 +429,7 @@ function createPoemEl(escrito, pos) {
   el.style.top = pos.y + 'px';
   el.style.zIndex = 1;
   const tipo = escrito.tipo === 'projeto' ? 'projeto' : (escrito.tipo || 'escrito');
-  const text = stripHtml(escrito.content || escrito.body || escrito.excerpt || '').slice(0, 600);
+  const text = stripHtml(escrito.content || escrito.body || escrito.excerpt || '');
   el.innerHTML = `
     <span class="poem-tag">— ${escHtml(tipo)}</span>
     <span class="poem-title"><a href="post.html?id=${escrito.id}">${escHtml((escrito.title || '').toLowerCase())}</a></span>
@@ -510,28 +523,34 @@ function reflowPoem(poemEl, obstacles) {
   body.style.height = (lines.length * POEM_LINE_H) + 'px';
 }
 
-/* reflow de todos os poemas — chamado durante drag */
-function reflowAllPoems() {
-  if (!dragged) return;
-  const dr = dragged.getBoundingClientRect();
-  // obstáculo em coords absolutas do canvas (= clientRect + scroll)
-  const obstacle = [{
-    left: dr.left + window.scrollX,
-    top:  dr.top  + window.scrollY,
-    width: dr.width,
-    height: dr.height + 24 // pequena margem de respiro
-  }];
-  document.querySelectorAll('.poem').forEach(p => {
-    // só reflow de poemas próximos ao drag pra evitar work desnecessário
-    const pr = p.getBoundingClientRect();
-    const prox = 260; // margem
-    if (dr.right < pr.left - prox || dr.left > pr.right + prox ||
-        dr.bottom < pr.top - prox || dr.top > pr.bottom + prox) return;
-    reflowPoem(p, obstacle);
+/* coleta TODOS os livros/cards próximos a um poema como obstáculos */
+function collectObstaclesFor(poemEl) {
+  const pr = poemEl.getBoundingClientRect();
+  const prox = 60;
+  const out = [];
+  document.querySelectorAll('.book, .drop-card').forEach(el => {
+    const er = el.getBoundingClientRect();
+    if (er.right < pr.left - prox || er.left > pr.right + prox ||
+        er.bottom < pr.top - prox || er.top > pr.bottom + prox) return;
+    // coords em canvas (= style.left/top pros livros)
+    const x = parseFloat(el.style.left) || (er.left + window.scrollX);
+    const y = parseFloat(el.style.top)  || (er.top  + window.scrollY);
+    out.push({
+      left: x, top: y,
+      width:  el.offsetWidth  || er.width,
+      height: (el.offsetHeight || er.height) + 16
+    });
   });
+  return out;
 }
-function reflowAllPoemsNoObstacle() {
-  document.querySelectorAll('.poem').forEach(p => reflowPoem(p, []));
+
+/* reflow: sempre considera TODOS os itens (livros+cards) próximos,
+   tanto durante drag quanto após soltar */
+function reflowAllPoems() {
+  document.querySelectorAll('.poem').forEach(p => {
+    const obstacles = collectObstaclesFor(p);
+    reflowPoem(p, obstacles);
+  });
 }
 
 /* ── render: DROP media ──────────────────── */
@@ -628,8 +647,8 @@ function pointerUp() {
   dragKind = null;
   stopEdgeScroll();
   stopReflowLoop();
-  // um reflow final sem obstáculo pra texto voltar ao layout natural
-  reflowAllPoemsNoObstacle();
+  // reflow final considerando as posições finais — texto fica contornando o livro
+  reflowAllPoems();
 }
 
 /* ── auto-scroll nas bordas ──────────────── */
@@ -803,8 +822,14 @@ async function init() {
     location.reload();
   });
 
-  // drag via poema (titulo/tag) não dá: só livro e drop-card têm drag.
-  // poema fica "fixo no canvas" — mas suas palavras se mexem com repel.
+  // reflow inicial: já considera livros/cards que porventura estejam sobre poemas
+  // (usuário pode ter arrastado items sobre poemas em visita anterior)
+  setTimeout(() => reflowAllPoems(), 120);
+
+  // arrumar em grid também faz reflow dos poemas depois
+  document.getElementById('grid-btn').addEventListener('click', () => {
+    setTimeout(() => reflowAllPoems(), 650);
+  }, true);
 }
 
 init();
