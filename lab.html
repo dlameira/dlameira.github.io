@@ -99,16 +99,21 @@ body {
 .book.dragging { transition: none; box-shadow: 0 12px 32px rgba(0,0,0,0.25); z-index: 9998 !important; }
 .book .cover {
   width: 100%;
-  aspect-ratio: 2/3;
-  background: #eee;
-  border: 1px solid rgba(0,0,0,0.08);
-  overflow: hidden;
+  background: transparent;
   line-height: 0;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  /* sem aspect-ratio forçado — altura dita pela proporção natural da capa */
 }
 .book .cover img {
-  width: 100%; height: 100%; display: block; object-fit: cover;
+  width: 100%;
+  height: auto;
+  display: block;
   pointer-events: none; /* drag vem do div pai */
+}
+/* placeholder sem imagem mantém um retângulo proporcional */
+.book .cover.no-img {
+  aspect-ratio: 2/3;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.1);
 }
 .book .cover.no-img {
   display: flex; align-items: center; justify-content: center;
