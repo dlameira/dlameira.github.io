@@ -3,257 +3,191 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>daniel lameira // não começa nem termina</title>
+<title>daniel lameira — biblioteca aberta</title>
 <link rel="preconnect" href="https://directus-production-afdd.up.railway.app" crossorigin>
 <link rel="dns-prefetch" href="https://directus-production-afdd.up.railway.app">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { background: #fff; overflow-x: hidden; }
-body {
+
+html, body {
   background: #fff;
   color: #000;
   font-family: 'Times New Roman', Times, serif;
-  font-size: 16px;
-  line-height: 1.35;
+  overscroll-behavior: none;
+}
+
+body {
+  /* canvas cresce livremente, scroll em ambos os eixos */
+  width: max-content;
+  min-width: 100vw;
   min-height: 100vh;
+  overflow: visible;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
   position: relative;
-  padding-bottom: 420px;
 }
 
-/* ─── canvas livre (posições absolutas) ─── */
-.canvas {
+/* ── CANVAS ──────────────────────────────────── */
+#canvas {
   position: relative;
-  width: 100%;
-  max-width: 100vw;
+  /* dimensões setadas via JS baseado no número de livros */
 }
 
-/* blocos posicionados */
-.bloom {
-  position: absolute;
-  max-width: 620px;
-}
-.bloom.w-240 { max-width: 240px; }
-.bloom.w-320 { max-width: 320px; }
-.bloom.w-480 { max-width: 480px; }
-.bloom.w-auto { max-width: none; width: auto; }
-
-/* ─── tipografia caótica ─── */
-.big {
-  font-family: 'Times New Roman', Times, serif;
-  font-weight: normal;
-  font-size: clamp(44px, 8vw, 110px);
-  line-height: 0.95;
-  letter-spacing: -0.02em;
-}
-.xbig {
-  font-size: clamp(70px, 14vw, 190px);
-  line-height: 0.88;
-  letter-spacing: -0.04em;
-  font-weight: normal;
-}
-.mid {
-  font-size: clamp(26px, 3.5vw, 40px);
-  line-height: 1.05;
-  font-weight: normal;
-}
-.small {
-  font-size: 11px;
-  font-family: 'Courier New', 'Courier', monospace;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-.xsmall {
-  font-size: 9px;
-  font-family: 'Courier New', monospace;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #555;
-}
-.poema {
-  font-size: 17px;
-  line-height: 1.55;
-  font-family: 'Times New Roman', Times, serif;
-}
-.text {
-  font-size: 14px;
-  line-height: 1.5;
-  font-family: 'Times New Roman', Times, serif;
-}
-.text.sm { font-size: 12px; line-height: 1.45; }
-
-a { color: #0000ee; text-decoration: underline; }
-a:visited { color: #551a8b; }
-a:hover { background: #ff0; color: #000; }
-
-/* imagem / vídeo solto */
-.media {
-  display: block;
-  line-height: 0;
-  max-width: 100%;
-}
-.media img, .media video {
-  display: block;
-  width: 100%;
-  height: auto;
-  max-width: 100%;
-}
-.media.w-120 { width: 120px; }
-.media.w-180 { width: 180px; }
-.media.w-240 { width: 240px; }
-.media.w-320 { width: 320px; }
-.media.w-420 { width: 420px; }
-.media.w-560 { width: 560px; }
-.media.broken {
-  width: 260px; height: 180px;
-  border: 1px solid #000;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Courier New', monospace;
-  font-size: 10px;
-  letter-spacing: 0.2em;
-  color: #888;
-  text-transform: uppercase;
-  background: repeating-linear-gradient(45deg, transparent, transparent 8px, #f2f2f2 8px, #f2f2f2 9px);
-}
-
-/* rotações sutis reusáveis */
-.r-l1 { transform: rotate(-1.2deg); }
-.r-l2 { transform: rotate(-2.6deg); }
-.r-l3 { transform: rotate(-4.1deg); }
-.r-r1 { transform: rotate(1.1deg); }
-.r-r2 { transform: rotate(2.8deg); }
-.r-r3 { transform: rotate(3.9deg); }
-
-/* abertura */
-.intro {
-  padding: 80px 24px 0;
-  position: relative;
-  min-height: 100vh;
-}
-.intro-stamp {
-  position: absolute; top: 22px; right: 28px;
+/* ── HUD flutuante (fixed na viewport) ──────── */
+.hud {
+  position: fixed;
   font-family: 'Courier New', monospace;
   font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #666;
+  color: #333;
+  z-index: 10000;
+  pointer-events: none;
 }
-.intro-stamp a { color: #0000ee; }
-.intro-nav { margin-top: 4px; }
+.hud a { color: #0000ee; text-decoration: underline; pointer-events: auto; }
+.hud a:hover { background: #ff0; }
 
-.intro-hero {
-  padding: 18vh 0 0 8vw;
-  font-family: 'Times New Roman', Times, serif;
-  font-weight: normal;
-  font-size: clamp(46px, 10vw, 150px);
-  line-height: 0.88;
-  letter-spacing: -0.03em;
-  max-width: 90vw;
+.hud-tl { top: 18px; left: 20px; }
+.hud-tr { top: 18px; right: 20px; text-align: right; }
+.hud-bl { bottom: 18px; left: 20px; }
+.hud-br { bottom: 18px; right: 20px; text-align: right; }
+.hud button {
+  pointer-events: auto;
+  background: none; border: 1px solid #000; padding: 4px 10px;
+  font-family: 'Courier New', monospace; font-size: 9.5px;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  cursor: pointer; color: #000;
 }
-.intro-hero .break { display: block; }
-.intro-hero .slash { color: #0000ee; padding: 0 .1em; }
-.intro-hero .pt { display: block; margin-left: clamp(30px, 10vw, 180px); }
-.intro-sub {
-  margin-top: 38px;
-  padding-left: 8vw;
+.hud button:hover { background: #000; color: #fff; }
+
+.intro-banner {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Times New Roman', serif;
+  font-size: clamp(36px, 5vw, 72px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  text-align: center;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.intro-banner.on { opacity: 1; }
+.intro-banner .sub {
+  display: block;
+  margin-top: 14px;
   font-family: 'Courier New', monospace;
   font-size: 11px;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
-  line-height: 1.9;
-  color: #333;
-  max-width: 520px;
+  color: #666;
 }
 
-/* rodapé (créditos) */
-.credits {
+/* ── LIVRO ──────────────────────────────────── */
+.book {
   position: absolute;
-  bottom: 40px; left: 24px; right: 24px;
+  width: 120px;
+  cursor: grab;
+  transition: box-shadow 0.15s, transform 0.25s cubic-bezier(.2,.9,.3,1);
+  will-change: transform;
+  touch-action: none; /* essential p/ touch drag */
+}
+.book:active { cursor: grabbing; }
+.book.dragging { transition: none; box-shadow: 0 12px 32px rgba(0,0,0,0.25); z-index: 9998 !important; }
+.book .cover {
+  width: 100%;
+  aspect-ratio: 2/3;
+  background: #eee;
+  border: 1px solid rgba(0,0,0,0.08);
+  overflow: hidden;
+  line-height: 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.book .cover img {
+  width: 100%; height: 100%; display: block; object-fit: cover;
+  pointer-events: none; /* drag vem do div pai */
+}
+.book .cover.no-img {
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Courier New', monospace; font-size: 9px;
+  letter-spacing: 0.2em; color: #999;
+  background: repeating-linear-gradient(45deg, #fff, #fff 8px, #f2f2f2 8px, #f2f2f2 9px);
+  text-transform: uppercase; text-align: center; padding: 10px;
+}
+.book .caption {
+  font-family: 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 11px;
+  line-height: 1.25;
+  margin-top: 6px;
+  color: #000;
+  padding: 0 2px;
+}
+.book .caption small {
+  display: block;
+  font-style: normal;
   font-family: 'Courier New', monospace;
-  font-size: 10px;
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #888;
+  margin-top: 2px;
+}
+
+.book a.open-link {
+  display: block;
+  font-family: 'Courier New', monospace;
+  font-size: 8px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #333;
-  line-height: 1.9;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 40px;
+  color: #0000ee;
+  margin-top: 4px;
+  padding: 0 2px;
+  pointer-events: auto;
+  text-decoration: underline;
 }
-.credits a { color: #0000ee; }
-.credits-fin {
-  position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
-  font-family: 'Courier New', monospace; font-size: 10px;
-  letter-spacing: 0.4em; color: #888;
-}
+.book a.open-link:hover { background: #ff0; }
 
-/* mobile: desliga posições absolutas, empilha */
-@media (max-width: 760px) {
-  .canvas { height: auto !important; }
-  .bloom {
-    position: static !important;
-    max-width: 100% !important;
-    margin: 40px 18px !important;
-    transform: none !important;
-  }
-  .media.w-120, .media.w-180, .media.w-240, .media.w-320, .media.w-420, .media.w-560 { width: 80% !important; }
-  .intro-hero { font-size: clamp(42px, 12vw, 90px); padding: 22vh 0 0 0; }
-  .intro-sub { padding-left: 0; }
-  .credits { position: static; margin: 60px 18px 0; grid-template-columns: 1fr; gap: 24px; }
-  .credits-fin { position: static; text-align: center; margin-top: 28px; }
-}
+/* cursor especial quando arrastando */
+body.dragging, body.dragging * { cursor: grabbing !important; }
 </style>
 </head>
 <body>
 
-<section class="intro">
-  <div class="intro-stamp">
-    daniel lameira · 2019—agora<br>
-    <span class="intro-nav">
-      <a href="index.html">home</a> ·
-      <a href="posts.html">arquivo</a> ·
-      <a href="lab.html">aqui</a>
-    </span>
-  </div>
-
-  <h1 class="intro-hero">
-    <span class="break">não começa</span>
-    <span class="break">nem <span class="slash">/</span> termina</span>
-    <span class="pt">does not begin</span>
-    <span class="pt">or end</span>
-  </h1>
-
-  <p class="intro-sub">
-    escritos / drops / obras / livros — em fluxo.<br>
-    sem menu, sem ordem fixa.<br>
-    role.
-  </p>
-</section>
-
-<div class="canvas" id="canvas">
-  <div style="position:absolute;top:40vh;left:8vw;" class="xsmall">carregando o caderno...</div>
+<!-- HUD -->
+<div class="hud hud-tl">
+  daniel lameira<br>
+  <span style="color:#888">biblioteca aberta</span>
+</div>
+<div class="hud hud-tr">
+  <a href="index.html">home</a> ·
+  <a href="posts.html">arquivo</a>
+</div>
+<div class="hud hud-bl" id="hud-count">
+  <span id="book-count">—</span> livros · arraste à vontade<br>
+  <span style="color:#888">scroll em qualquer direção</span>
+</div>
+<div class="hud hud-br">
+  <button id="reset-btn">resetar posições</button>
 </div>
 
-<footer>
-  <div class="credits" id="credits">
-    <div>
-      escrito &amp; organizado por<br>
-      <b>DANIEL LAMEIRA</b>
-    </div>
-    <div>
-      editoras<br>
-      <b>ANTOFÁGICA · SEIVA</b>
-    </div>
-    <div id="credits-contact">
-      contato<br>
-      <a href="#">instagram</a> ·
-      <a href="#">email</a> ·
-      <a href="#">linkedin</a>
-    </div>
-  </div>
-  <div class="credits-fin">— fim —</div>
-</footer>
+<!-- Banner de boas-vindas (aparece por 3s) -->
+<div class="intro-banner" id="intro">
+  biblioteca <span style="color:#0000ee">aberta</span>
+  <span class="sub">arraste os livros onde quiser — eles ficam.</span>
+</div>
+
+<!-- Canvas com livros -->
+<main id="canvas"></main>
 
 <script>
 const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
+const CANVAS_PAD = 140;  // margem interna nas bordas
+const BOOK_W = 120;
+const BOOK_H_EST = 220;  // estimativa com caption p/ espaçamento
 
 async function cachedFetch(key, url, ttl = 5 * 60 * 1000) {
   try {
@@ -275,221 +209,221 @@ async function cachedFetch(key, url, ttl = 5 * 60 * 1000) {
 
 function escHtml(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-function stripHtml(html) {
-  return String(html || '').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-}
-
-function fmtMonthYear(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr);
-  if (isNaN(d)) return String(dateStr);
-  const months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-  return `${String(d.getDate()).padStart(2,'0')}.${months[d.getMonth()]}.${d.getFullYear()}`;
-}
-
 function directusImg(id, w) {
   if (!id) return null;
   const tx = encodeURIComponent(JSON.stringify([['sharpen']]));
   return `${DIRECTUS}/assets/${id}?width=${w}&quality=85&format=webp&transforms=${tx}`;
 }
 
-/* PRNG determinístico — mesmo seed sempre gera mesma posição */
+/* PRNG determinístico */
 function sr(seed, min, max) {
   const x = Math.sin(seed * 9301 + 49297) * 233280;
   const frac = x - Math.floor(x);
   return min + Math.abs(frac) * (max - min);
 }
 
-/* fetchs */
-async function fetchEscritos() {
-  return cachedFetch('c:lab2:escritos', `${DIRECTUS}/items/escritos?filter[status][_eq]=published&sort[]=-date&limit=25`);
+/* --- persistence --- */
+const POS_KEY = 'lab:bookpos:v1';
+function loadAllPositions() {
+  try { return JSON.parse(localStorage.getItem(POS_KEY) || '{}'); }
+  catch(e) { return {}; }
 }
-async function fetchDrops() {
-  return cachedFetch('c:lab2:drops', `${DIRECTUS}/items/drops?filter[status][_eq]=published&sort[]=order&limit=30&fields=id,title,author,type,note,order,date_created`);
+function saveAllPositions(obj) {
+  try { localStorage.setItem(POS_KEY, JSON.stringify(obj)); } catch(e) {}
 }
-async function fetchLivros() {
-  return cachedFetch('c:lab2:livros', `${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=-ano&limit=15&fields=id,title,autor,Cover,cover,ano,editora`);
-}
-async function fetchObras() {
-  return cachedFetch('c:lab2:obras', `${DIRECTUS}/items/obras?filter[status][_eq]=published&sort[]=order&limit=15&fields=id,title,type,year,image,video,order`);
-}
-
-async function loadAbout() {
-  try {
-    const res = await fetch('content/settings/about.json');
-    if (!res.ok) return;
-    const data = await res.json();
-    const el = document.getElementById('credits-contact');
-    if (!el) return;
-    const parts = [];
-    if (data.instagram) parts.push(`<a href="${data.instagram}" target="_blank" rel="noopener">instagram</a>`);
-    if (data.email)     parts.push(`<a href="mailto:${data.email}">email</a>`);
-    if (data.linkedin)  parts.push(`<a href="${data.linkedin}" target="_blank" rel="noopener">linkedin</a>`);
-    if (parts.length) el.innerHTML = 'contato<br>' + parts.join(' · ');
-  } catch(e) {}
+let positions = loadAllPositions();
+function savePos(id, x, y, rot) {
+  positions[id] = { x, y, rot };
+  saveAllPositions(positions);
 }
 
-/* renderers — cada um retorna {html, height} e usa posições absolutas internas
-   baseadas em pseudo-random com seed determinística */
+/* --- fetch --- */
+async function fetchAllLivros() {
+  return cachedFetch('c:lab:allivros', `${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=-ano&limit=500&fields=id,title,autor,Cover,cover,ano,editora`);
+}
 
-const COL_PAD = 24;
-const PAGE_WIDTH = () => Math.min(window.innerWidth, 1440);
-const FREE_WIDTH = () => Math.max(340, PAGE_WIDTH() - COL_PAD * 2);
+/* --- canvas / placement --- */
+function computeCanvasSize(n) {
+  // densidade: ~1 livro por 260x340 em média
+  const cols = Math.ceil(Math.sqrt(n * 1.4));
+  const w = Math.max(window.innerWidth * 1.8, cols * 260 + CANVAS_PAD * 2);
+  const h = Math.max(window.innerHeight * 1.8, Math.ceil(n / cols) * 340 + CANVAS_PAD * 2);
+  return { w, h };
+}
 
-function blockEscrito(e, seed) {
-  const isProj = e.tipo === 'projeto';
-  const tipo = isProj ? 'projeto' : (e.tipo || 'escrito');
-  const date = fmtMonthYear(e.date);
-  const title = (e.title || 'sem título');
-  const bodyText = stripHtml(e.content || e.body || e.excerpt || '').slice(0, 520);
-  const short = bodyText.length > 510 ? bodyText + '…' : bodyText;
+function initialPosition(livro, index, canvasW, canvasH) {
+  // distribuição pseudoaleatória com seed por id+index
+  const seed = (parseInt(livro.id) || index) * 17 + 3;
+  const x = CANVAS_PAD + sr(seed, 0, canvasW - CANVAS_PAD * 2 - BOOK_W);
+  const y = CANVAS_PAD + sr(seed + 1, 0, canvasH - CANVAS_PAD * 2 - BOOK_H_EST);
+  const rot = sr(seed + 2, -7, 7);
+  return { x, y, rot };
+}
 
-  const baseHeight = Math.max(560, 360 + short.length / 2);
-
-  const titleLeft = sr(seed, 4, 42);
-  const titleTop  = sr(seed + 1, 20, 80);
-  const titleRot  = sr(seed + 2, -3, 3);
-
-  const metaLeft = sr(seed + 3, 2, 12);
-  const metaTop  = sr(seed + 4, 4, 30);
-
-  const textLeft = sr(seed + 5, 32, 58);
-  const textTop  = titleTop + sr(seed + 6, 120, 200);
-  const textRot  = sr(seed + 7, -1.5, 1.5);
-
-  const html = `
-    <div class="bloom xsmall" style="left:${metaLeft}%;top:${metaTop}px;">
-      ─ ${escHtml(tipo)} · ${escHtml(date)} · <a href="post.html?id=${e.id}${isProj ? '&tipo=projeto' : ''}">ver</a>
+function createBookEl(livro, pos) {
+  const el = document.createElement('div');
+  el.className = 'book';
+  el.dataset.id = livro.id;
+  el.style.left = pos.x + 'px';
+  el.style.top = pos.y + 'px';
+  el.style.transform = `rotate(${pos.rot.toFixed(2)}deg)`;
+  const coverId = livro.Cover || livro.cover;
+  const coverUrl = directusImg(coverId, 240);
+  const coverHtml = coverUrl
+    ? `<img src="${coverUrl}" alt="${escHtml(livro.title || '')}" loading="lazy" decoding="async" draggable="false">`
+    : `<div class="cover no-img">sem capa</div>`;
+  el.innerHTML = `
+    <div class="cover ${coverUrl ? '' : 'no-img'}">${coverUrl ? coverHtml : ''}</div>
+    ${!coverUrl ? '' /* placeholder já tá dentro se no-img */ : ''}
+    <div class="caption">
+      ${escHtml(livro.title || 'sem título')}
+      <small>${escHtml(livro.autor || '')}${livro.ano ? ' · ' + escHtml(livro.ano) : ''}</small>
     </div>
-    <a class="bloom big" style="left:${titleLeft}%;top:${titleTop}px;transform:rotate(${titleRot}deg);text-decoration:none;color:#000;max-width:${sr(seed + 8, 52, 82)}%;"
-       href="post.html?id=${e.id}${isProj ? '&tipo=projeto' : ''}">${escHtml(title.toLowerCase())}</a>
-    <div class="bloom text" style="left:${textLeft}%;top:${textTop}px;max-width:${sr(seed + 9, 28, 46)}%;transform:rotate(${textRot}deg);">
-      ${escHtml(short)}
-    </div>
+    <a class="open-link" href="livro.html?id=${livro.id}">abrir ↗</a>
   `;
-  return { html, height: baseHeight };
+  // fix: quando não tem cover, o innerHTML já cria <div class="cover no-img">...
+  if (!coverUrl) {
+    el.querySelector('.cover').innerHTML = 'sem capa';
+  }
+  return el;
 }
 
-function blockObra(o, seed) {
-  if (!o.image && !o.video) return { html: '', height: 0 };
-  const imgUrl = o.image ? directusImg(o.image, 900) : null;
-  const poster = imgUrl ? `poster="${imgUrl}"` : '';
-  const widthClass = ['w-240','w-320','w-420','w-560'][Math.floor(sr(seed,0,4))];
-  const mediaHtml = o.video
-    ? `<video autoplay muted loop playsinline preload="metadata" ${poster}><source src="${DIRECTUS}/assets/${o.video}" type="video/mp4"></video>`
-    : `<img src="${imgUrl}" alt="${escHtml(o.title || '')}" loading="lazy" decoding="async">`;
+/* --- drag & drop --- */
+let dragged = null;
+let dragOffsetX = 0, dragOffsetY = 0;
+let dragStartPosSaved = false;
+let autoScrollRAF = 0;
+let edgeDx = 0, edgeDy = 0;
+let lastPointerX = 0, lastPointerY = 0;
 
-  const mediaLeft = sr(seed + 1, 8, 55);
-  const mediaTop  = sr(seed + 2, 30, 80);
-  const mediaRot  = sr(seed + 3, -4, 4);
-
-  const capLeft = mediaLeft + sr(seed + 4, 4, 18);
-  const capTop  = mediaTop + sr(seed + 5, 260, 360);
-
-  const html = `
-    <a class="bloom media ${widthClass}" href="obra.html?id=${o.id}"
-       style="left:${mediaLeft}%;top:${mediaTop}px;transform:rotate(${mediaRot}deg);">
-      ${mediaHtml}
-    </a>
-    <div class="bloom xsmall" style="left:${capLeft}%;top:${capTop}px;">
-      ${escHtml(o.title || '')} — ${escHtml(o.type || '')} · ${escHtml(o.year || '')}
-    </div>
-  `;
-  return { html, height: 520 };
+function pointerDown(e) {
+  const bookEl = e.target.closest('.book');
+  if (!bookEl) return;
+  // não inicia drag se clicou no link "abrir ↗"
+  if (e.target.closest('.open-link')) return;
+  e.preventDefault();
+  const evt = e.touches ? e.touches[0] : e;
+  const rect = bookEl.getBoundingClientRect();
+  dragOffsetX = evt.clientX - rect.left;
+  dragOffsetY = evt.clientY - rect.top;
+  dragged = bookEl;
+  dragStartPosSaved = false;
+  bookEl.classList.add('dragging');
+  document.body.classList.add('dragging');
+  lastPointerX = evt.clientX;
+  lastPointerY = evt.clientY;
 }
 
-function blockLivro(l, seed) {
-  const coverUrl = directusImg(l.Cover || l.cover, 320);
-  const width = ['w-120','w-180','w-240'][Math.floor(sr(seed,0,3))];
-  const cvLeft = sr(seed + 1, 8, 60);
-  const cvTop  = sr(seed + 2, 30, 100);
-  const cvRot  = sr(seed + 3, -5, 5);
-
-  const infoLeft = cvLeft + sr(seed + 4, 12, 22);
-  const infoTop  = cvTop + sr(seed + 5, 120, 220);
-
-  const html = `
-    <a class="bloom media ${width}" href="livro.html?id=${l.id}"
-       style="left:${cvLeft}%;top:${cvTop}px;transform:rotate(${cvRot}deg);background:#eee;">
-      ${coverUrl ? `<img src="${coverUrl}" alt="${escHtml(l.title || '')}" loading="lazy" decoding="async">` : '<div class="broken">capa / sem / imagem</div>'}
-    </a>
-    <div class="bloom text sm" style="left:${infoLeft}%;top:${infoTop}px;max-width:260px;">
-      <i>${escHtml(l.title || '')}</i><br>
-      ${escHtml(l.autor || '')}<br>
-      <span class="xsmall">${escHtml(l.editora || '')} · ${escHtml(l.ano || '')} · livro que dirigi · <a href="livro.html?id=${l.id}">↗</a></span>
-    </div>
-  `;
-  return { html, height: 440 };
+function pointerMove(e) {
+  if (!dragged) return;
+  const evt = e.touches ? e.touches[0] : e;
+  lastPointerX = evt.clientX;
+  lastPointerY = evt.clientY;
+  // posição no canvas (viewport + scroll - offset)
+  const canvasX = evt.clientX + window.scrollX - dragOffsetX;
+  const canvasY = evt.clientY + window.scrollY - dragOffsetY;
+  dragged.style.left = canvasX + 'px';
+  dragged.style.top = canvasY + 'px';
+  checkEdgeScroll(evt.clientX, evt.clientY);
+  if (e.touches) e.preventDefault();
 }
 
-function blockDrop(d, seed) {
-  const tipo = d.type || 'drop';
-  const pick = Math.floor(sr(seed, 0, 3));
-  const titleCls = ['mid','big','poema'][pick];
-  const left = sr(seed + 1, 6, 55);
-  const top  = sr(seed + 2, 30, 80);
-  const rot  = sr(seed + 3, -3, 3);
-
-  const noteLeft = left + sr(seed + 4, 2, 12);
-  const noteTop  = top + sr(seed + 5, 140, 220);
-
-  const html = `
-    <a class="bloom ${titleCls}" href="drop.html?id=${d.id}"
-       style="left:${left}%;top:${top}px;transform:rotate(${rot}deg);text-decoration:none;color:#000;max-width:${sr(seed + 6, 35, 60)}%;">
-      ${escHtml(d.title || '')}
-    </a>
-    <div class="bloom xsmall" style="left:${left}%;top:${top - 22}px;">
-      ─ ${escHtml(tipo)} ${d.author ? '· ' + escHtml(d.author) : ''}
-    </div>
-    ${d.note ? `<div class="bloom text sm" style="left:${noteLeft}%;top:${noteTop}px;max-width:300px;font-style:italic;">"${escHtml(d.note)}"</div>` : ''}
-  `;
-  return { html, height: 340 };
+function pointerUp() {
+  if (!dragged) return;
+  const id = dragged.dataset.id;
+  const x = parseFloat(dragged.style.left);
+  const y = parseFloat(dragged.style.top);
+  const m = dragged.style.transform.match(/rotate\(([^)]+)deg\)/);
+  const rot = m ? parseFloat(m[1]) : 0;
+  savePos(id, x, y, rot);
+  dragged.classList.remove('dragging');
+  document.body.classList.remove('dragging');
+  dragged = null;
+  stopEdgeScroll();
 }
 
-function buildCanvas(escritos, drops, livros, obras) {
-  const items = [];
-  escritos.forEach(e => items.push({ kind: 'escrito', sort: e.date ? new Date(e.date).getTime() : 0, data: e }));
-  obras.forEach(o => items.push({ kind: 'obra', sort: o.year ? new Date(`${o.year}-06-15`).getTime() : 0, data: o }));
-  livros.forEach(l => items.push({ kind: 'livro', sort: l.ano ? new Date(`${l.ano}-06-15`).getTime() : 0, data: l }));
-  const now = Date.now();
-  drops.forEach((d, i) => items.push({
-    kind: 'drop',
-    sort: d.date_created ? new Date(d.date_created).getTime() : now - i * 86400000 * 7,
-    data: d
-  }));
+/* auto-scroll quando drag perto da borda */
+const EDGE = 110;
+const MAX_SPEED = 22;
 
-  items.sort((a, b) => b.sort - a.sort);
+function checkEdgeScroll(cx, cy) {
+  const w = window.innerWidth, h = window.innerHeight;
+  edgeDx = 0; edgeDy = 0;
+  if (cx < EDGE)       edgeDx = -Math.round((EDGE - cx) / EDGE * MAX_SPEED);
+  else if (cx > w - EDGE) edgeDx = Math.round((cx - (w - EDGE)) / EDGE * MAX_SPEED);
+  if (cy < EDGE)       edgeDy = -Math.round((EDGE - cy) / EDGE * MAX_SPEED);
+  else if (cy > h - EDGE) edgeDy = Math.round((cy - (h - EDGE)) / EDGE * MAX_SPEED);
+  if ((edgeDx || edgeDy) && !autoScrollRAF) {
+    const tick = () => {
+      if (!dragged || (!edgeDx && !edgeDy)) { autoScrollRAF = 0; return; }
+      window.scrollBy(edgeDx, edgeDy);
+      // ao scrollar, atualiza posição do livro pra seguir o cursor
+      if (dragged) {
+        const canvasX = lastPointerX + window.scrollX - dragOffsetX;
+        const canvasY = lastPointerY + window.scrollY - dragOffsetY;
+        dragged.style.left = canvasX + 'px';
+        dragged.style.top = canvasY + 'px';
+      }
+      autoScrollRAF = requestAnimationFrame(tick);
+    };
+    autoScrollRAF = requestAnimationFrame(tick);
+  }
+}
 
+function stopEdgeScroll() {
+  edgeDx = 0; edgeDy = 0;
+  if (autoScrollRAF) { cancelAnimationFrame(autoScrollRAF); autoScrollRAF = 0; }
+}
+
+/* --- init --- */
+async function init() {
+  const livros = await fetchAllLivros();
+  if (!livros.length) {
+    document.getElementById('book-count').textContent = '0';
+    document.querySelector('.hud-bl').innerHTML = '(nenhum livro carregou — directus offline?)';
+    return;
+  }
+
+  const { w: canvasW, h: canvasH } = computeCanvasSize(livros.length);
   const canvas = document.getElementById('canvas');
-  canvas.innerHTML = '';
-  let y = 0;
-  let html = '';
+  canvas.style.width = canvasW + 'px';
+  canvas.style.height = canvasH + 'px';
 
-  items.forEach((item, i) => {
-    const seed = i * 13 + item.data.id * 7;
-    let block;
-    if (item.kind === 'escrito') block = blockEscrito(item.data, seed);
-    else if (item.kind === 'obra') block = blockObra(item.data, seed);
-    else if (item.kind === 'livro') block = blockLivro(item.data, seed);
-    else block = blockDrop(item.data, seed);
-
-    if (!block.html) return;
-
-    // "offset pack" pra cada item ter container próprio com posição top absoluta
-    html += `<div style="position:absolute;left:0;right:0;top:${y}px;height:${block.height}px;">${block.html}</div>`;
-    y += block.height;
+  livros.forEach((l, i) => {
+    const saved = positions[l.id];
+    const pos = saved || initialPosition(l, i, canvasW, canvasH);
+    canvas.appendChild(createBookEl(l, pos));
   });
 
-  canvas.innerHTML = html;
-  canvas.style.height = (y + 80) + 'px';
-}
+  document.getElementById('book-count').textContent = livros.length;
 
-async function init() {
-  const [escritos, drops, livros, obras] = await Promise.all([
-    fetchEscritos(), fetchDrops(), fetchLivros(), fetchObras()
-  ]);
-  buildCanvas(escritos, drops, livros, obras);
-  loadAbout();
+  // scroll inicial pro centro do canvas (deixa mais "no meio da biblioteca")
+  window.scrollTo({
+    left: (canvasW - window.innerWidth) / 2,
+    top: (canvasH - window.innerHeight) / 2,
+    behavior: 'instant'
+  });
+
+  // show intro banner e esconde em 2.5s
+  const intro = document.getElementById('intro');
+  requestAnimationFrame(() => intro.classList.add('on'));
+  setTimeout(() => intro.classList.remove('on'), 2600);
+
+  // listeners globais
+  document.addEventListener('mousedown', pointerDown);
+  document.addEventListener('mousemove', pointerMove);
+  document.addEventListener('mouseup', pointerUp);
+  document.addEventListener('touchstart', pointerDown, { passive: false });
+  document.addEventListener('touchmove', pointerMove, { passive: false });
+  document.addEventListener('touchend', pointerUp);
+
+  // reset
+  document.getElementById('reset-btn').addEventListener('click', () => {
+    if (!confirm('apagar posições customizadas e voltar ao layout inicial?')) return;
+    try { localStorage.removeItem(POS_KEY); } catch(e) {}
+    positions = {};
+    location.reload();
+  });
 }
 
 init();
