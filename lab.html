@@ -248,15 +248,30 @@ html.dark .poem {
 }
 .poem-resize-handle {
   position: absolute;
-  right: 3px; bottom: 3px;
-  width: 18px; height: 18px;
+  right: 4px; bottom: 4px;
+  width: 26px; height: 26px;
   cursor: nwse-resize;
-  opacity: 0.4;
   pointer-events: auto;
-  background:
-    linear-gradient(135deg, transparent 0 42%, var(--fg-mute) 42% 50%, transparent 50% 62%, var(--fg-mute) 62% 70%, transparent 70%);
+  display: flex; align-items: flex-end; justify-content: flex-end;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px 6px;
+  color: var(--fg-mute);
+  opacity: 0.85;
+  user-select: none;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  border-radius: 0 0 10px 0;
+  transition: color 0.15s, opacity 0.15s;
 }
-.poem-resize-handle:hover { opacity: 0.9; }
+.poem-resize-handle::after {
+  content: '↘';
+  position: absolute;
+  right: 3px; bottom: -1px;
+  font-size: 13px;
+}
+.poem-resize-handle:hover { opacity: 1; color: var(--accent, var(--fg)); }
 
 /* ── DROP (vídeo/canal/música) ─────────────── */
 .drop-card {
