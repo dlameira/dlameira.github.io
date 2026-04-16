@@ -197,18 +197,24 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   border-radius: 14px;
   background: rgba(255,255,255,0.28);
   backdrop-filter: blur(0.5px);
-  cursor: grab;
+  cursor: default;
   touch-action: none;
   transition: left 0.6s cubic-bezier(.2,.9,.3,1), top 0.6s cubic-bezier(.2,.9,.3,1);
 }
 .poem.dragging, .poem.resizing {
-  cursor: grabbing;
   transition: none;
   box-shadow: 0 12px 32px var(--paper-shadow);
 }
 html.dark .poem {
   background: rgba(20,19,17,0.40);
 }
+/* header é o único lugar que inicia drag do poema */
+.poem .poem-header {
+  cursor: grab;
+  pointer-events: auto;
+  padding-bottom: 14px;
+}
+.poem.dragging .poem-header { cursor: grabbing; }
 .poem .poem-tag {
   font-family: 'Courier New', monospace;
   font-size: 9px;
@@ -217,14 +223,11 @@ html.dark .poem {
   color: var(--fg-mute);
   margin-bottom: 8px;
   display: block;
-  pointer-events: none;
 }
 .poem .poem-title {
   font-size: 20px;
   font-style: italic;
-  margin-bottom: 14px;
   display: block;
-  pointer-events: none;
 }
 .poem .poem-title a {
   color: var(--fg);
@@ -246,32 +249,51 @@ html.dark .poem {
   will-change: left, top;
   pointer-events: none;
 }
-.poem-resize-handle {
+/* bordas do outline = handles de resize (faixas invisíveis, visíveis no hover) */
+.poem-edge {
   position: absolute;
-  right: 4px; bottom: 4px;
-  width: 26px; height: 26px;
+  pointer-events: auto;
+  z-index: 2;
+  transition: background 0.15s ease;
+}
+.poem-edge-l {
+  left: -6px; top: 40px; bottom: 14px;
+  width: 14px;
+  cursor: ew-resize;
+  border-radius: 14px 0 0 14px;
+}
+.poem-edge-r {
+  right: -6px; top: 40px; bottom: 14px;
+  width: 14px;
+  cursor: ew-resize;
+  border-radius: 0 14px 14px 0;
+}
+.poem-edge:hover {
+  background: rgba(122,40,24,0.35);
+}
+html.dark .poem-edge:hover {
+  background: rgba(232,232,214,0.22);
+}
+.poem.resizing .poem-edge { background: rgba(122,40,24,0.55); }
+html.dark .poem.resizing .poem-edge { background: rgba(232,232,214,0.4); }
+/* canto inferior direito: resize horizontal também (mais descobrível) */
+.poem-corner {
+  position: absolute;
+  right: -6px; bottom: -6px;
+  width: 22px; height: 22px;
   cursor: nwse-resize;
   pointer-events: auto;
-  display: flex; align-items: flex-end; justify-content: flex-end;
-  font-family: 'Courier New', monospace;
-  font-size: 16px;
-  line-height: 1;
-  padding: 4px 6px;
+  display: flex; align-items: center; justify-content: center;
   color: var(--fg-mute);
-  opacity: 0.85;
-  user-select: none;
+  font-size: 14px;
   border-right: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
-  border-radius: 0 0 10px 0;
-  transition: color 0.15s, opacity 0.15s;
+  border-radius: 0 0 12px 0;
+  opacity: 0.75;
+  transition: opacity 0.15s, color 0.15s;
 }
-.poem-resize-handle::after {
-  content: '↘';
-  position: absolute;
-  right: 3px; bottom: -1px;
-  font-size: 13px;
-}
-.poem-resize-handle:hover { opacity: 1; color: var(--accent, var(--fg)); }
+.poem-corner::after { content: '↘'; margin: 0 -1px -2px 0; font-family: 'Courier New', monospace; }
+.poem-corner:hover { opacity: 1; color: var(--fg); }
 
 /* ── DROP (vídeo/canal/música) ─────────────── */
 .drop-card {
@@ -506,10 +528,14 @@ function createPoemEl(escrito, pos) {
   const tipo = escrito.tipo === 'projeto' ? 'projeto' : (escrito.tipo || 'escrito');
   const raw = escrito.content || escrito.body || escrito.excerpt || '';
   el.innerHTML = `
-    <span class="poem-tag">— ${escHtml(tipo)}</span>
-    <span class="poem-title"><a href="post.html?id=${escrito.id}">${escHtml((escrito.title || '').toLowerCase())}</a></span>
+    <div class="poem-header" title="arraste daqui">
+      <span class="poem-tag">— ${escHtml(tipo)}</span>
+      <span class="poem-title"><a href="post.html?id=${escrito.id}">${escHtml((escrito.title || '').toLowerCase())}</a></span>
+    </div>
     <div class="poem-body"></div>
-    <div class="poem-resize-handle" title="redimensionar"></div>
+    <div class="poem-edge poem-edge-l" title="redimensionar"></div>
+    <div class="poem-edge poem-edge-r" title="redimensionar"></div>
+    <div class="poem-corner" title="redimensionar"></div>
   `;
   try {
     el._blocks = preparePoemBlocks(raw);
@@ -527,47 +553,63 @@ function createPoemEl(escrito, pos) {
 }
 
 function initResizeHandle(poemEl) {
-  const h = poemEl.querySelector('.poem-resize-handle');
-  if (!h) return;
-  const begin = (clientX, clientY) => {
-    const startW = poemEl.offsetWidth;
-    const startH = poemEl.offsetHeight;
-    const startX = clientX;
-    const startY = clientY;
-    poemEl.classList.add('resizing');
-    const move = ev => {
-      const evt = ev.touches ? ev.touches[0] : ev;
-      const nw = Math.max(260, Math.min(880, startW + (evt.clientX - startX)));
-      poemEl.style.width = nw + 'px';
-      // re-flow durante resize
-      reflowPoem(poemEl, collectObstaclesFor(poemEl));
-      if (ev.touches) ev.preventDefault();
+  const bind = (handleEl, mode) => {
+    if (!handleEl) return;
+    const begin = (clientX) => {
+      const startW = poemEl.offsetWidth;
+      const startLeft = parseFloat(poemEl.style.left) || 0;
+      const startX = clientX;
+      poemEl.classList.add('resizing');
+      const move = ev => {
+        const evt = ev.touches ? ev.touches[0] : ev;
+        const dx = evt.clientX - startX;
+        let newW;
+        if (mode === 'left') {
+          newW = Math.max(260, Math.min(880, startW - dx));
+          const consumedDelta = startW - newW; // positivo se encolheu, negativo se cresceu
+          poemEl.style.width = newW + 'px';
+          poemEl.style.left  = (startLeft + consumedDelta) + 'px';
+        } else { // 'right' (ou corner)
+          newW = Math.max(260, Math.min(880, startW + dx));
+          poemEl.style.width = newW + 'px';
+        }
+        reflowPoem(poemEl, collectObstaclesFor(poemEl));
+        if (ev.touches) ev.preventDefault();
+      };
+      const up = () => {
+        poemEl.classList.remove('resizing');
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
+        document.removeEventListener('touchmove', move);
+        document.removeEventListener('touchend', up);
+        const id = poemEl.dataset.id;
+        const cur = positions[id] || {};
+        positions[id] = {
+          ...cur,
+          width: poemEl.offsetWidth,
+          x: parseFloat(poemEl.style.left) || 0,
+          y: parseFloat(poemEl.style.top) || 0
+        };
+        savePositions();
+        reflowAllPoems();
+      };
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+      document.addEventListener('touchmove', move, { passive: false });
+      document.addEventListener('touchend', up);
     };
-    const up = () => {
-      poemEl.classList.remove('resizing');
-      document.removeEventListener('mousemove', move);
-      document.removeEventListener('mouseup', up);
-      document.removeEventListener('touchmove', move);
-      document.removeEventListener('touchend', up);
-      // salva tamanho
-      const id = poemEl.dataset.id;
-      const cur = positions[id] || {};
-      positions[id] = { ...cur, width: poemEl.offsetWidth };
-      savePositions();
-      // reflow dos outros poemas (caso tamanho deste tenha mudado a geometria)
-      reflowAllPoems();
-    };
-    document.addEventListener('mousemove', move);
-    document.addEventListener('mouseup', up);
-    document.addEventListener('touchmove', move, { passive: false });
-    document.addEventListener('touchend', up);
+    handleEl.addEventListener('mousedown', e => {
+      e.preventDefault(); e.stopPropagation();
+      begin(e.clientX);
+    });
+    handleEl.addEventListener('touchstart', e => {
+      e.preventDefault(); e.stopPropagation();
+      begin(e.touches[0].clientX);
+    }, { passive: false });
   };
-  h.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); begin(e.clientX, e.clientY); });
-  h.addEventListener('touchstart', e => {
-    e.preventDefault(); e.stopPropagation();
-    const t = e.touches[0];
-    begin(t.clientX, t.clientY);
-  }, { passive: false });
+  bind(poemEl.querySelector('.poem-edge-l'), 'left');
+  bind(poemEl.querySelector('.poem-edge-r'), 'right');
+  bind(poemEl.querySelector('.poem-corner'), 'right');
 }
 
 /* ── reflow: recalcula layout linhas do poema considerando obstáculos ─── */
@@ -722,10 +764,14 @@ let edgeDx = 0, edgeDy = 0;
 let lastPointerX = 0, lastPointerY = 0;
 
 function pointerDown(e) {
-  const el = e.target.closest('.book, .drop-card, .poem');
+  // não inicia drag se clicou em link, handle de resize ou edge
+  if (e.target.closest('.open-link, .drop-open, .poem-title a, .poem-edge, .poem-corner')) return;
+  // poema só é arrastado pelo header; livro/drop em qualquer lugar
+  const poemHeader = e.target.closest('.poem-header');
+  const el = poemHeader
+    ? poemHeader.closest('.poem')
+    : e.target.closest('.book, .drop-card');
   if (!el) return;
-  // não inicia drag se clicou em link ou no handle de resize
-  if (e.target.closest('.open-link, .drop-open, .poem-title a, .poem-resize-handle')) return;
   e.preventDefault();
   const evt = e.touches ? e.touches[0] : e;
   const rect = el.getBoundingClientRect();
