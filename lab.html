@@ -239,7 +239,7 @@ function savePos(id, x, y, rot) {
 
 /* --- fetch --- */
 async function fetchAllLivros() {
-  return cachedFetch('c:lab:allivros', `${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=-ano&limit=500&fields=id,title,autor,Cover,cover,ano,editora`);
+  return cachedFetch('c:lab:allivros', `${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=-ano&limit=500&fields=id,title,autor,Cover,ano,editora`);
 }
 
 /* --- canvas / placement --- */
