@@ -385,6 +385,60 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
 .r.on { opacity: 1; transform: none; }
 .r.d1 { transition-delay: .08s; } .r.d2 { transition-delay: .16s; } .r.d3 { transition-delay: .26s; } .r.d4 { transition-delay: .36s; }
 
+/* ── SUMÁRIO ─────────────────────────────────────────── */
+.sumario-header { margin-bottom: 56px; }
+.sumario-eyebrow { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(232,50,10,0.55); margin-bottom: 14px; }
+.sumario-titulo { font-family: var(--f-title); font-size: clamp(44px, 7vw, 90px); letter-spacing: 0.05em; color: var(--red); line-height: 1; }
+.sumario-lista { list-style: none; padding: 0; margin: 0; }
+.sumario-lista li { border-bottom: 1px solid rgba(232,232,216,0.05); }
+.sumario-lista li:first-child { border-top: 1px solid rgba(232,232,216,0.05); }
+.sumario-item {
+  display: grid;
+  grid-template-columns: 48px 108px 1fr auto;
+  gap: 24px;
+  padding: 22px 0;
+  text-decoration: none;
+  color: var(--fg);
+  cursor: crosshair;
+  align-items: baseline;
+  transition: padding-left 0.2s ease, border-color 0.2s;
+}
+.sumario-item:hover { padding-left: 14px; }
+.sumario-item:hover .sumario-titulo-item { color: var(--red); }
+.sumario-num { font-family: var(--f-ui); font-size: 10px; color: rgba(232,50,10,0.4); letter-spacing: 0.15em; }
+.sumario-tipo { font-family: var(--f-ui); font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.85; }
+.sumario-tipo.t-escrito  { color: var(--red); }
+.sumario-tipo.t-projeto  { color: var(--blue); }
+.sumario-tipo.t-livro    { color: var(--yellow); }
+.sumario-tipo.t-obra     { color: var(--purple); }
+.sumario-tipo.t-album    { color: var(--green); }
+.sumario-tipo.t-podcast  { color: var(--purple); }
+.sumario-tipo.t-filme    { color: var(--blue); }
+.sumario-tipo.t-musica   { color: #00ccff; }
+.sumario-tipo.t-video    { color: #ff6600; }
+.sumario-tipo.t-canal    { color: #ff2020; }
+.sumario-tipo.t-jogo     { color: #7dff4f; }
+.sumario-tipo.t-artista  { color: #ff44bb; }
+.sumario-tipo.t-ensaio   { color: #e0c090; }
+.sumario-tipo.t-drop     { color: rgba(232,232,216,0.5); }
+.sumario-titulo-item { font-family: var(--f-title); font-size: clamp(20px, 2.6vw, 30px); letter-spacing: 0.02em; line-height: 1.2; color: var(--fg); transition: color 0.18s; }
+.sumario-sub { font-family: var(--f-ui); font-size: 9.5px; color: rgba(232,232,216,0.42); letter-spacing: 0.08em; display: block; margin-top: 4px; text-transform: uppercase; }
+.sumario-data { font-family: var(--f-ui); font-size: 9px; color: rgba(232,232,216,0.3); letter-spacing: 0.1em; text-align: right; white-space: nowrap; }
+
+.arquivo-row { display: flex; align-items: baseline; gap: 32px; padding: 48px 0 8px; flex-wrap: wrap; border-top: 1px solid rgba(232,50,10,0.12); margin-top: 48px; }
+.arquivo-label { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(232,50,10,0.5); }
+.arquivo-link { font-family: var(--f-title); font-size: 16px; letter-spacing: 0.06em; color: var(--fg); text-decoration: none; padding-bottom: 3px; border-bottom: 1px solid rgba(232,232,216,0.12); transition: border-color 0.15s, color 0.15s; }
+.arquivo-link:hover { border-color: var(--red); color: var(--red); }
+
+/* ── COLOFÃO ─────────────────────────────────────────── */
+.colofao-grid { display: grid; grid-template-columns: 1fr 1.8fr 1fr; gap: 72px; align-items: start; }
+.colofao-label { font-family: var(--f-ui); font-size: 8px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(232,50,10,0.5); margin-bottom: 16px; }
+.colofao-val { font-family: var(--f-body); font-size: 14px; color: rgba(232,232,216,0.78); line-height: 1.65; }
+.colofao-nome { font-family: var(--f-title); font-size: clamp(30px, 3.5vw, 44px); color: var(--fg); letter-spacing: 0.04em; line-height: 1.05; margin-bottom: 24px; }
+.colofao-nome span { color: var(--red); }
+.colofao-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.colofao-links { display: flex; flex-direction: column; gap: 10px; }
+
 @media (max-width: 760px) {
   .me-grid { grid-template-columns: 1fr; gap: 40px; }
   .fi-2, .fi-3 { display: none; }
@@ -438,100 +492,57 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
 </section>
 
 <!-- ── ESCRITOS + DROPS (wrapper para layout desktop 2 colunas) ───────────── -->
-<div id="escritos-drops-wrap">
-
-<!-- ── ESCRITOS ───────────────────────────────────────────────────────────── -->
-<section class="section" id="escritos">
+<!-- ── SUMÁRIO ────────────────────────────────────────────────────────────── -->
+<section class="section" id="sumario">
   <div class="section-inner">
-    <div class="section-header r">
-      <h2 class="section-title">ESCRITOS</h2>
-      <p class="section-desc">ensaios · poesia · artigos · notas</p>
+    <div class="sumario-header r">
+      <div class="sumario-eyebrow">— edição atual</div>
+      <h2 class="sumario-titulo">SUMÁRIO</h2>
     </div>
-    <!-- linhas injetadas pelo JS via renderPostList() -->
-  </div>
-</section>
-
-<!-- ── DROPS ─────────────────────────────────────────────────────────────── -->
-<section class="section" id="drops">
-  <div class="section-inner">
-    <div class="section-header r">
-      <h2 class="section-title">DROPS</h2>
-      <p class="section-desc">livros, álbuns, podcasts, filmes</p>
-    </div>
-    <!-- cards injetados pelo JS via renderDrops() -->
-    <div class="drops-grid"></div>
-  </div>
-</section>
-
-</div><!-- /escritos-drops-wrap -->
-
-<!-- ── LIVROS QUE DIRIGI ──────────────────────────────────────────────────── -->
-<section class="section" id="livros">
-  <div class="section-inner">
-    <div class="section-header r">
-      <h2 class="section-title col-yellow">LIVROS QUE DIRIGI</h2>
-      <p class="section-desc" style="border-color:rgba(242,224,74,0.25); color:rgba(242,224,74,0.4);">~200 títulos · desde 2003</p>
-    </div>
-    <div class="books-grid" id="books-grid">
-      <!-- preenchido dinamicamente pelo Directus -->
-    </div>
-    <a href="livros.html" class="see-all r">ver todos os livros →</a>
-  </div>
-</section>
-
-<!-- ── OBRAS VISUAIS ──────────────────────────────────────────────────────── -->
-<section class="section" id="obras">
-  <div class="section-inner">
-    <div class="section-header r">
-      <h2 class="section-title col-purple">OBRAS VISUAIS</h2>
-      <p class="section-desc" style="border-color:rgba(204,68,255,0.25); color:rgba(204,68,255,0.4);">desenhos · pinturas · animações · vídeos</p>
-    </div>
-    <div class="gallery-grid" id="obras-grid">
-      <!-- preenchido dinamicamente pelo Directus -->
+    <ol class="sumario-lista" id="sumario-lista">
+      <!-- populado pelo JS via renderSumario() -->
+    </ol>
+    <div class="arquivo-row r">
+      <span class="arquivo-label">— arquivo completo</span>
+      <a href="posts.html" class="arquivo-link">escritos →</a>
+      <a href="drops.html" class="arquivo-link">drops →</a>
+      <a href="livros.html" class="arquivo-link">livros →</a>
     </div>
   </div>
 </section>
 
-<!-- ── PROJETOS ───────────────────────────────────────────────────────────── -->
-<section class="section" id="projetos">
+<!-- ── COLOFÃO ────────────────────────────────────────────────────────────── -->
+<section class="section" id="colofao">
   <div class="section-inner">
-    <div class="section-header r">
-      <h2 class="section-title col-blue">PROJETOS</h2>
-      <p class="section-desc" style="border-color:rgba(51,85,255,0.25); color:rgba(51,85,255,0.4);">histórias longas sobre o que construí</p>
-    </div>
-    <!-- linhas injetadas pelo JS via renderProjetos() -->
-  </div>
-</section>
-
-<!-- ── ME ─────────────────────────────────────────────────────────────────── -->
-<section class="section" id="me">
-  <div class="section-inner">
-  <div class="me-grid">
-    <div class="r">
-      <h2 class="me-name">DANIEL<br><span>LAMEIRA</span></h2>
-      <div class="me-tags">
-        <span class="me-tag">arte</span><span class="me-tag">criatividade</span>
-        <span class="me-tag">tecnologia</span><span class="me-tag">livros</span><span class="me-tag">consciência</span>
+    <div class="colofao-grid r">
+      <div>
+        <div class="colofao-label">— edita</div>
+        <h2 class="colofao-nome">DANIEL<br><span>LAMEIRA</span></h2>
+        <div class="colofao-tags me-tags">
+          <span class="me-tag">arte</span><span class="me-tag">criatividade</span><span class="me-tag">livros</span><span class="me-tag">tecnologia</span><span class="me-tag">consciência</span>
+        </div>
       </div>
-    </div>
-    <div class="r d1">
-      <p style="font-family:var(--f-ui); font-size:8.5px; letter-spacing:0.18em; text-transform:uppercase; color:rgba(232,50,10,0.45);">— quem escreve</p>
-      <p class="me-bio">Sou um editor e pesquisador sobre tecnologia, arte e criatividade. Pai de um menino maravilhoso, fundador da Antofágica e da Seiva, editei muitos livros. Criei este blog para registrar mudanças, pensamentos e indicações de conteúdos que gosto.</p>
-      <div class="me-links">
-        <a href="#" class="me-link">Instagram ↗</a>
-        <a href="#" class="me-link">Email ↗</a>
-        <a href="#" class="me-link">LinkedIn ↗</a>
+      <div>
+        <div class="colofao-label">— sobre</div>
+        <p class="colofao-val me-bio">Sou um editor e pesquisador sobre tecnologia, arte e criatividade. Pai de um menino maravilhoso, fundador da Antofágica e da Seiva, editei muitos livros. Criei este blog para registrar mudanças, pensamentos e indicações de conteúdos que gosto.</p>
+      </div>
+      <div>
+        <div class="colofao-label">— contato</div>
+        <div class="colofao-links me-links">
+          <a href="#" class="me-link">Instagram ↗</a>
+          <a href="#" class="me-link">Email ↗</a>
+          <a href="#" class="me-link">LinkedIn ↗</a>
+        </div>
       </div>
     </div>
   </div>
-  </div><!-- /section-inner -->
 </section>
 
 <section class="newsletter-section">
   <div class="newsletter-block">
-    <div class="newsletter-eyebrow">— receba por email</div>
-    <h3 class="newsletter-title">NOVO POST?<br>VOCÊ RECEBE.</h3>
-    <p class="newsletter-desc">sem spam · só quando tiver algo novo · cancele quando quiser</p>
+    <div class="newsletter-eyebrow">— próxima edição</div>
+    <h3 class="newsletter-title">RECEBA<br>POR EMAIL.</h3>
+    <p class="newsletter-desc">um aviso quando sair edição nova · sem spam · cancele quando quiser</p>
     <form class="newsletter-form" id="nl-form-index"
           action="https://00bc7bfa.sibforms.com/serve/MUIFAP6Irrw--9y9roSCjipmIl4QR0T4wNHGL7l3E3UeY6kVH3b2sscz8ok4KT7n3UBxLtxBmrvtMMkSbyE9mfORmip7vX7y2z6PllCs5twrQmEg47eiJdgNP_mK__9s2-LLLtTCJA2qQO3fbMzyym_sdAkHL_0dMmGuC4JbQ0bTmFz11oDurorHHcJzHrxnEZEnT3V58kfQA_pSqQ=="
           method="POST" target="nl-iframe-index">
@@ -946,6 +957,98 @@ function initObserver() {
   document.querySelectorAll('.r').forEach(el => obs.observe(el));
 }
 
+// ── SUMÁRIO UNIFICADO (lab.html) ──────────────────────────────────────────
+function sumFmtDate(dateStr) {
+  if (!dateStr) return '';
+  const s = String(dateStr);
+  if (/^\d{4}$/.test(s)) return s;
+  const d = new Date(s);
+  if (isNaN(d)) return s;
+  const months = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+  return `${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function renderSumario(escritos, drops, livros, obras) {
+  const ol = document.getElementById('sumario-lista');
+  if (!ol) return;
+  ol.innerHTML = '';
+
+  const dropLabels = {
+    livro: 'livro', album: 'álbum', podcast: 'podcast', filme: 'filme',
+    musica: 'música', video: 'vídeo', canal: 'canal', jogo: 'jogo',
+    artista: 'artista', ensaio: 'ensaio'
+  };
+
+  const items = [];
+
+  escritos.forEach(e => {
+    const isProj = e.tipo === 'projeto';
+    items.push({
+      kind: isProj ? 'projeto' : 'escrito',
+      label: isProj ? 'projeto' : 'escrito',
+      title: e.title,
+      date: e.date,
+      sort: e.date ? new Date(e.date).getTime() : 0,
+      href: `post.html?id=${e.id}${isProj ? '&tipo=projeto' : ''}`
+    });
+  });
+
+  drops.forEach(d => {
+    const sub = d.type || 'drop';
+    items.push({
+      kind: sub,
+      label: dropLabels[sub] || sub,
+      title: d.title,
+      sublabel: d.author || '',
+      date: null,
+      sort: 0,
+      href: `drop.html?id=${d.id}`
+    });
+  });
+
+  livros.forEach(l => {
+    items.push({
+      kind: 'livro',
+      label: 'livro que dirigi',
+      title: l.title,
+      date: l.ano,
+      sort: l.ano ? new Date(`${l.ano}-06-30`).getTime() : 0,
+      href: `livro.html?id=${l.id}`
+    });
+  });
+
+  obras.forEach(o => {
+    items.push({
+      kind: 'obra',
+      label: 'obra visual',
+      title: o.title,
+      date: o.year,
+      sort: o.year ? new Date(`${o.year}-06-30`).getTime() : 0,
+      href: `obra.html?id=${o.id}`
+    });
+  });
+
+  // Ordena: mais recentes primeiro (items sem data vão pro fim)
+  items.sort((a, b) => b.sort - a.sort);
+
+  // Limita a ~20 na home (o resto vai no arquivo)
+  items.slice(0, 20).forEach((item, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <a href="${item.href}" class="sumario-item">
+        <span class="sumario-num">${String(i+1).padStart(2,'0')}</span>
+        <span class="sumario-tipo t-${item.kind}">${item.label}</span>
+        <span>
+          <span class="sumario-titulo-item">${item.title || ''}</span>
+          ${item.sublabel ? `<span class="sumario-sub">${item.sublabel}</span>` : ''}
+        </span>
+        <span class="sumario-data">${sumFmtDate(item.date)}</span>
+      </a>
+    `;
+    ol.appendChild(li);
+  });
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────
 async function init() {
   const [escritos, drops, livros, obras] = await Promise.all([
@@ -955,11 +1058,7 @@ async function init() {
     fetchObras(),
   ]);
   renderHeroPosts(escritos);
-  renderPostList(escritos);
-  renderProjetos(escritos.filter(e => e.tipo === 'projeto'));
-  renderDrops(drops);
-  renderLivros(livros);
-  renderObras(obras);
+  renderSumario(escritos, drops, livros, obras);
   renderHeroFloats(drops, livros, obras);
   await renderAbout();
   initObserver();
