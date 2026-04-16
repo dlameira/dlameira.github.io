@@ -3,319 +3,249 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>daniel lameira — caderno</title>
+<title>daniel lameira // não começa nem termina</title>
 <link rel="preconnect" href="https://directus-production-afdd.up.railway.app" crossorigin>
 <link rel="dns-prefetch" href="https://directus-production-afdd.up.railway.app">
 <style>
-@font-face { font-family: 'GTPressura'; src: url('fonts/gt-pressura-mono-regular.ttf') format('truetype'); font-display: swap; }
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --paper:     #ebe6d3;
-  --paper-2:   #e2dcc5;
-  --ink:       #141311;
-  --ink-soft:  #3a3832;
-  --ink-mute:  #7a776a;
-  --ink-line:  rgba(20,19,17,0.14);
-  --accent:    #7a2818;
-  --f-serif:   'Iowan Old Style', 'Charter', 'Apple Garamond', 'Baskerville', 'Libre Caslon Text', Georgia, serif;
-  --f-mono:    'GTPressura', ui-monospace, Menlo, 'Courier New', monospace;
-}
-
-html { overflow-x: hidden; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: #fff; overflow-x: hidden; }
 body {
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--f-serif);
-  font-size: 17px;
-  line-height: 1.65;
+  background: #fff;
+  color: #000;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 16px;
+  line-height: 1.35;
   min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  padding: 0 0 140px;
+  position: relative;
+  padding-bottom: 420px;
 }
 
-/* grão de papel em camada fixa */
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.08  0 0 0 0 0.05  0 0 0 0.22 0'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
-  background-size: 140px 140px;
-  pointer-events: none;
-  opacity: 0.5;
-  mix-blend-mode: multiply;
-  z-index: 9998;
+/* ─── canvas livre (posições absolutas) ─── */
+.canvas {
+  position: relative;
+  width: 100%;
+  max-width: 100vw;
 }
 
-a { color: var(--ink); text-decoration: none; }
-a:hover { color: var(--accent); }
-
-/* ── MARCA MÍNIMA ─────────────────────────────────────── */
-.mast {
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 28px 32px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-family: var(--f-mono);
-  font-size: 10px;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
+/* blocos posicionados */
+.bloom {
+  position: absolute;
+  max-width: 620px;
 }
-.mast a { color: inherit; }
-.mast a:hover { color: var(--accent); }
+.bloom.w-240 { max-width: 240px; }
+.bloom.w-320 { max-width: 320px; }
+.bloom.w-480 { max-width: 480px; }
+.bloom.w-auto { max-width: none; width: auto; }
 
-/* ── ABERTURA ────────────────────────────────────────── */
-.opening {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 140px 32px 80px;
-}
-.opening-title {
-  font-family: var(--f-serif);
-  font-size: clamp(48px, 8vw, 104px);
-  font-weight: 400;
+/* ─── tipografia caótica ─── */
+.big {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: normal;
+  font-size: clamp(44px, 8vw, 110px);
   line-height: 0.95;
-  letter-spacing: -0.01em;
-  color: var(--ink);
+  letter-spacing: -0.02em;
 }
-.opening-title em { font-style: italic; color: var(--accent); }
-.opening-sub {
-  margin-top: 28px;
-  font-family: var(--f-mono);
+.xbig {
+  font-size: clamp(70px, 14vw, 190px);
+  line-height: 0.88;
+  letter-spacing: -0.04em;
+  font-weight: normal;
+}
+.mid {
+  font-size: clamp(26px, 3.5vw, 40px);
+  line-height: 1.05;
+  font-weight: normal;
+}
+.small {
   font-size: 11px;
-  letter-spacing: 0.22em;
+  font-family: 'Courier New', 'Courier', monospace;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--ink-mute);
-  line-height: 1.8;
 }
-.opening-rule {
-  margin-top: 48px;
-  border: none;
-  border-top: 1px solid var(--ink-line);
-}
-
-/* ── TIMELINE ─────────────────────────────────────────── */
-.timeline {
-  max-width: 620px;
-  margin: 0 auto;
-  padding: 0 32px;
-}
-.entry { margin: 64px 0; }
-.entry + .entry { border-top: 1px solid var(--ink-line); padding-top: 64px; }
-
-/* metadados (timestamp + tipo) — sempre em mono */
-.meta {
-  font-family: var(--f-mono);
-  font-size: 10px;
-  letter-spacing: 0.22em;
+.xsmall {
+  font-size: 9px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--ink-mute);
-  margin-bottom: 18px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: baseline;
+  color: #555;
 }
-.meta .tipo { color: var(--accent); }
-.meta .sep { opacity: 0.4; }
-
-/* TEXTO (escritos / projetos) */
-.entry-text .title {
-  font-family: var(--f-serif);
-  font-size: clamp(26px, 3.4vw, 36px);
-  font-weight: 400;
-  line-height: 1.15;
-  letter-spacing: -0.005em;
-  margin-bottom: 24px;
+.poema {
+  font-size: 17px;
+  line-height: 1.55;
+  font-family: 'Times New Roman', Times, serif;
 }
-.entry-text .title a { color: var(--ink); }
-.entry-text .title a:hover { color: var(--accent); }
-.entry-text .body { color: var(--ink); }
-.entry-text .body p { margin-bottom: 18px; font-size: 17px; line-height: 1.7; }
-.entry-text .body p:last-child { margin-bottom: 0; }
-.entry-text .body em { font-style: italic; }
-.entry-text .body strong { font-weight: 600; }
-.entry-text .body a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-.entry-text .body blockquote {
-  border-left: 2px solid var(--accent);
-  padding-left: 18px;
-  margin: 22px 0;
-  color: var(--ink-soft);
-  font-style: italic;
-}
-.entry-text .body h2, .entry-text .body h3 {
-  font-family: var(--f-serif); font-weight: 600;
-  margin: 28px 0 10px;
-}
-
-/* OBRA visual — full-bleed quebrando a coluna */
-.entry-visual {
-  margin-left: calc(-1 * max(0px, (100vw - 980px) / 2 - 32px));
-  margin-right: calc(-1 * max(0px, (100vw - 980px) / 2 - 32px));
-  max-width: none;
-}
-.entry-visual .meta { max-width: 620px; margin-left: auto; margin-right: auto; padding: 0 32px; }
-.entry-visual .visual-frame {
-  background: var(--ink);
-  line-height: 0;
-  margin: 0;
-}
-.entry-visual .visual-frame img,
-.entry-visual .visual-frame video {
-  width: 100%; height: auto;
-  display: block;
-  max-height: 82vh;
-  object-fit: contain;
-}
-.entry-visual .caption {
-  max-width: 620px; margin: 14px auto 0;
-  padding: 0 32px;
-  font-family: var(--f-mono);
-  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--ink-mute);
-  display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap;
-}
-.entry-visual .caption .name { color: var(--ink); font-size: 11px; letter-spacing: 0.08em; text-transform: none; font-family: var(--f-serif); font-style: italic; }
-
-/* LIVRO dirigido — capa + ficha lateral */
-.entry-book { display: grid; grid-template-columns: 140px 1fr; gap: 28px; align-items: start; }
-.entry-book .book-cover {
-  aspect-ratio: 2/3;
-  background: var(--paper-2);
-  overflow: hidden;
-  box-shadow: 0 1px 0 var(--ink-line), 0 8px 24px rgba(20,19,17,0.12);
-}
-.entry-book .book-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.entry-book .book-info { padding-top: 4px; }
-.entry-book .book-title {
-  font-family: var(--f-serif); font-size: 22px; font-weight: 400; font-style: italic;
-  line-height: 1.2; margin-bottom: 6px;
-}
-.entry-book .book-author { font-family: var(--f-serif); font-size: 15px; color: var(--ink-soft); margin-bottom: 14px; }
-.entry-book .book-details {
-  font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--ink-mute); line-height: 1.8;
-}
-@media (max-width: 540px) {
-  .entry-book { grid-template-columns: 100px 1fr; gap: 18px; }
-  .entry-book .book-title { font-size: 19px; }
-}
-
-/* DROP / indicação */
-.entry-drop .drop-quote {
-  font-family: var(--f-serif);
-  font-size: 20px;
+.text {
+  font-size: 14px;
   line-height: 1.5;
-  color: var(--ink);
-  font-style: italic;
-  margin-bottom: 14px;
+  font-family: 'Times New Roman', Times, serif;
 }
-.entry-drop .drop-quote::before { content: '"'; margin-right: 2px; }
-.entry-drop .drop-quote::after { content: '"'; margin-left: 2px; }
-.entry-drop .drop-attr {
-  font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--ink-mute);
-}
-.entry-drop .drop-attr strong { color: var(--ink); font-weight: 400; }
+.text.sm { font-size: 12px; line-height: 1.45; }
 
-/* ── CRÉDITOS (rodapé estilo roteiro) ────────────────── */
-.credits {
-  max-width: 620px;
-  margin: 180px auto 0;
-  padding: 64px 32px 0;
-  border-top: 1px solid var(--ink-line);
-  font-family: var(--f-mono);
+a { color: #0000ee; text-decoration: underline; }
+a:visited { color: #551a8b; }
+a:hover { background: #ff0; color: #000; }
+
+/* imagem / vídeo solto */
+.media {
+  display: block;
+  line-height: 0;
+  max-width: 100%;
+}
+.media img, .media video {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+.media.w-120 { width: 120px; }
+.media.w-180 { width: 180px; }
+.media.w-240 { width: 240px; }
+.media.w-320 { width: 320px; }
+.media.w-420 { width: 420px; }
+.media.w-560 { width: 560px; }
+.media.broken {
+  width: 260px; height: 180px;
+  border: 1px solid #000;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: #888;
+  text-transform: uppercase;
+  background: repeating-linear-gradient(45deg, transparent, transparent 8px, #f2f2f2 8px, #f2f2f2 9px);
+}
+
+/* rotações sutis reusáveis */
+.r-l1 { transform: rotate(-1.2deg); }
+.r-l2 { transform: rotate(-2.6deg); }
+.r-l3 { transform: rotate(-4.1deg); }
+.r-r1 { transform: rotate(1.1deg); }
+.r-r2 { transform: rotate(2.8deg); }
+.r-r3 { transform: rotate(3.9deg); }
+
+/* abertura */
+.intro {
+  padding: 80px 24px 0;
+  position: relative;
+  min-height: 100vh;
+}
+.intro-stamp {
+  position: absolute; top: 22px; right: 28px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #666;
+}
+.intro-stamp a { color: #0000ee; }
+.intro-nav { margin-top: 4px; }
+
+.intro-hero {
+  padding: 18vh 0 0 8vw;
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: normal;
+  font-size: clamp(46px, 10vw, 150px);
+  line-height: 0.88;
+  letter-spacing: -0.03em;
+  max-width: 90vw;
+}
+.intro-hero .break { display: block; }
+.intro-hero .slash { color: #0000ee; padding: 0 .1em; }
+.intro-hero .pt { display: block; margin-left: clamp(30px, 10vw, 180px); }
+.intro-sub {
+  margin-top: 38px;
+  padding-left: 8vw;
+  font-family: 'Courier New', monospace;
   font-size: 11px;
-  line-height: 2;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1.9;
+  color: #333;
+  max-width: 520px;
+}
+
+/* rodapé (créditos) */
+.credits {
+  position: absolute;
+  bottom: 40px; left: 24px; right: 24px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ink-soft);
-  text-align: center;
+  color: #333;
+  line-height: 1.9;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 40px;
 }
-.credits-block { margin-bottom: 44px; }
-.credits-label { color: var(--ink-mute); font-size: 9.5px; letter-spacing: 0.28em; margin-bottom: 4px; }
-.credits-value { color: var(--ink); }
-.credits-value a { color: inherit; }
-.credits-value a:hover { color: var(--accent); }
+.credits a { color: #0000ee; }
 .credits-fin {
-  margin-top: 72px;
-  font-size: 9px;
-  letter-spacing: 0.4em;
-  color: var(--ink-mute);
+  position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
+  font-family: 'Courier New', monospace; font-size: 10px;
+  letter-spacing: 0.4em; color: #888;
 }
 
-/* skeleton de loading discreto */
-.loading {
-  text-align: center;
-  font-family: var(--f-mono);
-  font-size: 10px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-  padding: 80px 0;
+/* mobile: desliga posições absolutas, empilha */
+@media (max-width: 760px) {
+  .canvas { height: auto !important; }
+  .bloom {
+    position: static !important;
+    max-width: 100% !important;
+    margin: 40px 18px !important;
+    transform: none !important;
+  }
+  .media.w-120, .media.w-180, .media.w-240, .media.w-320, .media.w-420, .media.w-560 { width: 80% !important; }
+  .intro-hero { font-size: clamp(42px, 12vw, 90px); padding: 22vh 0 0 0; }
+  .intro-sub { padding-left: 0; }
+  .credits { position: static; margin: 60px 18px 0; grid-template-columns: 1fr; gap: 24px; }
+  .credits-fin { position: static; text-align: center; margin-top: 28px; }
 }
-
-/* mobile */
-@media (max-width: 620px) {
-  .opening { padding: 100px 24px 60px; }
-  .timeline { padding: 0 24px; }
-  .entry-visual { margin-left: -24px; margin-right: -24px; }
-  .entry-visual .meta { padding: 0 24px; }
-  .entry-visual .caption { padding: 0 24px; }
-}
-
-/* respira ao entrar no viewport (sutil) */
-.entry { opacity: 0; transform: translateY(12px); transition: opacity .7s ease, transform .7s ease; }
-.entry.on { opacity: 1; transform: none; }
 </style>
 </head>
 <body>
 
-<div class="mast">
-  <a href="lab.html">daniel lameira</a>
-  <div>
-    <a href="index.html">home</a>
-    &nbsp;&nbsp;·&nbsp;&nbsp;
-    <a href="posts.html">arquivo</a>
+<section class="intro">
+  <div class="intro-stamp">
+    daniel lameira · 2019—agora<br>
+    <span class="intro-nav">
+      <a href="index.html">home</a> ·
+      <a href="posts.html">arquivo</a> ·
+      <a href="lab.html">aqui</a>
+    </span>
   </div>
-</div>
 
-<section class="opening">
-  <h1 class="opening-title">caderno <em>em passagem</em></h1>
-  <div class="opening-sub">
-    escritos · obras · drops · livros<br>
-    daniel lameira · 2019 — agora · em processo
-  </div>
-  <hr class="opening-rule">
+  <h1 class="intro-hero">
+    <span class="break">não começa</span>
+    <span class="break">nem <span class="slash">/</span> termina</span>
+    <span class="pt">does not begin</span>
+    <span class="pt">or end</span>
+  </h1>
+
+  <p class="intro-sub">
+    escritos / drops / obras / livros — em fluxo.<br>
+    sem menu, sem ordem fixa.<br>
+    role.
+  </p>
 </section>
 
-<main class="timeline" id="timeline">
-  <div class="loading">carregando —</div>
-</main>
+<div class="canvas" id="canvas">
+  <div style="position:absolute;top:40vh;left:8vw;" class="xsmall">carregando o caderno...</div>
+</div>
 
-<footer class="credits">
-  <div class="credits-block">
-    <div class="credits-label">escrito &amp; organizado por</div>
-    <div class="credits-value">DANIEL LAMEIRA</div>
-  </div>
-  <div class="credits-block">
-    <div class="credits-label">editoras</div>
-    <div class="credits-value">ANTOFÁGICA · SEIVA</div>
-  </div>
-  <div class="credits-block">
-    <div class="credits-label">em</div>
-    <div class="credits-value">rio de janeiro</div>
-  </div>
-  <div class="credits-block" id="credits-contact">
-    <div class="credits-label">contato</div>
-    <div class="credits-value">
-      <a href="#">instagram</a>
-      &nbsp;·&nbsp;
-      <a href="#">email</a>
-      &nbsp;·&nbsp;
+<footer>
+  <div class="credits" id="credits">
+    <div>
+      escrito &amp; organizado por<br>
+      <b>DANIEL LAMEIRA</b>
+    </div>
+    <div>
+      editoras<br>
+      <b>ANTOFÁGICA · SEIVA</b>
+    </div>
+    <div id="credits-contact">
+      contato<br>
+      <a href="#">instagram</a> ·
+      <a href="#">email</a> ·
       <a href="#">linkedin</a>
     </div>
   </div>
@@ -325,7 +255,6 @@ a:hover { color: var(--accent); }
 <script>
 const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
 
-/* cache leve em sessionStorage (5min) */
 async function cachedFetch(key, url, ttl = 5 * 60 * 1000) {
   try {
     const c = sessionStorage.getItem(key);
@@ -346,16 +275,8 @@ async function cachedFetch(key, url, ttl = 5 * 60 * 1000) {
 
 function escHtml(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-function renderMarkdown(str) {
-  if (!str) return '';
-  const s = String(str);
-  if (/<(p|br|div|h[1-6]|strong|em|b|i|a\s|ul|ol|li|blockquote|img|figure|hr)[\s>/]/i.test(s)) return s;
-  return '<p>' + s
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g,'<em>$1</em>')
-    .replace(/\n\n/g,'</p><p>')
-    .replace(/\n/g,'<br>') + '</p>';
+function stripHtml(html) {
+  return String(html || '').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
 }
 
 function fmtMonthYear(dateStr) {
@@ -363,91 +284,34 @@ function fmtMonthYear(dateStr) {
   const d = new Date(dateStr);
   if (isNaN(d)) return String(dateStr);
   const months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-  return `${String(d.getDate()).padStart(2,'0')} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  return `${String(d.getDate()).padStart(2,'0')}.${months[d.getMonth()]}.${d.getFullYear()}`;
 }
 
 function directusImg(id, w) {
   if (!id) return null;
   const tx = encodeURIComponent(JSON.stringify([['sharpen']]));
-  return `${DIRECTUS}/assets/${id}?width=${w}&quality=90&format=webp&transforms=${tx}`;
+  return `${DIRECTUS}/assets/${id}?width=${w}&quality=85&format=webp&transforms=${tx}`;
 }
 
-/* renderers por tipo */
-function renderEscrito(e) {
-  const isProj = e.tipo === 'projeto';
-  const tipoLabel = isProj ? 'projeto' : (e.tipo || 'escrito');
-  return `
-    <article class="entry entry-text">
-      <div class="meta"><span class="tipo">— ${escHtml(tipoLabel)}</span><span class="sep">·</span><span>${fmtMonthYear(e.date)}</span></div>
-      <h2 class="title"><a href="post.html?id=${e.id}${isProj ? '&tipo=projeto' : ''}">${escHtml(e.title || 'sem título')}</a></h2>
-      <div class="body">${renderMarkdown(e.content || e.body || e.excerpt || '')}</div>
-    </article>`;
-}
-
-function renderObra(o) {
-  const imgUrl = o.image ? directusImg(o.image, 1280) : null;
-  const posterAttr = imgUrl ? `poster="${imgUrl}"` : '';
-  let mediaHtml;
-  if (o.video) {
-    mediaHtml = `<video autoplay muted loop playsinline preload="metadata" ${posterAttr}><source src="${DIRECTUS}/assets/${o.video}" type="video/mp4"></video>`;
-  } else if (imgUrl) {
-    mediaHtml = `<img src="${imgUrl}" alt="${escHtml(o.title || '')}" loading="lazy" decoding="async">`;
-  } else {
-    return '';
-  }
-  return `
-    <article class="entry entry-visual">
-      <div class="meta"><span class="tipo">— obra</span><span class="sep">·</span><span>${escHtml(o.type || 'visual')}</span><span class="sep">·</span><span>${escHtml(o.year || '')}</span></div>
-      <figure class="visual-frame"><a href="obra.html?id=${o.id}">${mediaHtml}</a></figure>
-      <figcaption class="caption">
-        <span class="name">${escHtml(o.title || '')}</span>
-        <span>${escHtml(o.type || '')} · ${escHtml(o.year || '')}</span>
-      </figcaption>
-    </article>`;
-}
-
-function renderLivro(l) {
-  const coverId = l.Cover || l.cover;
-  const coverUrl = directusImg(coverId, 360);
-  const coverHtml = coverUrl
-    ? `<img src="${coverUrl}" alt="${escHtml(l.title || '')}" loading="lazy" decoding="async">`
-    : '';
-  return `
-    <article class="entry entry-book">
-      <a class="book-cover" href="livro.html?id=${l.id}">${coverHtml}</a>
-      <div class="book-info">
-        <div class="meta"><span class="tipo">— livro que dirigi</span><span class="sep">·</span><span>${escHtml(l.ano || '')}</span></div>
-        <h3 class="book-title"><a href="livro.html?id=${l.id}">${escHtml(l.title || '')}</a></h3>
-        <p class="book-author">${escHtml(l.autor || '')}</p>
-        <p class="book-details">${[l.editora, l.ano, l.paginas ? l.paginas + 'p' : null].filter(Boolean).map(escHtml).join(' · ')}</p>
-      </div>
-    </article>`;
-}
-
-function renderDrop(d) {
-  const tipoL = d.type || 'drop';
-  return `
-    <article class="entry entry-drop">
-      <div class="meta"><span class="tipo">— drop</span><span class="sep">·</span><span>${escHtml(tipoL)}</span></div>
-      ${d.note ? `<div class="drop-quote">${escHtml(d.note)}</div>` : ''}
-      <div class="drop-attr">
-        <strong><a href="drop.html?id=${d.id}">${escHtml(d.title || '')}</a></strong>${d.author ? ` · ${escHtml(d.author)}` : ''}
-      </div>
-    </article>`;
+/* PRNG determinístico — mesmo seed sempre gera mesma posição */
+function sr(seed, min, max) {
+  const x = Math.sin(seed * 9301 + 49297) * 233280;
+  const frac = x - Math.floor(x);
+  return min + Math.abs(frac) * (max - min);
 }
 
 /* fetchs */
 async function fetchEscritos() {
-  return cachedFetch('c:lab:escritos', `${DIRECTUS}/items/escritos?filter[status][_eq]=published&sort[]=-date&limit=40`);
+  return cachedFetch('c:lab2:escritos', `${DIRECTUS}/items/escritos?filter[status][_eq]=published&sort[]=-date&limit=25`);
 }
 async function fetchDrops() {
-  return cachedFetch('c:lab:drops', `${DIRECTUS}/items/drops?filter[status][_eq]=published&sort[]=order&limit=30&fields=id,title,author,type,note,order,date_created`);
+  return cachedFetch('c:lab2:drops', `${DIRECTUS}/items/drops?filter[status][_eq]=published&sort[]=order&limit=30&fields=id,title,author,type,note,order,date_created`);
 }
 async function fetchLivros() {
-  return cachedFetch('c:lab:livros', `${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=-ano&limit=20&fields=id,title,autor,Cover,cover,ano,editora,paginas`);
+  return cachedFetch('c:lab2:livros', `${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=-ano&limit=15&fields=id,title,autor,Cover,cover,ano,editora`);
 }
 async function fetchObras() {
-  return cachedFetch('c:lab:obras', `${DIRECTUS}/items/obras?filter[status][_eq]=published&sort[]=order&limit=20&fields=id,title,type,year,image,video,order`);
+  return cachedFetch('c:lab2:obras', `${DIRECTUS}/items/obras?filter[status][_eq]=published&sort[]=order&limit=15&fields=id,title,type,year,image,video,order`);
 }
 
 async function loadAbout() {
@@ -455,63 +319,177 @@ async function loadAbout() {
     const res = await fetch('content/settings/about.json');
     if (!res.ok) return;
     const data = await res.json();
-    const wrap = document.getElementById('credits-contact');
-    if (!wrap) return;
-    let links = '';
-    if (data.instagram) links += `<a href="${data.instagram}" target="_blank" rel="noopener">instagram</a>`;
-    if (data.email)     links += (links?'&nbsp;·&nbsp;':'') + `<a href="mailto:${data.email}">email</a>`;
-    if (data.linkedin)  links += (links?'&nbsp;·&nbsp;':'') + `<a href="${data.linkedin}" target="_blank" rel="noopener">linkedin</a>`;
-    if (links) wrap.querySelector('.credits-value').innerHTML = links;
+    const el = document.getElementById('credits-contact');
+    if (!el) return;
+    const parts = [];
+    if (data.instagram) parts.push(`<a href="${data.instagram}" target="_blank" rel="noopener">instagram</a>`);
+    if (data.email)     parts.push(`<a href="mailto:${data.email}">email</a>`);
+    if (data.linkedin)  parts.push(`<a href="${data.linkedin}" target="_blank" rel="noopener">linkedin</a>`);
+    if (parts.length) el.innerHTML = 'contato<br>' + parts.join(' · ');
   } catch(e) {}
 }
 
-/* monta a timeline unificada */
-function buildTimeline(escritos, drops, livros, obras) {
+/* renderers — cada um retorna {html, height} e usa posições absolutas internas
+   baseadas em pseudo-random com seed determinística */
+
+const COL_PAD = 24;
+const PAGE_WIDTH = () => Math.min(window.innerWidth, 1440);
+const FREE_WIDTH = () => Math.max(340, PAGE_WIDTH() - COL_PAD * 2);
+
+function blockEscrito(e, seed) {
+  const isProj = e.tipo === 'projeto';
+  const tipo = isProj ? 'projeto' : (e.tipo || 'escrito');
+  const date = fmtMonthYear(e.date);
+  const title = (e.title || 'sem título');
+  const bodyText = stripHtml(e.content || e.body || e.excerpt || '').slice(0, 520);
+  const short = bodyText.length > 510 ? bodyText + '…' : bodyText;
+
+  const baseHeight = Math.max(560, 360 + short.length / 2);
+
+  const titleLeft = sr(seed, 4, 42);
+  const titleTop  = sr(seed + 1, 20, 80);
+  const titleRot  = sr(seed + 2, -3, 3);
+
+  const metaLeft = sr(seed + 3, 2, 12);
+  const metaTop  = sr(seed + 4, 4, 30);
+
+  const textLeft = sr(seed + 5, 32, 58);
+  const textTop  = titleTop + sr(seed + 6, 120, 200);
+  const textRot  = sr(seed + 7, -1.5, 1.5);
+
+  const html = `
+    <div class="bloom xsmall" style="left:${metaLeft}%;top:${metaTop}px;">
+      ─ ${escHtml(tipo)} · ${escHtml(date)} · <a href="post.html?id=${e.id}${isProj ? '&tipo=projeto' : ''}">ver</a>
+    </div>
+    <a class="bloom big" style="left:${titleLeft}%;top:${titleTop}px;transform:rotate(${titleRot}deg);text-decoration:none;color:#000;max-width:${sr(seed + 8, 52, 82)}%;"
+       href="post.html?id=${e.id}${isProj ? '&tipo=projeto' : ''}">${escHtml(title.toLowerCase())}</a>
+    <div class="bloom text" style="left:${textLeft}%;top:${textTop}px;max-width:${sr(seed + 9, 28, 46)}%;transform:rotate(${textRot}deg);">
+      ${escHtml(short)}
+    </div>
+  `;
+  return { html, height: baseHeight };
+}
+
+function blockObra(o, seed) {
+  if (!o.image && !o.video) return { html: '', height: 0 };
+  const imgUrl = o.image ? directusImg(o.image, 900) : null;
+  const poster = imgUrl ? `poster="${imgUrl}"` : '';
+  const widthClass = ['w-240','w-320','w-420','w-560'][Math.floor(sr(seed,0,4))];
+  const mediaHtml = o.video
+    ? `<video autoplay muted loop playsinline preload="metadata" ${poster}><source src="${DIRECTUS}/assets/${o.video}" type="video/mp4"></video>`
+    : `<img src="${imgUrl}" alt="${escHtml(o.title || '')}" loading="lazy" decoding="async">`;
+
+  const mediaLeft = sr(seed + 1, 8, 55);
+  const mediaTop  = sr(seed + 2, 30, 80);
+  const mediaRot  = sr(seed + 3, -4, 4);
+
+  const capLeft = mediaLeft + sr(seed + 4, 4, 18);
+  const capTop  = mediaTop + sr(seed + 5, 260, 360);
+
+  const html = `
+    <a class="bloom media ${widthClass}" href="obra.html?id=${o.id}"
+       style="left:${mediaLeft}%;top:${mediaTop}px;transform:rotate(${mediaRot}deg);">
+      ${mediaHtml}
+    </a>
+    <div class="bloom xsmall" style="left:${capLeft}%;top:${capTop}px;">
+      ${escHtml(o.title || '')} — ${escHtml(o.type || '')} · ${escHtml(o.year || '')}
+    </div>
+  `;
+  return { html, height: 520 };
+}
+
+function blockLivro(l, seed) {
+  const coverUrl = directusImg(l.Cover || l.cover, 320);
+  const width = ['w-120','w-180','w-240'][Math.floor(sr(seed,0,3))];
+  const cvLeft = sr(seed + 1, 8, 60);
+  const cvTop  = sr(seed + 2, 30, 100);
+  const cvRot  = sr(seed + 3, -5, 5);
+
+  const infoLeft = cvLeft + sr(seed + 4, 12, 22);
+  const infoTop  = cvTop + sr(seed + 5, 120, 220);
+
+  const html = `
+    <a class="bloom media ${width}" href="livro.html?id=${l.id}"
+       style="left:${cvLeft}%;top:${cvTop}px;transform:rotate(${cvRot}deg);background:#eee;">
+      ${coverUrl ? `<img src="${coverUrl}" alt="${escHtml(l.title || '')}" loading="lazy" decoding="async">` : '<div class="broken">capa / sem / imagem</div>'}
+    </a>
+    <div class="bloom text sm" style="left:${infoLeft}%;top:${infoTop}px;max-width:260px;">
+      <i>${escHtml(l.title || '')}</i><br>
+      ${escHtml(l.autor || '')}<br>
+      <span class="xsmall">${escHtml(l.editora || '')} · ${escHtml(l.ano || '')} · livro que dirigi · <a href="livro.html?id=${l.id}">↗</a></span>
+    </div>
+  `;
+  return { html, height: 440 };
+}
+
+function blockDrop(d, seed) {
+  const tipo = d.type || 'drop';
+  const pick = Math.floor(sr(seed, 0, 3));
+  const titleCls = ['mid','big','poema'][pick];
+  const left = sr(seed + 1, 6, 55);
+  const top  = sr(seed + 2, 30, 80);
+  const rot  = sr(seed + 3, -3, 3);
+
+  const noteLeft = left + sr(seed + 4, 2, 12);
+  const noteTop  = top + sr(seed + 5, 140, 220);
+
+  const html = `
+    <a class="bloom ${titleCls}" href="drop.html?id=${d.id}"
+       style="left:${left}%;top:${top}px;transform:rotate(${rot}deg);text-decoration:none;color:#000;max-width:${sr(seed + 6, 35, 60)}%;">
+      ${escHtml(d.title || '')}
+    </a>
+    <div class="bloom xsmall" style="left:${left}%;top:${top - 22}px;">
+      ─ ${escHtml(tipo)} ${d.author ? '· ' + escHtml(d.author) : ''}
+    </div>
+    ${d.note ? `<div class="bloom text sm" style="left:${noteLeft}%;top:${noteTop}px;max-width:300px;font-style:italic;">"${escHtml(d.note)}"</div>` : ''}
+  `;
+  return { html, height: 340 };
+}
+
+function buildCanvas(escritos, drops, livros, obras) {
   const items = [];
-  escritos.forEach(e => items.push({
-    sort: e.date ? new Date(e.date).getTime() : 0,
-    html: renderEscrito(e)
+  escritos.forEach(e => items.push({ kind: 'escrito', sort: e.date ? new Date(e.date).getTime() : 0, data: e }));
+  obras.forEach(o => items.push({ kind: 'obra', sort: o.year ? new Date(`${o.year}-06-15`).getTime() : 0, data: o }));
+  livros.forEach(l => items.push({ kind: 'livro', sort: l.ano ? new Date(`${l.ano}-06-15`).getTime() : 0, data: l }));
+  const now = Date.now();
+  drops.forEach((d, i) => items.push({
+    kind: 'drop',
+    sort: d.date_created ? new Date(d.date_created).getTime() : now - i * 86400000 * 7,
+    data: d
   }));
-  obras.forEach(o => items.push({
-    sort: o.year ? new Date(`${o.year}-06-15`).getTime() : 0,
-    html: renderObra(o)
-  }));
-  livros.forEach(l => items.push({
-    sort: l.ano ? new Date(`${l.ano}-06-15`).getTime() : 0,
-    html: renderLivro(l)
-  }));
-  /* drops não têm data — intercala nas posições usando date_created se vier, senão spread pelo range */
-  const sorted = [...escritos, ...obras.map(o=>({date: o.year?`${o.year}-06-15`:null})), ...livros.map(l=>({date: l.ano?`${l.ano}-06-15`:null}))]
-    .map(i => i.date ? new Date(i.date).getTime() : null)
-    .filter(Boolean);
-  const max = Math.max(...sorted, Date.now());
-  const min = Math.min(...sorted, Date.now() - 365*24*3600*1000);
-  const span = max - min;
-  drops.forEach((d, i) => {
-    const sort = d.date_created ? new Date(d.date_created).getTime() : (max - (i/drops.length) * span * 0.9);
-    items.push({ sort, html: renderDrop(d) });
+
+  items.sort((a, b) => b.sort - a.sort);
+
+  const canvas = document.getElementById('canvas');
+  canvas.innerHTML = '';
+  let y = 0;
+  let html = '';
+
+  items.forEach((item, i) => {
+    const seed = i * 13 + item.data.id * 7;
+    let block;
+    if (item.kind === 'escrito') block = blockEscrito(item.data, seed);
+    else if (item.kind === 'obra') block = blockObra(item.data, seed);
+    else if (item.kind === 'livro') block = blockLivro(item.data, seed);
+    else block = blockDrop(item.data, seed);
+
+    if (!block.html) return;
+
+    // "offset pack" pra cada item ter container próprio com posição top absoluta
+    html += `<div style="position:absolute;left:0;right:0;top:${y}px;height:${block.height}px;">${block.html}</div>`;
+    y += block.height;
   });
-  return items
-    .filter(i => i.html)
-    .sort((a,b) => b.sort - a.sort)
-    .map(i => i.html)
-    .join('');
+
+  canvas.innerHTML = html;
+  canvas.style.height = (y + 80) + 'px';
 }
 
 async function init() {
   const [escritos, drops, livros, obras] = await Promise.all([
     fetchEscritos(), fetchDrops(), fetchLivros(), fetchObras()
   ]);
-  const html = buildTimeline(escritos, drops, livros, obras);
-  const tl = document.getElementById('timeline');
-  tl.innerHTML = html || '<div class="loading">(vazio por enquanto)</div>';
+  buildCanvas(escritos, drops, livros, obras);
   loadAbout();
-
-  /* fade-in sutil das entradas ao entrar no viewport */
-  const obs = new IntersectionObserver(es => {
-    es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); obs.unobserve(e.target); } });
-  }, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
-  tl.querySelectorAll('.entry').forEach(el => obs.observe(el));
 }
 
 init();
