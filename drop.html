@@ -489,6 +489,24 @@ function renderSidebarList(drops) {
   });
 }
 
+// Renderiza markdown simples (espelha previewMd do admin.html)
+function renderMarkdown(str) {
+  if (!str) return '';
+  return '<p>' + String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`(.+?)`/g,'<code>$1</code>')
+    .replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2">$1</a>')
+    .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
+    .replace(/^---$/gm,'<hr>')
+    .replace(/\n\n/g,'</p><p>')
+    .replace(/\n/g,'<br>') + '</p>';
+}
+
 // ── MAIN DROP ─────────────────────────────────────────────────────────────
 
 async function loadDrop() {
@@ -516,7 +534,7 @@ async function loadDrop() {
       : '';
 
     const bodyHtml = drop.note
-      ? `<div class="drop-body">${drop.note}</div>`
+      ? `<div class="drop-body">${renderMarkdown(drop.note)}</div>`
       : '';
 
     const coverEl = drop.cover

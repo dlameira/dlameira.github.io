@@ -505,6 +505,24 @@ function formatDateShort(dateStr) {
   return `${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
+// Renderiza markdown simples (espelha previewMd do admin.html)
+function renderMarkdown(str) {
+  if (!str) return '';
+  return '<p>' + String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`(.+?)`/g,'<code>$1</code>')
+    .replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2">$1</a>')
+    .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
+    .replace(/^---$/gm,'<hr>')
+    .replace(/\n\n/g,'</p><p>')
+    .replace(/\n/g,'<br>') + '</p>';
+}
+
 async function loadPost() {
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
@@ -539,7 +557,7 @@ async function loadPost() {
     content.innerHTML = `
       ${tagParts.length ? `<div class="post-tag">${tagParts.join(' · ')}</div>` : ''}
       <h1 class="post-title">${(post.title || '').toUpperCase()}</h1>
-      <div class="post-body">${post.content || ''}</div>
+      <div class="post-body">${renderMarkdown(post.content)}</div>
       <div class="post-footer-meta">
         ${post.date ? `<div class="post-meta-item">
           <span class="post-meta-label">Publicado</span>

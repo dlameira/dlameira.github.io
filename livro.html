@@ -321,6 +321,24 @@ function directusImg(id, width) {
   return `${DIRECTUS}/assets/${id}?${width ? 'width=' + width + '&' : ''}quality=90&format=webp&transforms=${transforms}`;
 }
 
+// Renderiza markdown simples (espelha previewMd do admin.html)
+function renderMarkdown(str) {
+  if (!str) return '';
+  return '<p>' + String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`(.+?)`/g,'<code>$1</code>')
+    .replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2">$1</a>')
+    .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
+    .replace(/^---$/gm,'<hr>')
+    .replace(/\n\n/g,'</p><p>')
+    .replace(/\n/g,'<br>') + '</p>';
+}
+
 async function fetchLivro(id) {
   const res = await fetch(`${DIRECTUS}/items/livros/${id}?fields=*,colaboradores.papel,colaboradores.colaboradores_id.name,colaboradores.colaboradores_id.website`);
   const data = await res.json();
@@ -432,13 +450,13 @@ async function init() {
 
   const sinopseHtml = livro.sinopse
     ? `<div class="livro-sinopse-label">— sinopse</div>
-       <div class="livro-sinopse">${livro.sinopse.split('\n\n').map(p => `<p>${p}</p>`).join('')}</div>`
+       <div class="livro-sinopse">${renderMarkdown(livro.sinopse)}</div>`
     : '';
 
   const notasHtml = livro.notas
     ? `<div style="margin-top:48px;padding-top:24px;border-top:1px solid rgba(232,50,10,0.12);">
          <div class="livro-sinopse-label">— bastidores</div>
-         <div class="livro-sinopse">${livro.notas.split('\n\n').map(p => `<p>${p}</p>`).join('')}</div>
+         <div class="livro-sinopse">${renderMarkdown(livro.notas)}</div>
        </div>`
     : '';
 
