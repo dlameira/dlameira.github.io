@@ -134,7 +134,10 @@ nav {
   padding: 8px 20px; margin: 6px 0; width: fit-content;
   text-decoration: none; color: var(--fg);
   position: relative; z-index: 3; cursor: crosshair;
+  overflow: hidden;
 }
+.headline-title { display: block; transition: opacity 0.18s ease; }
+.headline:hover .headline-title { opacity: 0; }
 .headline.border-red    { border: 2px solid var(--red); }
 .headline.border-green  { border: 2px solid var(--green); }
 .headline.border-blue   { border: 2px solid var(--blue); }
@@ -147,6 +150,32 @@ nav {
 .headline.border-blue:hover   { background: var(--blue);   color: var(--fg); }
 .headline.border-purple:hover { background: var(--purple); color: var(--fg); }
 .headline.border-yellow:hover { background: var(--yellow); color: var(--bg); }
+
+/* meta que aparece no hover dos headlines — excerpt centralizado,
+   tipo · data no canto inferior direito */
+.headline-meta {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  padding: 14px 20px 32px;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: none;
+}
+.headline-meta-excerpt {
+  font-family: var(--f-body);
+  font-size: clamp(12px, 1.2vw, 16px); line-height: 1.5;
+  max-width: 88%;
+  opacity: 0.92;
+}
+.headline-meta-tag {
+  position: absolute; right: 18px; bottom: 10px;
+  font-family: var(--f-ui);
+  font-size: clamp(8px, 0.8vw, 10px); letter-spacing: 0.24em; text-transform: uppercase;
+  opacity: 0.85;
+  text-align: right;
+}
+.headline:hover .headline-meta { opacity: 1; }
 
 .hl-1 { margin-left: clamp(18px, 7vw, 120px); margin-right: clamp(16px, 4vw, 60px); margin-top: 28px; }
 .hl-2 { margin-left: clamp(8px, 2vw, 24px); margin-right: clamp(40px, 10vw, 160px); }
@@ -202,7 +231,7 @@ nav {
 }
 
 /* DROPS */
-.drops-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(188px, 1fr)); gap: 2px; }
+.drops-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 2px; }
 .drop-card { background: #111109; border: 1px solid rgba(255,255,255,0.04); text-decoration: none; color: var(--fg); display: flex; flex-direction: column; cursor: crosshair; transition: border-color 0.2s; }
 .drop-card:hover { border-color: var(--red); }
 .drop-cover { aspect-ratio: 1; position: relative; overflow: hidden; }
@@ -211,7 +240,8 @@ nav {
 .drop-card:hover .drop-cover-text { opacity: 1; }
 .drop-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .drop-card[data-type="book"] .drop-cover img { object-fit: contain; }
-.drop-type-badge { position: absolute; top: 8px; left: 8px; font-family: var(--f-ui); font-size: 7.5px; letter-spacing: 0.16em; text-transform: uppercase; padding: 3px 6px; }
+.drop-type-badge { position: absolute; top: 6px; left: 6px; font-family: var(--f-ui); font-size: 7px; letter-spacing: 0.16em; text-transform: uppercase; padding: 2px 5px; opacity: 0.55; transition: opacity 0.2s; }
+.drop-card:hover .drop-type-badge { opacity: 1; }
 .drop-card[data-type="livro"]   .drop-cover-bg { background: #1a1208; }
 .drop-card[data-type="album"]   .drop-cover-bg { background: #08121a; }
 .drop-card[data-type="podcast"] .drop-cover-bg { background: #120a1a; }
@@ -232,10 +262,10 @@ nav {
 .drop-card[data-type="jogo"]    .drop-type-badge { color: #7dff4f; border: 1px solid #7dff4f; }
 .drop-card[data-type="artista"] .drop-type-badge { color: #ff44bb; border: 1px solid #ff44bb; }
 .drop-card[data-type="ensaio"]  .drop-type-badge { color: #e0c090; border: 1px solid #e0c090; }
-.drop-info { padding: 14px; display: flex; flex-direction: column; gap: 4px; }
-.drop-title { font-family: var(--f-ui); font-size: 12.5px; font-weight: 700; line-height: 1.2; }
-.drop-author { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.08em; color: rgba(232,232,216,0.35); text-transform: uppercase; }
-.drop-note { margin-top: 6px; font-family: var(--f-body); font-size: 11px; color: rgba(232,232,216,0.45); line-height: 1.55; }
+.drop-info { padding: 10px 12px; display: flex; flex-direction: column; gap: 3px; }
+.drop-title { font-family: var(--f-ui); font-size: 10.5px; font-weight: 500; line-height: 1.25; color: rgba(232,232,216,0.85); }
+.drop-author { font-family: var(--f-ui); font-size: 7.5px; letter-spacing: 0.08em; color: rgba(232,232,216,0.3); text-transform: uppercase; }
+.drop-note { display: none; }
 
 /* LIVROS QUE DIRIGI */
 .books-grid {
@@ -409,7 +439,7 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
     <span class="nav-logo-sub">arte, criatividade, livros,<br>tecnologia e consciência</span>
   </div>
   <ul class="nav-links">
-    <li><span class="nav-sep">..·</span><a href="#escritos">Escritos</a></li>
+    <li><span class="nav-sep">..·</span><a href="posts.html">Escritos</a></li>
     <li><span class="nav-sep">:·</span><a href="drops.html">Drops</a></li>
     <li><span class="nav-sep">.·.</span><a href="#livros">Livros</a></li>
     <li><span class="nav-sep">-·.</span><a href="#obras">Obras</a></li>
@@ -437,20 +467,6 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
   <!-- headlines injetadas pelo JS via renderHeroPosts() -->
 </section>
 
-<!-- ── ESCRITOS + DROPS (wrapper para layout desktop 2 colunas) ───────────── -->
-<div id="escritos-drops-wrap">
-
-<!-- ── ESCRITOS ───────────────────────────────────────────────────────────── -->
-<section class="section" id="escritos">
-  <div class="section-inner">
-    <div class="section-header r">
-      <h2 class="section-title">ESCRITOS</h2>
-      <p class="section-desc">ensaios · poesia · artigos · notas</p>
-    </div>
-    <!-- linhas injetadas pelo JS via renderPostList() -->
-  </div>
-</section>
-
 <!-- ── DROPS ─────────────────────────────────────────────────────────────── -->
 <section class="section" id="drops">
   <div class="section-inner">
@@ -462,8 +478,6 @@ footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em
     <div class="drops-grid"></div>
   </div>
 </section>
-
-</div><!-- /escritos-drops-wrap -->
 
 <!-- ── LIVROS QUE DIRIGI ──────────────────────────────────────────────────── -->
 <section class="section" id="livros">
@@ -658,6 +672,17 @@ function formatDate(dateStr) {
 }
 
 // ── RENDER POSTS HERO (headlines) ─────────────────────────────────────────
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function fmtHeroDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return '';
+  const months = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+  return `${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
 function renderHeroPosts(escritos) {
   const homeSection = document.getElementById('home');
   homeSection.querySelectorAll('.headline').forEach(el => el.remove());
@@ -667,7 +692,14 @@ function renderHeroPosts(escritos) {
     const a = document.createElement('a');
     a.href = `post.html?id=${post.id}`;
     a.className = `headline ${borderColors[i % borderColors.length]} ${hlClasses[i]} r ${delays[i]}`;
-    a.textContent = post.title?.toUpperCase() || 'SEM TÍTULO';
+
+    const title = (post.title || 'SEM TÍTULO').toUpperCase();
+    const tipo = post.tipo === 'projeto' ? 'PROJETO' : (post.tipo ? String(post.tipo).toUpperCase() : 'ESCRITO');
+    const date = fmtHeroDate(post.date);
+    const tagLine = [tipo, date].filter(Boolean).join(' · ');
+    const rawExcerpt = post.excerpt || (post.body ? String(post.body).replace(/[#*_`>[\]()!-]/g,'').trim().slice(0, 160) : '');
+
+    a.innerHTML = `<span class="headline-title">${escHtml(title)}</span><span class="headline-meta">${rawExcerpt ? `<span class="headline-meta-excerpt">${escHtml(rawExcerpt)}${rawExcerpt.length >= 160 ? '…' : ''}</span>` : ''}<span class="headline-meta-tag">${escHtml(tagLine)}</span></span>`;
     homeSection.appendChild(a);
   });
 }
@@ -955,7 +987,6 @@ async function init() {
     fetchObras(),
   ]);
   renderHeroPosts(escritos);
-  renderPostList(escritos);
   renderProjetos(escritos.filter(e => e.tipo === 'projeto'));
   renderDrops(drops);
   renderLivros(livros);
