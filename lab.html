@@ -190,15 +190,24 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   font-family: 'Times New Roman', Times, serif;
   color: var(--fg);
   width: 440px;
+  min-width: 260px;
+  max-width: 880px;
   padding: 22px 24px 24px;
   border: 1px solid var(--rule);
   border-radius: 14px;
-  background: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.28);
   backdrop-filter: blur(0.5px);
-  pointer-events: none;
+  cursor: grab;
+  touch-action: none;
+  transition: left 0.6s cubic-bezier(.2,.9,.3,1), top 0.6s cubic-bezier(.2,.9,.3,1);
+}
+.poem.dragging, .poem.resizing {
+  cursor: grabbing;
+  transition: none;
+  box-shadow: 0 12px 32px var(--paper-shadow);
 }
 html.dark .poem {
-  background: rgba(20,19,17,0.35);
+  background: rgba(20,19,17,0.40);
 }
 .poem .poem-tag {
   font-family: 'Courier New', monospace;
@@ -208,29 +217,46 @@ html.dark .poem {
   color: var(--fg-mute);
   margin-bottom: 8px;
   display: block;
-  pointer-events: auto;
+  pointer-events: none;
 }
 .poem .poem-title {
   font-size: 20px;
   font-style: italic;
   margin-bottom: 14px;
   display: block;
+  pointer-events: none;
+}
+.poem .poem-title a {
+  color: var(--fg);
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
   pointer-events: auto;
 }
-.poem .poem-title a { color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--rule); }
 .poem .poem-title a:hover { color: var(--link); }
 .poem .poem-body {
   position: relative;
   font-size: 16px;
   color: var(--fg);
+  pointer-events: none;
 }
 .poem-line {
   position: absolute;
   white-space: pre;
-  transition: left 0.35s cubic-bezier(.2,.9,.3,1), top 0.35s cubic-bezier(.2,.9,.3,1), width 0.35s ease;
+  transition: left 0.28s cubic-bezier(.2,.9,.3,1), top 0.28s cubic-bezier(.2,.9,.3,1);
   will-change: left, top;
-  pointer-events: auto;
+  pointer-events: none;
 }
+.poem-resize-handle {
+  position: absolute;
+  right: 3px; bottom: 3px;
+  width: 18px; height: 18px;
+  cursor: nwse-resize;
+  opacity: 0.4;
+  pointer-events: auto;
+  background:
+    linear-gradient(135deg, transparent 0 42%, var(--fg-mute) 42% 50%, transparent 50% 62%, var(--fg-mute) 62% 70%, transparent 70%);
+}
+.poem-resize-handle:hover { opacity: 0.9; }
 
 /* ── DROP (vídeo/canal/música) ─────────────── */
 .drop-card {
@@ -319,8 +345,9 @@ const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
 
 const POEM_FONT = '16px "Times New Roman", Times, serif';
 const POEM_LINE_H = 22;
-const POEM_WIDTH = 392; // 440 (card) - 48 (padding total)
-const POEM_MAX_LINES = 200; // texto inteiro
+const POEM_PARA_GAP = 14; // espaço entre parágrafos
+const POEM_PAD_X = 48;    // padding horizontal total (24+24)
+const POEM_MAX_LINES_PER_FORCED = 60;
 const CANVAS_PAD = 140;
 const BOOK_W = 120;
 
@@ -419,6 +446,38 @@ function createBookEl(livro, pos) {
   return el;
 }
 
+/* ── parse conteúdo em blocos (parágrafos × linhas forçadas) ─── */
+function parseContentToBlocks(raw) {
+  if (!raw) return [];
+  const tmp = document.createElement('div');
+  tmp.innerHTML = String(raw);
+  const pEls = tmp.querySelectorAll('p');
+  if (pEls.length > 0) {
+    // HTML com <p>: cada <p> é um parágrafo. <br> dentro vira \n
+    return Array.from(pEls).map(p => {
+      p.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
+      const text = (p.textContent || '').replace(/\u00a0/g, ' ').trim();
+      if (!text) return null;
+      return text.split('\n').map(l => l.trim()).filter(Boolean);
+    }).filter(arr => arr && arr.length > 0);
+  }
+  // Texto plain: \n\n separa parágrafos, \n simples mantém linha forçada
+  const plain = (tmp.textContent || '').replace(/\u00a0/g, ' ');
+  return plain.split(/\n\s*\n/).map(para =>
+    para.split('\n').map(l => l.trim()).filter(Boolean)
+  ).filter(arr => arr.length > 0);
+}
+
+function preparePoemBlocks(raw) {
+  const blocks = parseContentToBlocks(raw);
+  return blocks.map(paragraph =>
+    paragraph.map(line => ({
+      text: line,
+      prepared: Pretext.prepareWithSegments(line, POEM_FONT)
+    }))
+  );
+}
+
 /* ── render: POEMA (via Pretext — reflow editorial) ─── */
 function createPoemEl(escrito, pos) {
   const el = document.createElement('article');
@@ -427,100 +486,149 @@ function createPoemEl(escrito, pos) {
   el.dataset.kind = 'poem';
   el.style.left = pos.x + 'px';
   el.style.top = pos.y + 'px';
-  el.style.zIndex = 1;
+  el.style.zIndex = pos.z || 1;
+  if (pos.width) el.style.width = pos.width + 'px';
   const tipo = escrito.tipo === 'projeto' ? 'projeto' : (escrito.tipo || 'escrito');
-  const text = stripHtml(escrito.content || escrito.body || escrito.excerpt || '');
+  const raw = escrito.content || escrito.body || escrito.excerpt || '';
   el.innerHTML = `
     <span class="poem-tag">— ${escHtml(tipo)}</span>
     <span class="poem-title"><a href="post.html?id=${escrito.id}">${escHtml((escrito.title || '').toLowerCase())}</a></span>
     <div class="poem-body"></div>
+    <div class="poem-resize-handle" title="redimensionar"></div>
   `;
-  // prepara via Pretext (uma vez) e guarda no elemento
   try {
-    el._prepared = Pretext.prepareWithSegments(text, POEM_FONT);
-    el._text = text;
+    el._blocks = preparePoemBlocks(raw);
+    el._raw = raw;
   } catch(e) {
-    // fallback simples se Pretext falhar
-    el.querySelector('.poem-body').textContent = text;
+    // fallback se Pretext falhar
+    el.querySelector('.poem-body').textContent = stripHtml(raw);
     return el;
   }
-  // layout inicial (sem obstáculos)
-  requestAnimationFrame(() => reflowPoem(el, []));
+  // inicializa resize handle
+  initResizeHandle(el);
+  // layout inicial
+  requestAnimationFrame(() => reflowPoem(el, collectObstaclesFor(el)));
   return el;
+}
+
+function initResizeHandle(poemEl) {
+  const h = poemEl.querySelector('.poem-resize-handle');
+  if (!h) return;
+  const begin = (clientX, clientY) => {
+    const startW = poemEl.offsetWidth;
+    const startH = poemEl.offsetHeight;
+    const startX = clientX;
+    const startY = clientY;
+    poemEl.classList.add('resizing');
+    const move = ev => {
+      const evt = ev.touches ? ev.touches[0] : ev;
+      const nw = Math.max(260, Math.min(880, startW + (evt.clientX - startX)));
+      poemEl.style.width = nw + 'px';
+      // re-flow durante resize
+      reflowPoem(poemEl, collectObstaclesFor(poemEl));
+      if (ev.touches) ev.preventDefault();
+    };
+    const up = () => {
+      poemEl.classList.remove('resizing');
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+      document.removeEventListener('touchmove', move);
+      document.removeEventListener('touchend', up);
+      // salva tamanho
+      const id = poemEl.dataset.id;
+      const cur = positions[id] || {};
+      positions[id] = { ...cur, width: poemEl.offsetWidth };
+      savePositions();
+      // reflow dos outros poemas (caso tamanho deste tenha mudado a geometria)
+      reflowAllPoems();
+    };
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+    document.addEventListener('touchmove', move, { passive: false });
+    document.addEventListener('touchend', up);
+  };
+  h.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); begin(e.clientX, e.clientY); });
+  h.addEventListener('touchstart', e => {
+    e.preventDefault(); e.stopPropagation();
+    const t = e.touches[0];
+    begin(t.clientX, t.clientY);
+  }, { passive: false });
 }
 
 /* ── reflow: recalcula layout linhas do poema considerando obstáculos ─── */
 function reflowPoem(poemEl, obstacles) {
-  const prepared = poemEl._prepared;
-  if (!prepared) return;
+  const blocks = poemEl._blocks;
+  if (!blocks || !blocks.length) return;
   const body = poemEl.querySelector('.poem-body');
   if (!body) return;
-  // geometria do poema no canvas (coords absolutas dentro do canvas)
-  const poemCanvasRect = {
-    left: parseFloat(poemEl.style.left) || 0,
-    top:  (parseFloat(poemEl.style.top) || 0),
-  };
-  // body offset dentro do poema (o título + tag ocupa espaço)
-  const bodyOffsetY = body.offsetTop;
-  const bodyAbsTop = poemCanvasRect.top + bodyOffsetY;
-  const bodyAbsLeft = poemCanvasRect.left + body.offsetLeft;
+  const poemCanvasLeft = parseFloat(poemEl.style.left) || 0;
+  const poemCanvasTop  = parseFloat(poemEl.style.top)  || 0;
+  const bodyAbsTop  = poemCanvasTop  + body.offsetTop;
+  const bodyAbsLeft = poemCanvasLeft + body.offsetLeft;
+  const poemWidth = body.clientWidth || (poemEl.offsetWidth - POEM_PAD_X);
 
-  // converte obstáculos pra coords relativas ao body do poema
+  // obstáculos em coord do body
   const obs = obstacles.map(o => ({
     x: o.left - bodyAbsLeft,
-    y: o.top - bodyAbsTop,
+    y: o.top  - bodyAbsTop,
     w: o.width,
     h: o.height
-  })).filter(o => o.y + o.h > 0); // descarta obstáculos acima do body
+  })).filter(o => o.y + o.h > 0);
 
-  // layout linha-a-linha
-  const lines = [];
-  let cursor = { segmentIndex: 0, graphemeIndex: 0 };
-  let y = 0;
-  for (let i = 0; i < POEM_MAX_LINES; i++) {
-    // calcula ranges livres em Y dado os obstáculos
-    let ranges = [[0, POEM_WIDTH]];
+  function availableAtY(y) {
+    let ranges = [[0, poemWidth]];
     for (const o of obs) {
       if (o.y >= y + POEM_LINE_H || o.y + o.h <= y) continue;
-      const newRanges = [];
+      const newR = [];
       for (const [rs, re] of ranges) {
-        if (o.x + o.w <= rs || o.x >= re) { newRanges.push([rs, re]); continue; }
-        if (o.x > rs) newRanges.push([rs, o.x]);
-        if (o.x + o.w < re) newRanges.push([o.x + o.w, re]);
+        if (o.x + o.w <= rs || o.x >= re) { newR.push([rs, re]); continue; }
+        if (o.x > rs) newR.push([rs, o.x]);
+        if (o.x + o.w < re) newR.push([o.x + o.w, re]);
       }
-      ranges = newRanges;
+      ranges = newR;
     }
-    // escolhe o maior sub-range livre
     let best = [0, 0];
-    for (const r of ranges) { if (r[1] - r[0] > best[1] - best[0]) best = r; }
-    const avail = best[1] - best[0];
-    if (avail < 40) { y += POEM_LINE_H; continue; } // pula linha se não cabe nada
-
-    const range = Pretext.layoutNextLineRange(prepared, cursor, avail);
-    if (!range) break;
-    const mat = Pretext.materializeLineRange(prepared, range);
-    lines.push({ x: best[0], y, w: mat.width, text: mat.text });
-    cursor = range.end;
-    y += POEM_LINE_H;
+    for (const r of ranges) if (r[1] - r[0] > best[1] - best[0]) best = r;
+    return { x: best[0], w: best[1] - best[0] };
   }
 
-  // diff: reusa elementos de linha existentes, atualiza posição/texto
+  const outLines = [];
+  let y = 0;
+  for (let pi = 0; pi < blocks.length; pi++) {
+    const paragraph = blocks[pi];
+    for (let li = 0; li < paragraph.length; li++) {
+      const forced = paragraph[li];
+      let cursor = { segmentIndex: 0, graphemeIndex: 0 };
+      let looped = 0;
+      while (looped++ < POEM_MAX_LINES_PER_FORCED) {
+        const avail = availableAtY(y);
+        if (avail.w < 40) { y += POEM_LINE_H; if (y > 8000) break; continue; }
+        const range = Pretext.layoutNextLineRange(forced.prepared, cursor, avail.w);
+        if (!range) break; // fim desta linha forçada
+        const mat = Pretext.materializeLineRange(forced.prepared, range);
+        outLines.push({ x: avail.x, y, text: mat.text });
+        cursor = range.end;
+        y += POEM_LINE_H;
+      }
+    }
+    if (pi < blocks.length - 1) y += POEM_PARA_GAP;
+  }
+
+  // diff-render: reusa divs, atualiza texto/posição
   const existing = body.querySelectorAll('.poem-line');
-  for (let i = 0; i < lines.length; i++) {
+  for (let i = 0; i < outLines.length; i++) {
     let el = existing[i];
     if (!el) {
       el = document.createElement('div');
       el.className = 'poem-line';
       body.appendChild(el);
     }
-    if (el.textContent !== lines[i].text) el.textContent = lines[i].text;
-    el.style.left = lines[i].x + 'px';
-    el.style.top  = lines[i].y + 'px';
+    if (el.textContent !== outLines[i].text) el.textContent = outLines[i].text;
+    el.style.left = outLines[i].x + 'px';
+    el.style.top  = outLines[i].y + 'px';
   }
-  // remove linhas sobrando
-  for (let i = lines.length; i < existing.length; i++) existing[i].remove();
-  // altura do body acompanha
-  body.style.height = (lines.length * POEM_LINE_H) + 'px';
+  for (let i = outLines.length; i < existing.length; i++) existing[i].remove();
+  body.style.height = y + 'px';
 }
 
 /* coleta TODOS os livros/cards próximos a um poema como obstáculos */
@@ -599,9 +707,10 @@ let edgeDx = 0, edgeDy = 0;
 let lastPointerX = 0, lastPointerY = 0;
 
 function pointerDown(e) {
-  const el = e.target.closest('.book, .drop-card');
+  const el = e.target.closest('.book, .drop-card, .poem');
   if (!el) return;
-  if (e.target.closest('.open-link, .drop-open')) return;
+  // não inicia drag se clicou em link ou no handle de resize
+  if (e.target.closest('.open-link, .drop-open, .poem-title a, .poem-resize-handle')) return;
   e.preventDefault();
   const evt = e.touches ? e.touches[0] : e;
   const rect = el.getBoundingClientRect();
@@ -639,7 +748,9 @@ function pointerUp() {
   const m = (dragged.style.transform || '').match(/rotate\(([^)]+)deg\)/);
   const rot = m ? parseFloat(m[1]) : 0;
   const z = parseInt(dragged.style.zIndex) || zCounter;
-  positions[id] = { x, y, rot, z };
+  // preserva outras props salvas (ex: width do poema após resize)
+  const cur = positions[id] || {};
+  positions[id] = { ...cur, x, y, rot, z };
   savePositions();
   dragged.classList.remove('dragging');
   document.body.classList.remove('dragging');
