@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>daniel lameira</title>
+<link rel="preconnect" href="https://directus-production-afdd.up.railway.app" crossorigin>
+<link rel="dns-prefetch" href="https://directus-production-afdd.up.railway.app">
 <style>
 @font-face {
   font-family: 'OffBit';
@@ -598,13 +600,28 @@ function px(cssMax) {
   return Math.round(cssMax * (window.devicePixelRatio || 1));
 }
 
-async function fetchLivros() {
+// Cache curto em sessionStorage — navegações de volta ficam instantâneas
+async function cachedFetch(key, url, ttl = 5 * 60 * 1000) {
   try {
-    const res = await fetch(`${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=-ano&limit=200`);
+    const cached = sessionStorage.getItem(key);
+    if (cached) {
+      const { ts, data } = JSON.parse(cached);
+      if (Date.now() - ts < ttl) return data;
+    }
+  } catch(e) {}
+  try {
+    const res = await fetch(url);
     if (!res.ok) return [];
-    const data = await res.json();
-    return data.data || [];
+    const json = await res.json();
+    const data = json.data || [];
+    try { sessionStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch(e) {}
+    return data;
   } catch(e) { return []; }
+}
+
+async function fetchLivros() {
+  // Home só mostra ~40 no grid; a página livros.html pode pegar tudo
+  return cachedFetch('c:livros', `${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=-ano&limit=40&fields=id,title,autor,Cover,cover,ano`);
 }
 
 function renderLivros(livros) {
@@ -624,39 +641,24 @@ function renderLivros(livros) {
     a.style.textDecoration = 'none';
     const coverUrl = directusImg(livro.Cover || livro.cover, px(200));
     const coverHtml = coverUrl
-      ? `<img src="${coverUrl}" alt="${livro.title}">`
+      ? `<img src="${coverUrl}" alt="${livro.title}" loading="lazy" decoding="async">`
       : `<div class="book-mini-bg" style="background:#1a100a;">capa</div>`;
     a.innerHTML = `${coverHtml}<div class="book-mini-overlay">${(livro.title || '').toUpperCase()}<br>${livro.autor || ''}</div>`;
     grid.appendChild(a);
   });
 }
 
-// ── FETCH DO DIRECTUS ─────────────────────────────────────────────────────
+// ── FETCH DO DIRECTUS (com cache sessionStorage) ──────────────────────────
 async function fetchEscritos() {
-  try {
-    const res = await fetch(`${DIRECTUS}/items/escritos?filter[status][_eq]=published&sort[]=-date&limit=50`);
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.data || [];
-  } catch(e) { return []; }
+  return cachedFetch('c:escritos', `${DIRECTUS}/items/escritos?filter[status][_eq]=published&sort[]=-date&limit=50`);
 }
 
 async function fetchDrops() {
-  try {
-    const res = await fetch(`${DIRECTUS}/items/drops?filter[status][_eq]=published&sort[]=order&limit=100&fields=id,title,author,type,cover.id,cover.focal_point_x,cover.focal_point_y,thumbnail,focal_x,focal_y,note,featured,order`);
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.data || [];
-  } catch(e) { return []; }
+  return cachedFetch('c:drops', `${DIRECTUS}/items/drops?filter[status][_eq]=published&sort[]=order&limit=100&fields=id,title,author,type,cover.id,cover.focal_point_x,cover.focal_point_y,thumbnail,focal_x,focal_y,note,featured,order`);
 }
 
 async function fetchObras() {
-  try {
-    const res = await fetch(`${DIRECTUS}/items/obras?filter[status][_eq]=published&sort[]=order&limit=100&fields=id,title,type,year,image,video`);
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.data || [];
-  } catch(e) { return []; }
+  return cachedFetch('c:obras', `${DIRECTUS}/items/obras?filter[status][_eq]=published&sort[]=order&limit=100&fields=id,title,type,year,image,video`);
 }
 
 // ── CORES E UTILITÁRIOS ────────────────────────────────────────────────────
@@ -767,7 +769,7 @@ function renderDrops(drops) {
       ? directusImg(drop.thumbnail, px(260))
       : coverId ? directusImgSquare(coverId, px(260), fpX, fpY) : null;
     const coverHtml = coverUrl
-      ? `<img src="${coverUrl}" alt="${drop.title}" style="width:100%;height:100%;object-fit:cover;">`
+      ? `<img src="${coverUrl}" alt="${drop.title}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;">`
       : `<div class="drop-cover-bg">${drop.type || ''}</div>`;
     a.innerHTML = `
       <div class="drop-cover">
@@ -802,7 +804,7 @@ function renderObras(obras) {
            <source src="${DIRECTUS}/assets/${obra.video}" type="video/mp4">
          </video>`
       : imgUrl
-        ? `<img src="${imgUrl}" alt="${obra.title || ''}">`
+        ? `<img src="${imgUrl}" alt="${obra.title || ''}" loading="lazy" decoding="async">`
         : `<div class="gallery-item-bg" style="background:#120818;">obra</div>`;
     const typeYear = [obra.type, obra.year].filter(Boolean).join(' · ');
     div.innerHTML = `
@@ -978,22 +980,29 @@ function initObserver() {
   document.querySelectorAll('.r').forEach(el => obs.observe(el));
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────────
+// ── INIT (render progressivo — cada seção aparece quando seu fetch chega) ─
 async function init() {
-  const [escritos, drops, livros, obras] = await Promise.all([
-    fetchEscritos(),
-    fetchDrops(),
-    fetchLivros(),
-    fetchObras(),
-  ]);
-  renderHeroPosts(escritos);
-  renderProjetos(escritos.filter(e => e.tipo === 'projeto'));
-  renderDrops(drops);
-  renderLivros(livros);
-  renderObras(obras);
-  renderHeroFloats(drops, livros, obras);
-  await renderAbout();
   initObserver();
+  renderAbout();
+
+  // Dispara os 4 fetchs em paralelo, renderiza cada um quando chega
+  const escritosP = fetchEscritos();
+  const dropsP    = fetchDrops();
+  const livrosP   = fetchLivros();
+  const obrasP    = fetchObras();
+
+  escritosP.then(escritos => {
+    renderHeroPosts(escritos);
+    renderProjetos(escritos.filter(e => e.tipo === 'projeto'));
+  });
+  dropsP.then(renderDrops);
+  livrosP.then(renderLivros);
+  obrasP.then(renderObras);
+
+  // Floats do hero precisam de drops + livros + obras — renderizam quando os 3 chegam
+  Promise.all([dropsP, livrosP, obrasP]).then(([drops, livros, obras]) => {
+    renderHeroFloats(drops, livros, obras);
+  });
 }
 
 init();
