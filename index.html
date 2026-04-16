@@ -73,7 +73,8 @@ nav {
   aspect-ratio: 2/3; /* fallback só enquanto o placeholder está visível */
 }
 .float-img.natural-ratio { aspect-ratio: auto; height: auto; }
-.float-img > img, .float-img > video { width: 100%; height: auto; display: block; }
+.float-img > img { width: 100%; height: auto; display: block; }
+.float-img > video { width: 100%; height: 100%; object-fit: contain; display: block; }
 .float-img:hover { z-index: 6; }
 .cover-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-family: var(--f-ui); font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; }
 .cover-label {
@@ -882,21 +883,37 @@ function renderHeroFloats(drops, livros, obras) {
     el.dataset.type = src.type;
     const imgUrl = src.imgId ? directusImg(src.imgId, px(185)) : null;
     let mediaHtml;
-    let hasMedia = false;
+    let isImg = false;
+    let isVideo = false;
     if (src.videoId) {
       const posterAttr = imgUrl ? `poster="${imgUrl}"` : '';
-      mediaHtml = `<video autoplay muted loop playsinline ${posterAttr} style="width:100%;height:auto;display:block;">
+      // preload=metadata garante que o browser saiba o tamanho do vídeo logo
+      mediaHtml = `<video autoplay muted loop playsinline preload="metadata" ${posterAttr}>
         <source src="${DIRECTUS}/assets/${src.videoId}" type="video/mp4">
       </video>`;
-      hasMedia = true;
+      isVideo = true;
     } else if (imgUrl) {
-      mediaHtml = `<img src="${imgUrl}" alt="${src.title || ''}" style="width:100%;height:auto;display:block;">`;
-      hasMedia = true;
+      mediaHtml = `<img src="${imgUrl}" alt="${src.title || ''}">`;
+      isImg = true;
     } else {
       mediaHtml = `<div class="cover-placeholder">${src.label}</div>`;
     }
     el.innerHTML = `${mediaHtml}<div class="cover-label">${src.label}<br>${(src.title || '').toUpperCase()}</div>`;
-    el.classList.toggle('natural-ratio', hasMedia);
+    // Imagens usam a proporção natural; vídeos mantêm o aspect-ratio do tipo (ex: 4/3 para visual)
+    // pois o tamanho do vídeo só é conhecido depois do metadata carregar.
+    el.classList.toggle('natural-ratio', isImg);
+    if (isVideo) {
+      const videoEl = el.querySelector('video');
+      videoEl.addEventListener('loadedmetadata', () => {
+        if (videoEl.videoWidth && videoEl.videoHeight) {
+          el.style.aspectRatio = `${videoEl.videoWidth}/${videoEl.videoHeight}`;
+        }
+      });
+      videoEl.addEventListener('error', () => {
+        // Fallback defensivo: se o vídeo não carregar, mostra placeholder
+        el.innerHTML = `<div class="cover-placeholder">${src.label}</div><div class="cover-label">${src.label}<br>${(src.title || '').toUpperCase()}</div>`;
+      });
+    }
     if (src.href) {
       el.addEventListener('click', () => window.location.href = src.href);
     }
