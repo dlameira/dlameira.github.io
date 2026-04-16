@@ -134,7 +134,10 @@ nav {
   padding: 8px 20px; margin: 6px 0; width: fit-content;
   text-decoration: none; color: var(--fg);
   position: relative; z-index: 3; cursor: crosshair;
+  overflow: hidden;
 }
+.headline-title { display: block; transition: opacity 0.18s ease; }
+.headline:hover .headline-title { opacity: 0; }
 .headline.border-red    { border: 2px solid var(--red); }
 .headline.border-green  { border: 2px solid var(--green); }
 .headline.border-blue   { border: 2px solid var(--blue); }
@@ -148,36 +151,29 @@ nav {
 .headline.border-purple:hover { background: var(--purple); color: var(--fg); }
 .headline.border-yellow:hover { background: var(--yellow); color: var(--bg); }
 
-/* meta que aparece no hover dos headlines: tipo · data + excerpt */
+/* meta que aparece no hover dos headlines — cobre o título com info
+   (tipo · data + começo do excerpt), no mesmo padrão dos floats */
 .headline-meta {
-  position: absolute; top: calc(100% + 4px); left: 2px; right: 2px;
-  padding: 6px 18px 0;
-  opacity: 0; transform: translateY(-4px);
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  text-align: center; gap: 10px;
+  padding: 12px 24px;
+  opacity: 0;
+  transition: opacity 0.18s ease;
   pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.22s ease;
-  z-index: 52;
-  display: block;
 }
 .headline-meta-tag {
-  display: block;
   font-family: var(--f-ui);
-  font-size: 9.5px; letter-spacing: 0.22em; text-transform: uppercase;
-  opacity: 0.9;
+  font-size: clamp(9px, 0.9vw, 11px); letter-spacing: 0.26em; text-transform: uppercase;
+  opacity: 0.95;
 }
 .headline-meta-excerpt {
-  display: block;
   font-family: var(--f-body);
-  font-size: 13px; line-height: 1.55;
-  margin-top: 8px;
-  opacity: 0.78;
-  max-width: 560px;
+  font-size: clamp(11px, 1.1vw, 15px); line-height: 1.5;
+  max-width: 88%;
+  opacity: 0.92;
 }
-.headline.border-red    .headline-meta { color: var(--red); }
-.headline.border-green  .headline-meta { color: var(--green); }
-.headline.border-blue   .headline-meta { color: var(--blue); }
-.headline.border-purple .headline-meta { color: var(--purple); }
-.headline.border-yellow .headline-meta { color: var(--yellow); }
-.headline:hover .headline-meta { opacity: 1; transform: translateY(0); }
+.headline:hover .headline-meta { opacity: 1; }
 
 .hl-1 { margin-left: clamp(18px, 7vw, 120px); margin-right: clamp(16px, 4vw, 60px); margin-top: 28px; }
 .hl-2 { margin-left: clamp(8px, 2vw, 24px); margin-right: clamp(40px, 10vw, 160px); }
@@ -701,7 +697,7 @@ function renderHeroPosts(escritos) {
     const tagLine = [tipo, date].filter(Boolean).join(' · ');
     const rawExcerpt = post.excerpt || (post.body ? String(post.body).replace(/[#*_`>[\]()!-]/g,'').trim().slice(0, 160) : '');
 
-    a.innerHTML = `${escHtml(title)}<span class="headline-meta"><span class="headline-meta-tag">${escHtml(tagLine)}</span>${rawExcerpt ? `<span class="headline-meta-excerpt">${escHtml(rawExcerpt)}${rawExcerpt.length >= 160 ? '…' : ''}</span>` : ''}</span>`;
+    a.innerHTML = `<span class="headline-title">${escHtml(title)}</span><span class="headline-meta"><span class="headline-meta-tag">${escHtml(tagLine)}</span>${rawExcerpt ? `<span class="headline-meta-excerpt">${escHtml(rawExcerpt)}${rawExcerpt.length >= 160 ? '…' : ''}</span>` : ''}</span>`;
     homeSection.appendChild(a);
   });
 }
