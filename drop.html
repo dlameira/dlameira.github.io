@@ -492,7 +492,11 @@ function renderSidebarList(drops) {
 // Renderiza markdown simples (espelha previewMd do admin.html)
 function renderMarkdown(str) {
   if (!str) return '';
-  return '<p>' + String(str)
+  const s = String(str);
+  if (/<(p|br|div|h[1-6]|strong|em|b|i|a\s|ul|ol|li|blockquote|img|figure|hr)[\s>/]/i.test(s)) {
+    return s;
+  }
+  return '<p>' + s
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/^### (.+)$/gm,'<h3>$1</h3>')
     .replace(/^## (.+)$/gm,'<h2>$1</h2>')
