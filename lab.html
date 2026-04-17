@@ -1095,14 +1095,52 @@ async function init() {
     location.reload();
   });
 
-  // reflow inicial: já considera livros/cards que porventura estejam sobre poemas
-  // (usuário pode ter arrastado items sobre poemas em visita anterior)
-  setTimeout(() => reflowAllPoems(), 120);
+  // ESPERA FONTS CARREGAREM antes do reflow — senão Pretext calcula com
+  // métrica da fonte fallback e texto vaza do card quando a Source Serif chega
+  (async () => {
+    try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch(e) {}
+    reflowAllPoems();
+    // Depois do reflow, reempilha poemas pela altura REAL pra não sobrepor
+    rearrangePoemColumn();
+    // Recalcula canvas height pra caber tudo
+    fitCanvasToContent();
+  })();
 
   // arrumar em grid também faz reflow dos poemas depois
   document.getElementById('grid-btn').addEventListener('click', () => {
-    setTimeout(() => reflowAllPoems(), 650);
+    setTimeout(() => { reflowAllPoems(); fitCanvasToContent(); }, 650);
   }, true);
+}
+
+/* Reempilha poemas que estão na coluna esquerda inicial (x == LX)
+   pela altura real — evita overlap entre cards longos */
+function rearrangePoemColumn() {
+  const poemEls = Array.from(document.querySelectorAll('.poem'))
+    .filter(el => Math.round(parseFloat(el.style.left) || 0) === LAYOUT.LX)
+    .sort((a, b) => (parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0));
+  let y = 40;
+  poemEls.forEach(el => {
+    el.style.top = y + 'px';
+    const id = el.dataset.id;
+    const cur = positions[id] || {};
+    positions[id] = { ...cur, x: LAYOUT.LX, y };
+    y += el.offsetHeight + 40;
+  });
+  savePositions();
+}
+
+function fitCanvasToContent() {
+  const canvas = document.getElementById('canvas');
+  let maxX = window.innerWidth;
+  let maxY = window.innerHeight;
+  document.querySelectorAll('.book, .drop-card, .poem').forEach(el => {
+    const x = (parseFloat(el.style.left) || 0) + el.offsetWidth;
+    const y = (parseFloat(el.style.top)  || 0) + el.offsetHeight;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+  });
+  canvas.style.width  = (maxX + 80) + 'px';
+  canvas.style.height = (maxY + 80) + 'px';
 }
 
 init();
