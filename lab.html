@@ -348,6 +348,49 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 }
 .drop-card .drop-open:hover { background: var(--highlight); color: #000; }
 html.dark .drop-card .drop-open:hover { color: #fff; }
+
+/* ── OBRA visual (coluna esquerda) ─────────── */
+.obra {
+  position: absolute;
+  cursor: grab;
+  touch-action: none;
+  transition: left 0.6s cubic-bezier(.2,.9,.3,1), top 0.6s cubic-bezier(.2,.9,.3,1);
+}
+.obra.dragging {
+  cursor: grabbing;
+  transition: none;
+  box-shadow: 0 14px 36px var(--paper-shadow);
+  z-index: 999999 !important;
+}
+.obra-media {
+  width: 100%;
+  line-height: 0;
+  background: #111;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+.obra-media img, .obra-media video {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+.obra-empty {
+  aspect-ratio: 4/3;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Courier New', monospace; font-size: 10px;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--fg-mute); background: var(--no-img-bg);
+}
+.obra-caption {
+  padding: 8px 2px 0;
+  font-family: 'Source Serif 4', 'Source Serif Pro', Georgia, serif;
+}
+.obra-title { font-size: 15px; font-style: italic; color: var(--fg); line-height: 1.25; }
+.obra-meta {
+  font-family: 'Courier New', monospace;
+  font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--fg-mute); margin-top: 4px;
+}
 </style>
 </head>
 <body>
@@ -415,9 +458,9 @@ let positions = (() => {
   try { return JSON.parse(localStorage.getItem(POS_KEY) || '{}'); }
   catch(e) { return {}; }
 })();
-/* Migration v5: layout foi redesenhado — reset completo de posições */
+/* Migration v6: layout de 3 colunas (obras | textos | livros) */
 (() => {
-  const MIG = 'lab:mig:v5-freshlayout';
+  const MIG = 'lab:mig:v6-3cols';
   try {
     if (localStorage.getItem(MIG)) return;
     positions = {};
@@ -455,6 +498,10 @@ function sr(seed, min, max) {
 async function fetchAllLivros() {
   return cachedFetch('c:lab:allivros',
     `${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=-ano&limit=500&fields=id,title,autor,Cover,ano,editora`);
+}
+async function fetchObras() {
+  return cachedFetch('c:lab:obras',
+    `${DIRECTUS}/items/obras?filter[status][_eq]=published&sort[]=order&limit=40&fields=id,title,type,year,image,video,order`);
 }
 async function fetchPoemas() {
   // escritos do tipo poesia (ou tudo se nenhum tem tipo explicito)
@@ -773,6 +820,39 @@ function avoidPoemOverlap(x, y, w, h) {
   return { x, y };
 }
 
+/* ── render: OBRA visual (coluna esquerda) ─── */
+function createObraEl(obra, pos) {
+  const el = document.createElement('div');
+  el.className = 'obra';
+  el.dataset.id = 'obra-' + obra.id;
+  el.dataset.kind = 'obra';
+  el.dataset.href = `obra.html?id=${obra.id}`;
+  el.style.left = pos.x + 'px';
+  el.style.top  = pos.y + 'px';
+  el.style.width = LAYOUT.OBRA_W + 'px';
+  el.style.zIndex = pos.z || 5;
+
+  const imgUrl = obra.image ? directusImg(obra.image, 720) : null;
+  const posterAttr = imgUrl ? `poster="${imgUrl}"` : '';
+  let mediaHtml;
+  if (obra.video) {
+    mediaHtml = `<video autoplay muted loop playsinline preload="metadata" ${posterAttr}><source src="${DIRECTUS}/assets/${obra.video}" type="video/mp4"></video>`;
+  } else if (imgUrl) {
+    mediaHtml = `<img src="${imgUrl}" alt="${escHtml(obra.title || '')}" loading="lazy" decoding="async" draggable="false">`;
+  } else {
+    mediaHtml = `<div class="obra-empty">sem mídia</div>`;
+  }
+
+  el.innerHTML = `
+    <div class="obra-media">${mediaHtml}</div>
+    <div class="obra-caption">
+      <div class="obra-title">${escHtml(obra.title || '')}</div>
+      <div class="obra-meta">${escHtml(obra.type || '')}${obra.year ? ' · ' + escHtml(obra.year) : ''}</div>
+    </div>
+  `;
+  return el;
+}
+
 /* ── render: DROP media ──────────────────── */
 function createDropEl(drop, pos) {
   const el = document.createElement('div');
@@ -800,51 +880,63 @@ function createDropEl(drop, pos) {
 /* Layout inicial: textos à esquerda (coluna), livros empilhados à direita,
    drops abaixo dos textos. Itens com posição salva no localStorage
    mantêm onde estavam. */
+/* 3 colunas: esquerda=obras, centro=textos+drops, direita=livros
+   projetado pra caber confortavelmente em 1440px (um monitor normal) */
 const LAYOUT = {
-  LX: 40,                    // X dos textos (esquerda)
-  TEXT_WIDTH: 400,           // largura default dos poemas
-  TEXT_STACK_GAP: 280,       // espaço vertical entre poemas (fallback)
-  DROP_GAP_X: 230,
-  DROP_GAP_Y: 130,
-  STACK_START_X: 560,        // onde começa a pilha de livros
-  STACK_STEP_X: 120,         // largura de cada pilha
-  STACK_STEP_Y: 14,          // overlap entre livros
-  STACK_TOP: 40,
-  STACK_COLS: 6              // quantas pilhas lado a lado
+  TOP: 40,
+  COL_GAP: 32,
+
+  OBRA_X: 40,
+  OBRA_W: 360,
+
+  TEXT_X: 40 + 360 + 32,          // 432
+  TEXT_W: 420,
+
+  BOOK_X: 40 + 360 + 32 + 420 + 32, // 884
+  BOOK_W: 460,
+  STACK_COLS: 3,                    // 3 pilhas dentro da coluna dos livros
+  STACK_STEP_X: 140,
+  STACK_STEP_Y: 13,
+
+  TEXT_STACK_GAP: 300,
+  OBRA_STACK_GAP: 260,
+  DROP_STACK_GAP: 140
 };
 
-function applyInitialLayout(livros, poemas, drops) {
-  // textos E drops misturados em coluna à esquerda (drops depois dos textos)
-  let leftY = 40;
+function applyInitialLayout(obras, poemas, drops, livros) {
+  // ESQUERDA: obras visuais
+  let obraY = LAYOUT.TOP;
+  obras.forEach((o) => {
+    const k = 'obra-' + o.id;
+    if (!positions[k]) positions[k] = { x: LAYOUT.OBRA_X, y: obraY, z: 5 };
+    obraY += LAYOUT.OBRA_STACK_GAP;
+  });
+
+  // CENTRO: textos depois drops
+  let midY = LAYOUT.TOP;
   poemas.forEach((p) => {
     const k = 'poem-' + p.id;
-    if (!positions[k]) {
-      positions[k] = { x: LAYOUT.LX, y: leftY, z: 1, width: LAYOUT.TEXT_WIDTH };
-    }
-    leftY += LAYOUT.TEXT_STACK_GAP;
+    if (!positions[k]) positions[k] = { x: LAYOUT.TEXT_X, y: midY, z: 1, width: LAYOUT.TEXT_W };
+    midY += LAYOUT.TEXT_STACK_GAP;
   });
   drops.forEach((d, i) => {
     const k = 'drop-' + d.id;
-    if (!positions[k]) {
-      positions[k] = {
-        x: LAYOUT.LX,
-        y: leftY,
-        rot: sr((parseInt(d.id) || i) * 5, -1.2, 1.2),
-        z: 5
-      };
-    }
-    leftY += 140;
+    if (!positions[k]) positions[k] = {
+      x: LAYOUT.TEXT_X, y: midY,
+      rot: sr((parseInt(d.id) || i) * 5, -1.2, 1.2), z: 5
+    };
+    midY += LAYOUT.DROP_STACK_GAP;
   });
 
-  // livros empilhados à direita
+  // DIREITA: livros empilhados em 3 pilhas
   livros.forEach((l, i) => {
     const k = 'book-' + l.id;
     if (!positions[k]) {
       const col = i % LAYOUT.STACK_COLS;
       const row = Math.floor(i / LAYOUT.STACK_COLS);
       positions[k] = {
-        x: LAYOUT.STACK_START_X + col * LAYOUT.STACK_STEP_X,
-        y: LAYOUT.STACK_TOP + row * LAYOUT.STACK_STEP_Y,
+        x: LAYOUT.BOOK_X + col * LAYOUT.STACK_STEP_X,
+        y: LAYOUT.TOP + row * LAYOUT.STACK_STEP_Y,
         rot: sr((parseInt(l.id) || i) * 7, -3.5, 3.5),
         z: 10 + i
       };
@@ -852,14 +944,14 @@ function applyInitialLayout(livros, poemas, drops) {
   });
 }
 
-function computeCanvasSize(livrosCount, dropsCount, poemasCount) {
+function computeCanvasSize(livrosCount, dropsCount, poemasCount, obrasCount) {
   const stackRows = Math.ceil(livrosCount / LAYOUT.STACK_COLS);
-  const stackH = LAYOUT.STACK_TOP + stackRows * LAYOUT.STACK_STEP_Y + 240;
-  const textsH = 40 + poemasCount * LAYOUT.TEXT_STACK_GAP;
-  const dropsH = Math.ceil(dropsCount / 3) * LAYOUT.DROP_GAP_Y;
-  const h = Math.max(window.innerHeight, stackH, textsH + dropsH + 80);
+  const stackH = LAYOUT.TOP + stackRows * LAYOUT.STACK_STEP_Y + 260;
+  const obraH  = LAYOUT.TOP + obrasCount * LAYOUT.OBRA_STACK_GAP;
+  const midH   = LAYOUT.TOP + poemasCount * LAYOUT.TEXT_STACK_GAP + dropsCount * LAYOUT.DROP_STACK_GAP;
+  const h = Math.max(window.innerHeight, stackH, obraH, midH);
   const w = Math.max(window.innerWidth,
-    LAYOUT.STACK_START_X + LAYOUT.STACK_COLS * LAYOUT.STACK_STEP_X + 80);
+    LAYOUT.BOOK_X + LAYOUT.STACK_COLS * LAYOUT.STACK_STEP_X + 60);
   return { w, h };
 }
 
@@ -881,7 +973,7 @@ function pointerDown(e) {
   const poemHeader = e.target.closest('.poem-header');
   const el = poemHeader
     ? poemHeader.closest('.poem')
-    : e.target.closest('.book, .drop-card');
+    : e.target.closest('.book, .drop-card, .obra');
   if (!el) return;
   e.preventDefault();
   const evt = e.touches ? e.touches[0] : e;
@@ -907,8 +999,8 @@ function pointerMove(e) {
   lastPointerY = evt.clientY;
   let canvasX = evt.clientX + window.scrollX - dragOffsetX;
   let canvasY = evt.clientY + window.scrollY - dragOffsetY;
-  // livros e drops são empurrados pra fora de qualquer poema
-  if (dragKind === 'book' || dragKind === 'drop') {
+  // livros, drops e obras são empurrados pra fora de qualquer poema
+  if (dragKind === 'book' || dragKind === 'drop' || dragKind === 'obra') {
     const pos = avoidPoemOverlap(canvasX, canvasY, dragged.offsetWidth, dragged.offsetHeight);
     canvasX = pos.x;
     canvasY = pos.y;
@@ -945,7 +1037,7 @@ function pointerUp() {
   stopEdgeScroll();
 
   // se foi click (não drag) e é book/drop com href, abre
-  if (wasClick && (kind === 'book' || kind === 'drop')) {
+  if (wasClick && (kind === 'book' || kind === 'drop' || kind === 'obra')) {
     const href = draggedEl.dataset.href;
     if (href) {
       if (draggedEl.dataset.external) window.open(href, '_blank', 'noopener');
@@ -1057,35 +1149,42 @@ function toggleTheme() {
 
 /* ── INIT ────────────────────────────────── */
 async function init() {
-  const [livros, poemas, drops] = await Promise.all([fetchAllLivros(), fetchPoemas(), fetchDropsMedia()]);
-  const total = livros.length + poemas.length + drops.length;
+  const [livros, poemas, drops, obras] = await Promise.all([
+    fetchAllLivros(), fetchPoemas(), fetchDropsMedia(), fetchObras()
+  ]);
+  const total = livros.length + poemas.length + drops.length + obras.length;
   if (!total) {
     document.getElementById('item-count').textContent = '0';
     document.querySelector('.hud-bl').innerHTML = '(nada carregou — directus offline?)';
     return;
   }
-  const { w: cw, h: ch } = computeCanvasSize(livros.length, drops.length, poemas.length);
+  const { w: cw, h: ch } = computeCanvasSize(livros.length, drops.length, poemas.length, obras.length);
   const canvas = document.getElementById('canvas');
   canvas.style.width = cw + 'px';
   canvas.style.height = ch + 'px';
 
-  // aplica layout organizado (textos esquerda, livros empilhados direita)
-  // só afeta items sem posição salva — quem já tinha posição customizada mantém
-  applyInitialLayout(livros, poemas, drops);
+  // layout 3 colunas: obras | textos+drops | livros
+  applyInitialLayout(obras, poemas, drops, livros);
 
-  // Poemas (primeiro — ficam por baixo dos livros empilhados se houver overlap)
+  // Obras (coluna esquerda)
+  obras.forEach(o => {
+    const key = 'obra-' + o.id;
+    canvas.appendChild(createObraEl(o, positions[key]));
+  });
+
+  // Poemas (coluna centro)
   poemas.forEach(p => {
     const key = 'poem-' + p.id;
     canvas.appendChild(createPoemEl(p, positions[key]));
   });
 
-  // Drops
+  // Drops (coluna centro, abaixo dos poemas)
   drops.forEach(d => {
     const key = 'drop-' + d.id;
     canvas.appendChild(createDropEl(d, positions[key]));
   });
 
-  // Livros
+  // Livros (coluna direita, empilhados)
   livros.forEach(l => {
     const key = 'book-' + l.id;
     canvas.appendChild(createBookEl(l, positions[key]));
@@ -1139,20 +1238,35 @@ async function init() {
   }, true);
 }
 
-/* Reempilha poemas+drops da coluna esquerda pela altura REAL,
-   evitando overlap */
+/* Reempilha 3 colunas pela altura REAL, evitando overlap:
+   - esquerda: obras (em LAYOUT.OBRA_X)
+   - centro:  poemas+drops (em LAYOUT.TEXT_X)
+   - direita: livros (mantém layout empilhado original, não reorganiza) */
 function rearrangePoemColumn() {
-  const els = Array.from(document.querySelectorAll('.poem, .drop-card'))
-    .filter(el => Math.abs((parseFloat(el.style.left) || 0) - LAYOUT.LX) < 10)
-    .sort((a, b) => (parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0));
-  let y = 40;
-  els.forEach(el => {
-    el.style.top = y + 'px';
-    const id = el.dataset.id;
-    const cur = positions[id] || {};
-    positions[id] = { ...cur, x: LAYOUT.LX, y };
-    y += el.offsetHeight + 28;
-  });
+  // coluna esquerda: obras
+  let obraY = LAYOUT.TOP;
+  Array.from(document.querySelectorAll('.obra'))
+    .filter(el => Math.abs((parseFloat(el.style.left) || 0) - LAYOUT.OBRA_X) < 10)
+    .sort((a, b) => (parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0))
+    .forEach(el => {
+      el.style.top = obraY + 'px';
+      const id = el.dataset.id;
+      positions[id] = { ...(positions[id] || {}), x: LAYOUT.OBRA_X, y: obraY };
+      obraY += el.offsetHeight + 28;
+    });
+
+  // coluna centro: poemas + drops
+  let midY = LAYOUT.TOP;
+  Array.from(document.querySelectorAll('.poem, .drop-card'))
+    .filter(el => Math.abs((parseFloat(el.style.left) || 0) - LAYOUT.TEXT_X) < 10)
+    .sort((a, b) => (parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0))
+    .forEach(el => {
+      el.style.top = midY + 'px';
+      const id = el.dataset.id;
+      positions[id] = { ...(positions[id] || {}), x: LAYOUT.TEXT_X, y: midY };
+      midY += el.offsetHeight + 24;
+    });
+
   savePositions();
 }
 
