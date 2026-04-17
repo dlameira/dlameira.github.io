@@ -83,10 +83,11 @@ html.dark .hud a:hover { background: var(--highlight); color: #fff; }
 
 .hud button {
   pointer-events: auto;
-  background: none; border: 1px solid currentColor; padding: 4px 10px;
-  font-family: 'Courier New', monospace; font-size: 9.5px;
-  letter-spacing: 0.2em; text-transform: uppercase;
+  background: none; border: 1px solid currentColor; padding: 3px 8px;
+  font-family: 'Courier New', monospace; font-size: 8.5px;
+  letter-spacing: 0.16em; text-transform: uppercase;
   cursor: pointer; color: var(--fg);
+  white-space: nowrap;
 }
 .hud button:hover { background: var(--fg); color: var(--bg); }
 
@@ -414,14 +415,13 @@ let positions = (() => {
   try { return JSON.parse(localStorage.getItem(POS_KEY) || '{}'); }
   catch(e) { return {}; }
 })();
-/* Migration: limpa posições antigas de poemas UMA VEZ pra reempilhar
-   na coluna (muitos usuários arrastaram em tests anteriores) */
+/* Migration v5: layout foi redesenhado — reset completo de posições */
 (() => {
-  const MIG = 'lab:mig:v3-poems';
+  const MIG = 'lab:mig:v5-freshlayout';
   try {
     if (localStorage.getItem(MIG)) return;
-    Object.keys(positions).forEach(k => { if (k.startsWith('poem-')) delete positions[k]; });
-    localStorage.setItem(POS_KEY, JSON.stringify(positions));
+    positions = {};
+    localStorage.setItem(POS_KEY, '{}');
     localStorage.setItem(MIG, '1');
   } catch(e) {}
 })();
@@ -489,8 +489,8 @@ function createBookEl(livro, pos) {
       ${escHtml(livro.title || 'sem título')}
       <small>${escHtml(livro.autor || '')}${livro.ano ? ' · ' + escHtml(livro.ano) : ''}</small>
     </div>
-    <a class="open-link" href="livro.html?id=${livro.id}">abrir ↗</a>
   `;
+  el.dataset.href = `livro.html?id=${livro.id}`;
   return el;
 }
 
@@ -790,8 +790,9 @@ function createDropEl(drop, pos) {
     <div class="drop-tag">— ${escHtml(drop.type || 'drop')}</div>
     <div class="drop-title">${escHtml(drop.title || '')}</div>
     ${drop.author ? `<div class="drop-author">${escHtml(drop.author)}</div>` : ''}
-    <a class="drop-open" href="${href}" ${targetAttr}>${isExternal ? 'abrir ↗' : 'ver ↗'}</a>
   `;
+  el.dataset.href = href;
+  el.dataset.external = isExternal ? '1' : '';
   return el;
 }
 
@@ -813,34 +814,26 @@ const LAYOUT = {
 };
 
 function applyInitialLayout(livros, poemas, drops) {
-  // textos à esquerda
-  let textY = 40;
+  // textos E drops misturados em coluna à esquerda (drops depois dos textos)
+  let leftY = 40;
   poemas.forEach((p) => {
     const k = 'poem-' + p.id;
     if (!positions[k]) {
-      positions[k] = { x: LAYOUT.LX, y: textY, z: 1, width: LAYOUT.TEXT_WIDTH };
+      positions[k] = { x: LAYOUT.LX, y: leftY, z: 1, width: LAYOUT.TEXT_WIDTH };
     }
-    textY += LAYOUT.TEXT_STACK_GAP;
+    leftY += LAYOUT.TEXT_STACK_GAP;
   });
-
-  // drops em grade abaixo dos textos
-  let dropX = LAYOUT.LX;
-  let dropY = Math.max(textY + 20, 560);
   drops.forEach((d, i) => {
     const k = 'drop-' + d.id;
     if (!positions[k]) {
       positions[k] = {
-        x: dropX,
-        y: dropY,
-        rot: sr((parseInt(d.id) || i) * 5, -2, 2),
+        x: LAYOUT.LX,
+        y: leftY,
+        rot: sr((parseInt(d.id) || i) * 5, -1.2, 1.2),
         z: 5
       };
     }
-    dropX += LAYOUT.DROP_GAP_X;
-    if (dropX > LAYOUT.STACK_START_X - 80) {
-      dropX = LAYOUT.LX;
-      dropY += LAYOUT.DROP_GAP_Y;
-    }
+    leftY += 140;
   });
 
   // livros empilhados à direita
@@ -853,7 +846,7 @@ function applyInitialLayout(livros, poemas, drops) {
         x: LAYOUT.STACK_START_X + col * LAYOUT.STACK_STEP_X,
         y: LAYOUT.STACK_TOP + row * LAYOUT.STACK_STEP_Y,
         rot: sr((parseInt(l.id) || i) * 7, -3.5, 3.5),
-        z: 10 + i  // livros mais "de baixo" (i menor) ficam abaixo
+        z: 10 + i
       };
     }
   });
@@ -878,10 +871,12 @@ let autoScrollRAF = 0;
 let repelRAF = 0;
 let edgeDx = 0, edgeDy = 0;
 let lastPointerX = 0, lastPointerY = 0;
+let dragStartX = 0, dragStartY = 0;
+const CLICK_THRESHOLD = 5; // px — abaixo disso é clique (não drag)
 
 function pointerDown(e) {
   // não inicia drag se clicou em link, handle de resize ou edge
-  if (e.target.closest('.open-link, .drop-open, .poem-title a, .poem-edge, .poem-corner')) return;
+  if (e.target.closest('.poem-title a, .poem-edge, .poem-corner')) return;
   // poema só é arrastado pelo header; livro/drop em qualquer lugar
   const poemHeader = e.target.closest('.poem-header');
   const el = poemHeader
@@ -901,6 +896,8 @@ function pointerDown(e) {
   document.body.classList.add('dragging');
   lastPointerX = evt.clientX;
   lastPointerY = evt.clientY;
+  dragStartX = evt.clientX;
+  dragStartY = evt.clientY;
 }
 
 function pointerMove(e) {
@@ -924,21 +921,37 @@ function pointerMove(e) {
 
 function pointerUp() {
   if (!dragged) return;
-  const id = dragged.dataset.id;
-  const x = parseFloat(dragged.style.left) || 0;
-  const y = parseFloat(dragged.style.top) || 0;
-  const m = (dragged.style.transform || '').match(/rotate\(([^)]+)deg\)/);
+  const dx = Math.abs(lastPointerX - dragStartX);
+  const dy = Math.abs(lastPointerY - dragStartY);
+  const wasClick = dx < CLICK_THRESHOLD && dy < CLICK_THRESHOLD;
+
+  const draggedEl = dragged;
+  const kind = dragKind;
+
+  // reset state SEMPRE primeiro
+  const id = draggedEl.dataset.id;
+  const x = parseFloat(draggedEl.style.left) || 0;
+  const y = parseFloat(draggedEl.style.top) || 0;
+  const m = (draggedEl.style.transform || '').match(/rotate\(([^)]+)deg\)/);
   const rot = m ? parseFloat(m[1]) : 0;
-  const z = parseInt(dragged.style.zIndex) || zCounter;
-  // preserva outras props salvas (ex: width do poema após resize)
+  const z = parseInt(draggedEl.style.zIndex) || zCounter;
   const cur = positions[id] || {};
   positions[id] = { ...cur, x, y, rot, z };
   savePositions();
-  dragged.classList.remove('dragging');
+  draggedEl.classList.remove('dragging');
   document.body.classList.remove('dragging');
   dragged = null;
   dragKind = null;
   stopEdgeScroll();
+
+  // se foi click (não drag) e é book/drop com href, abre
+  if (wasClick && (kind === 'book' || kind === 'drop')) {
+    const href = draggedEl.dataset.href;
+    if (href) {
+      if (draggedEl.dataset.external) window.open(href, '_blank', 'noopener');
+      else window.location.href = href;
+    }
+  }
 }
 
 /* ── auto-scroll nas bordas ──────────────── */
@@ -1083,10 +1096,10 @@ async function init() {
   // scroll inicial: começa no canto superior esquerdo (textos visíveis + parte dos livros)
   window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
 
-  // banner de intro
+  // banner de intro (sai rapidinho)
   const intro = document.getElementById('intro');
   requestAnimationFrame(() => intro.classList.add('on'));
-  setTimeout(() => intro.classList.remove('on'), 2400);
+  setTimeout(() => intro.classList.remove('on'), 1400);
 
   // listeners globais de drag
   document.addEventListener('mousedown', pointerDown);
@@ -1126,19 +1139,19 @@ async function init() {
   }, true);
 }
 
-/* Reempilha poemas que estão na coluna esquerda inicial (x == LX)
-   pela altura real — evita overlap entre cards longos */
+/* Reempilha poemas+drops da coluna esquerda pela altura REAL,
+   evitando overlap */
 function rearrangePoemColumn() {
-  const poemEls = Array.from(document.querySelectorAll('.poem'))
-    .filter(el => Math.round(parseFloat(el.style.left) || 0) === LAYOUT.LX)
+  const els = Array.from(document.querySelectorAll('.poem, .drop-card'))
+    .filter(el => Math.abs((parseFloat(el.style.left) || 0) - LAYOUT.LX) < 10)
     .sort((a, b) => (parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0));
   let y = 40;
-  poemEls.forEach(el => {
+  els.forEach(el => {
     el.style.top = y + 'px';
     const id = el.dataset.id;
     const cur = positions[id] || {};
     positions[id] = { ...cur, x: LAYOUT.LX, y };
-    y += el.offsetHeight + 40;
+    y += el.offsetHeight + 28;
   });
   savePositions();
 }
