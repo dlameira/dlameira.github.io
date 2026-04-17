@@ -3,436 +3,463 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>daniel lameira — biblioteca aberta</title>
+<title>daniel lameira — lab</title>
 <link rel="preconnect" href="https://directus-production-afdd.up.railway.app" crossorigin>
 <link rel="dns-prefetch" href="https://directus-production-afdd.up.railway.app">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap">
 <style>
+@font-face { font-family: 'AuthenticSans'; src: url('fonts/60b11050899817005a227b9e.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'OffBit';        src: url('fonts/OffBit-101Bold.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'GTPressura';    src: url('fonts/gt-pressura-mono-regular.ttf') format('truetype'); font-display: swap; }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #fff;
-  --fg: #000;
-  --fg-soft: #333;
-  --fg-mute: #888;
-  --rule: rgba(0,0,0,0.12);
-  --link: #0000ee;
-  --link-visited: #551a8b;
-  --highlight: #ff0;
-  --paper-shadow: rgba(0,0,0,0.18);
-  --no-img-bg: repeating-linear-gradient(45deg, #fff, #fff 8px, #f2f2f2 8px, #f2f2f2 9px);
-}
-html.dark {
   --bg: #0e0e0c;
+  --bg-2: #161614;
   --fg: #e6e4d6;
-  --fg-soft: #c2bfaf;
-  --fg-mute: #6f6d63;
-  --rule: rgba(230,228,214,0.18);
-  --link: #7af0ff;
-  --link-visited: #ffa6ff;
-  --highlight: #5a5a00;
-  --paper-shadow: rgba(0,0,0,0.6);
-  --no-img-bg: repeating-linear-gradient(45deg, #111, #111 8px, #1a1a18 8px, #1a1a18 9px);
+  --fg-soft: rgba(230,228,214,0.70);
+  --fg-mute: rgba(230,228,214,0.40);
+  --rule: rgba(230,228,214,0.12);
+  --red: #E8320A;
+  --green: #00ff41;
+  --blue: #3355ff;
+  --purple: #cc44ff;
+  --yellow: #f2e04a;
+  --f-title: 'AuthenticSans', 'OffBit', monospace;
+  --f-ui: 'GTPressura', ui-monospace, monospace;
+  --f-body: 'Source Serif 4', 'Source Serif Pro', 'Charter', Georgia, serif;
+}
+html.light {
+  --bg: #ebe7d6;
+  --bg-2: #dfd9c0;
+  --fg: #141311;
+  --fg-soft: rgba(20,19,17,0.72);
+  --fg-mute: rgba(20,19,17,0.42);
+  --rule: rgba(20,19,17,0.15);
 }
 
-html, body {
-  background: var(--bg);
-  color: var(--fg);
-  font-family: 'Times New Roman', Times, serif;
-  overscroll-behavior: none;
-  transition: background 0.3s ease, color 0.3s ease;
-}
-
+html { scroll-behavior: smooth; }
 body {
-  width: max-content;
-  min-width: 100vw;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--f-body);
+  font-size: 16.5px;
+  line-height: 1.65;
   min-height: 100vh;
-  overflow: visible;
-  user-select: none;
-  -webkit-user-select: none;
-  cursor: default;
-  position: relative;
+  -webkit-font-smoothing: antialiased;
 }
+a { color: var(--fg); text-decoration: none; }
+a:hover { color: var(--red); }
 
-/* ── CANVAS ──────────────────────────────────── */
-#canvas {
-  position: relative;
+/* ── NAV ───────────────────────────────────── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 16px 24px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--rule);
 }
-
-/* ── HUD flutuante ───────────────────────────── */
-.hud {
-  position: fixed;
-  font-family: 'Courier New', monospace;
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--fg-soft);
-  z-index: 10000;
-  pointer-events: none;
+.nav-logo { display: flex; flex-direction: column; gap: 3px; }
+.nav-logo-title {
+  font-family: var(--f-title); font-size: 22px; color: var(--red);
+  letter-spacing: 0.05em; line-height: 1; text-decoration: none;
 }
-.hud a { color: var(--link); text-decoration: underline; pointer-events: auto; }
-.hud a:hover { background: var(--highlight); color: #000; }
-html.dark .hud a:hover { background: var(--highlight); color: #fff; }
+.nav-logo-sub {
+  font-family: var(--f-ui); font-size: 8.5px;
+  color: rgba(232,50,10,0.55); letter-spacing: 0.04em; line-height: 1.45;
+}
+.nav-links {
+  display: flex; align-items: center; list-style: none; gap: 0;
+  flex-wrap: wrap; justify-content: flex-end;
+}
+.nav-sep { color: var(--red); font-size: 11px; padding: 0 5px; opacity: 0.5; }
+.nav-links a {
+  font-family: var(--f-ui); font-size: 11px; color: var(--fg);
+  text-decoration: none; letter-spacing: 0.06em; padding: 2px 4px;
+}
+.nav-links a:hover { color: var(--red); }
+.theme-btn {
+  background: none; border: 1px solid var(--rule); padding: 3px 8px;
+  font-family: var(--f-ui); font-size: 9px; letter-spacing: 0.18em;
+  text-transform: uppercase; cursor: pointer; color: var(--fg-soft);
+  margin-left: 12px;
+}
+.theme-btn:hover { border-color: var(--red); color: var(--red); }
 
-.hud-tl { top: 18px; left: 20px; }
-.hud-tr { top: 18px; right: 20px; text-align: right; }
-.hud-bl { bottom: 18px; left: 20px; }
-.hud-br { bottom: 18px; right: 20px; text-align: right; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
-
-.hud button {
-  pointer-events: auto;
-  background: none; border: 1px solid currentColor; padding: 3px 8px;
-  font-family: 'Courier New', monospace; font-size: 8.5px;
+/* ── HERO ──────────────────────────────────── */
+.hero {
+  max-width: 1400px; margin: 0 auto;
+  padding: 72px 24px 40px;
+  display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: end;
+}
+.hero-title {
+  font-family: var(--f-title);
+  font-size: clamp(48px, 7.5vw, 110px);
+  font-weight: 400; line-height: 0.9; letter-spacing: 0.02em;
+  color: var(--fg);
+}
+.hero-title em { font-style: italic; color: var(--red); }
+.hero-sub {
+  font-family: var(--f-ui); font-size: 11px;
   letter-spacing: 0.16em; text-transform: uppercase;
-  cursor: pointer; color: var(--fg);
-  white-space: nowrap;
+  color: var(--fg-mute); line-height: 1.8;
+  text-align: right; max-width: 280px;
 }
-.hud button:hover { background: var(--fg); color: var(--bg); }
-
-.intro-banner {
-  position: fixed;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  font-family: 'Times New Roman', serif;
-  font-size: clamp(36px, 5vw, 72px);
-  line-height: 0.95;
-  letter-spacing: -0.02em;
-  text-align: center;
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  color: var(--fg);
-}
-.intro-banner.on { opacity: 1; }
-.intro-banner .sub {
-  display: block;
-  margin-top: 14px;
-  font-family: 'Courier New', monospace;
-  font-size: 11px;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: var(--fg-mute);
+@media (max-width: 760px) {
+  .hero { grid-template-columns: 1fr; gap: 24px; padding: 48px 20px 32px; }
+  .hero-sub { text-align: left; }
 }
 
-/* ── LIVRO ──────────────────────────────────── */
-.book {
-  position: absolute;
-  width: 120px;
-  cursor: grab;
-  transition: box-shadow 0.15s, transform 0.25s cubic-bezier(.2,.9,.3,1), left 0.6s cubic-bezier(.2,.9,.3,1), top 0.6s cubic-bezier(.2,.9,.3,1);
-  will-change: transform, left, top;
-  touch-action: none;
+/* ── SEÇÕES ────────────────────────────────── */
+.section {
+  max-width: 1400px; margin: 0 auto;
+  padding: 64px 24px 40px;
+  border-top: 1px solid var(--rule);
 }
-.book:active { cursor: grabbing; }
-.book.dragging {
-  transition: none;
-  box-shadow: 0 12px 32px var(--paper-shadow);
-  z-index: 999999 !important;
+.section-header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 20px; margin-bottom: 36px; flex-wrap: wrap;
 }
-.book .cover {
-  width: 100%;
-  background: transparent;
-  line-height: 0;
+.section-title {
+  font-family: var(--f-title);
+  font-size: clamp(32px, 5vw, 56px);
+  letter-spacing: 0.04em; color: var(--red); line-height: 1;
 }
-.book .cover img {
-  width: 100%;
-  height: auto;
-  display: block;
-  pointer-events: none;
+.section-title.yellow { color: var(--yellow); }
+.section-title.purple { color: var(--purple); }
+.section-title.blue   { color: var(--blue); }
+.section-title.green  { color: var(--green); }
+.section-desc {
+  font-family: var(--f-ui); font-size: 9.5px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--fg-mute); line-height: 1.7; max-width: 260px;
 }
-.book .cover.no-img {
-  aspect-ratio: 2/3;
-  background: var(--no-img-bg);
-  border: 1px solid var(--rule);
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Courier New', monospace; font-size: 9px;
-  letter-spacing: 0.2em; color: var(--fg-mute);
-  text-transform: uppercase; text-align: center; padding: 10px;
-}
-.book .caption {
-  font-family: 'Times New Roman', serif;
-  font-style: italic;
-  font-size: 11px;
-  line-height: 1.25;
-  margin-top: 6px;
-  color: var(--fg);
-  padding: 0 2px;
-}
-.book .caption small {
-  display: block;
-  font-style: normal;
-  font-family: 'Courier New', monospace;
-  font-size: 8.5px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--fg-mute);
-  margin-top: 2px;
-}
-.book a.open-link {
-  display: block;
-  font-family: 'Courier New', monospace;
-  font-size: 8px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--link);
-  margin-top: 4px;
-  padding: 0 2px;
-  pointer-events: auto;
-  text-decoration: underline;
-}
-.book a.open-link:hover { background: var(--highlight); color: #000; }
-html.dark .book a.open-link:hover { color: #fff; }
 
-body.dragging, body.dragging * { cursor: grabbing !important; }
-
-/* ── POEMA (Pretext reflow editorial) ─────── */
-.poem {
-  position: absolute;
-  font-family: 'Source Serif 4', 'Source Serif Pro', 'Charter', 'Iowan Old Style', Georgia, serif;
-  color: var(--fg);
-  width: 400px;
-  min-width: 280px;
-  max-width: 820px;
+/* ── ESCRITOS (cards com header colorido) ─────────── */
+.escritos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 28px;
+}
+.escrito-card {
   border: 2.5px solid var(--fg);
-  border-radius: 12px;
-  background: var(--bg);
-  cursor: default;
-  touch-action: none;
-  transition: left 0.6s cubic-bezier(.2,.9,.3,1), top 0.6s cubic-bezier(.2,.9,.3,1);
+  border-radius: 14px;
   overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+  display: flex; flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
 }
-.poem.dragging, .poem.resizing {
-  transition: none;
-  box-shadow: 0 14px 38px var(--paper-shadow);
+.escrito-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.25);
 }
-/* header colorido — o único lugar que inicia drag do poema */
-.poem .poem-header {
-  cursor: grab;
-  pointer-events: auto;
-  padding: 12px 20px 14px;
-  background: #1a3e5c;
-  color: #f8f5ec;
+html.light .escrito-card:hover { box-shadow: 0 12px 28px rgba(0,0,0,0.15); }
+.escrito-header {
+  padding: 14px 20px 16px;
   border-bottom: 2.5px solid var(--fg);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: flex; flex-direction: column; gap: 2px;
 }
-.poem.dragging .poem-header { cursor: grabbing; }
-.poem .poem-tag {
-  font-family: 'Courier New', monospace;
-  font-size: 8.5px;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
+.escrito-tag {
+  font-family: var(--f-ui); font-size: 8.5px;
+  letter-spacing: 0.28em; text-transform: uppercase;
   opacity: 0.7;
-  display: block;
 }
-.poem .poem-title {
-  font-family: 'Source Serif 4', 'Source Serif Pro', Georgia, serif;
-  font-size: 19px;
-  font-weight: 500;
-  line-height: 1.2;
-  display: block;
-  margin-top: 2px;
+.escrito-title {
+  font-family: var(--f-body); font-weight: 500; font-size: 22px;
+  line-height: 1.2; margin-top: 2px;
 }
-.poem .poem-title a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.22); pointer-events: auto; }
-.poem .poem-title a:hover { border-bottom-color: #fff; }
-.poem .poem-date {
-  display: block;
-  margin-top: 4px;
-  font-family: 'Courier New', monospace;
-  font-size: 9.5px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  opacity: 0.55;
+.escrito-title a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.18); }
+.escrito-title a:hover { border-bottom-color: #fff; }
+html.light .escrito-title a { border-bottom-color: rgba(255,255,255,0.3); }
+.escrito-date {
+  font-family: var(--f-ui); font-size: 9.5px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  opacity: 0.55; margin-top: 6px;
 }
-.poem .poem-body {
+.escrito-body {
+  padding: 18px 22px 22px;
+  font-family: var(--f-body); font-size: 15px;
+  line-height: 1.6; color: var(--fg);
+  overflow: hidden;
+  max-height: 220px;
   position: relative;
-  padding: 16px 20px 20px;
-  font-size: 15.5px;
-  line-height: 1.55;
-  color: var(--fg);
-  pointer-events: none;
-  background: var(--bg);
 }
-.poem-line {
-  position: absolute;
-  white-space: pre;
-  transition: left 0.28s cubic-bezier(.2,.9,.3,1), top 0.28s cubic-bezier(.2,.9,.3,1);
-  will-change: left, top;
+.escrito-body::after {
+  content: '';
+  position: absolute; left: 0; right: 0; bottom: 0; height: 40px;
+  background: linear-gradient(transparent, var(--bg));
   pointer-events: none;
 }
-/* bordas do outline = handles de resize (faixas dentro do outline) */
-.poem-edge {
-  position: absolute;
-  pointer-events: auto;
-  z-index: 3;
-  transition: background 0.15s ease;
-  top: 70px;
-  bottom: 26px;
-  width: 10px;
-}
-.poem-edge-l { left: 0; cursor: ew-resize; }
-.poem-edge-r { right: 0; cursor: ew-resize; }
-.poem-edge:hover { background: rgba(232,50,10,0.4); }
-.poem.resizing .poem-edge { background: rgba(232,50,10,0.6); }
-/* canto inferior direito: resize horizontal também (mais descobrível) */
-.poem-corner {
-  position: absolute;
-  right: 0; bottom: 0;
-  width: 24px; height: 24px;
-  cursor: nwse-resize;
-  pointer-events: auto;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--fg-mute);
-  font-family: 'Courier New', monospace;
-  font-size: 14px;
-  opacity: 0.6;
-  z-index: 4;
-  transition: opacity 0.15s, color 0.15s;
-}
-.poem-corner::after { content: '↘'; }
-.poem-corner:hover { opacity: 1; color: var(--fg); }
+.escrito-body p { margin-bottom: 14px; }
+.escrito-body p:last-child { margin-bottom: 0; }
+.escrito-body em { font-style: italic; }
+.escrito-body strong { font-weight: 600; }
 
-/* ── DROP (vídeo/canal/música) ─────────────── */
+.see-all-link {
+  display: inline-block;
+  margin-top: 24px;
+  font-family: var(--f-ui); font-size: 10.5px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--fg-mute); text-decoration: none;
+  border-bottom: 1px solid var(--rule); padding-bottom: 2px;
+}
+.see-all-link:hover { color: var(--red); border-color: var(--red); }
+
+/* ── DROPS ─────────────────────────────────── */
+.drops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 4px;
+}
 .drop-card {
-  position: absolute;
-  font-family: 'Courier New', monospace;
-  font-size: 11px;
-  line-height: 1.45;
-  color: var(--fg);
-  max-width: 260px;
-  padding: 10px 14px;
-  border: 1px solid var(--fg);
-  background: var(--bg);
-  cursor: grab;
-  touch-action: none;
-  transition: box-shadow 0.15s, transform 0.25s cubic-bezier(.2,.9,.3,1), left 0.6s cubic-bezier(.2,.9,.3,1), top 0.6s cubic-bezier(.2,.9,.3,1);
+  background: #111109; border: 1px solid rgba(255,255,255,0.04);
+  text-decoration: none; color: var(--fg);
+  display: flex; flex-direction: column;
+  transition: border-color 0.2s;
 }
-.drop-card:active { cursor: grabbing; }
-.drop-card.dragging {
-  transition: none;
-  box-shadow: 0 12px 32px var(--paper-shadow);
-  z-index: 999999 !important;
+html.light .drop-card { background: #f2efe0; border-color: rgba(0,0,0,0.06); }
+.drop-card:hover { border-color: var(--red); }
+.drop-cover { aspect-ratio: 1; position: relative; overflow: hidden; }
+.drop-cover-bg {
+  width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.18); text-transform: uppercase;
 }
-.drop-card .drop-tag {
-  font-size: 8.5px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--fg-mute);
-  margin-bottom: 6px;
+.drop-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.drop-type-badge {
+  position: absolute; top: 6px; left: 6px;
+  font-family: var(--f-ui); font-size: 7.5px; letter-spacing: 0.18em;
+  text-transform: uppercase; padding: 3px 6px;
 }
-.drop-card .drop-title {
-  font-family: 'Times New Roman', serif;
-  font-size: 15px;
-  font-style: italic;
-  margin-bottom: 4px;
-  line-height: 1.2;
-}
-.drop-card .drop-author {
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--fg-mute);
-  margin-bottom: 8px;
-}
-.drop-card .drop-open {
-  font-size: 8.5px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--link);
-  text-decoration: underline;
-  pointer-events: auto;
-}
-.drop-card .drop-open:hover { background: var(--highlight); color: #000; }
-html.dark .drop-card .drop-open:hover { color: #fff; }
+.drop-card[data-type="livro"]   .drop-cover-bg { background: #1a1208; }
+.drop-card[data-type="album"]   .drop-cover-bg { background: #08121a; }
+.drop-card[data-type="podcast"] .drop-cover-bg { background: #120a1a; }
+.drop-card[data-type="filme"]   .drop-cover-bg { background: #0a1a0a; }
+.drop-card[data-type="musica"]  .drop-cover-bg { background: #081a1a; }
+.drop-card[data-type="video"]   .drop-cover-bg { background: #1a0c00; }
+.drop-card[data-type="canal"]   .drop-cover-bg { background: #1a0404; }
+.drop-card[data-type="jogo"]    .drop-cover-bg { background: #0a1a04; }
+.drop-card[data-type="artista"] .drop-cover-bg { background: #1a0410; }
+.drop-card[data-type="ensaio"]  .drop-cover-bg { background: #14120a; }
+.drop-card[data-type="livro"]   .drop-type-badge { color: var(--yellow); border: 1px solid var(--yellow); }
+.drop-card[data-type="album"]   .drop-type-badge { color: var(--green);  border: 1px solid var(--green);  }
+.drop-card[data-type="podcast"] .drop-type-badge { color: var(--purple); border: 1px solid var(--purple); }
+.drop-card[data-type="filme"]   .drop-type-badge { color: var(--blue);   border: 1px solid var(--blue);   }
+.drop-card[data-type="musica"]  .drop-type-badge { color: #00ccff; border: 1px solid #00ccff; }
+.drop-card[data-type="video"]   .drop-type-badge { color: #ff6600; border: 1px solid #ff6600; }
+.drop-card[data-type="canal"]   .drop-type-badge { color: #ff2020; border: 1px solid #ff2020; }
+.drop-card[data-type="jogo"]    .drop-type-badge { color: #7dff4f; border: 1px solid #7dff4f; }
+.drop-card[data-type="artista"] .drop-type-badge { color: #ff44bb; border: 1px solid #ff44bb; }
+.drop-card[data-type="ensaio"]  .drop-type-badge { color: #e0c090; border: 1px solid #e0c090; }
+.drop-info { padding: 10px 12px; display: flex; flex-direction: column; gap: 3px; }
+.drop-title { font-family: var(--f-ui); font-size: 11px; font-weight: 500; line-height: 1.25; color: var(--fg); }
+.drop-author { font-family: var(--f-ui); font-size: 8px; letter-spacing: 0.08em; color: var(--fg-mute); text-transform: uppercase; }
 
-/* ── OBRA visual (coluna esquerda) ─────────── */
-.obra {
-  position: absolute;
-  cursor: grab;
-  touch-action: none;
-  transition: left 0.6s cubic-bezier(.2,.9,.3,1), top 0.6s cubic-bezier(.2,.9,.3,1);
+/* ── LIVROS QUE DIRIGI (grid capas) ───────── */
+.livros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 6px;
 }
-.obra.dragging {
-  cursor: grabbing;
-  transition: none;
-  box-shadow: 0 14px 36px var(--paper-shadow);
-  z-index: 999999 !important;
+.livro-mini { aspect-ratio: 2/3; position: relative; overflow: hidden; cursor: pointer; background: #1a100a; display: block; }
+html.light .livro-mini { background: #d9d2b8; }
+.livro-mini img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
+.livro-mini:hover img { transform: scale(1.04); }
+.livro-mini-overlay {
+  position: absolute; inset: 0;
+  background: var(--yellow); color: var(--bg);
+  display: flex; flex-direction: column; justify-content: flex-end; padding: 10px;
+  opacity: 0; transition: opacity 0.2s;
+  font-family: var(--f-ui); font-size: 9.5px; line-height: 1.3; letter-spacing: 0.04em;
 }
-.obra-media {
-  width: 100%;
-  line-height: 0;
-  background: #111;
-  border: 1px solid rgba(0,0,0,0.1);
+.livro-mini:hover .livro-mini-overlay { opacity: 0.96; }
+.livro-mini-author { font-size: 8px; opacity: 0.7; margin-top: 3px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* ── OBRAS VISUAIS ────────────────────────── */
+.obras-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
 }
-.obra-media img, .obra-media video {
+.obra-item {
+  position: relative; overflow: hidden; cursor: pointer;
+  background: #111; border: 1px solid rgba(255,255,255,0.05);
   display: block;
-  width: 100%;
-  height: auto;
-  pointer-events: none;
 }
-.obra-empty {
+.obra-item img, .obra-item video {
+  width: 100%; height: 100%; object-fit: contain; display: block;
   aspect-ratio: 4/3;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Courier New', monospace; font-size: 10px;
-  letter-spacing: 0.2em; text-transform: uppercase;
-  color: var(--fg-mute); background: var(--no-img-bg);
+  background: #111;
 }
-.obra-caption {
-  padding: 8px 2px 0;
-  font-family: 'Source Serif 4', 'Source Serif Pro', Georgia, serif;
+.obra-overlay {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  padding: 20px 14px 12px;
+  opacity: 0; transition: opacity 0.2s;
+  font-family: var(--f-body);
+  color: #f0eee0;
 }
-.obra-title { font-size: 15px; font-style: italic; color: var(--fg); line-height: 1.25; }
-.obra-meta {
-  font-family: 'Courier New', monospace;
-  font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--fg-mute); margin-top: 4px;
+.obra-item:hover .obra-overlay { opacity: 1; }
+.obra-overlay-title { font-style: italic; font-size: 15px; line-height: 1.2; }
+.obra-overlay-meta {
+  font-family: var(--f-ui); font-size: 9px; letter-spacing: 0.16em;
+  text-transform: uppercase; opacity: 0.7; margin-top: 4px;
 }
+
+/* ── ME (sobre) ────────────────────────────── */
+#me { padding-bottom: 80px; }
+.me-grid {
+  display: grid; grid-template-columns: 1fr 2fr; gap: 48px; align-items: start;
+}
+@media (max-width: 760px) { .me-grid { grid-template-columns: 1fr; gap: 28px; } }
+.me-name {
+  font-family: var(--f-title); font-size: clamp(40px, 6vw, 72px);
+  line-height: 0.95; letter-spacing: 0.03em; color: var(--fg);
+}
+.me-name span { color: var(--red); }
+.me-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.me-tag {
+  font-family: var(--f-ui); font-size: 8.5px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  border: 1px solid var(--rule); padding: 4px 8px;
+  color: var(--fg-soft);
+}
+.me-bio-label {
+  font-family: var(--f-ui); font-size: 8.5px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: rgba(232,50,10,0.55); margin-bottom: 14px;
+}
+.me-bio {
+  font-family: var(--f-body); font-size: 17px; line-height: 1.65;
+  color: var(--fg);
+}
+.me-links { display: flex; gap: 18px; margin-top: 22px; flex-wrap: wrap; }
+.me-link {
+  font-family: var(--f-ui); font-size: 10.5px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--fg-soft); text-decoration: none;
+  border-bottom: 1px solid var(--rule); padding-bottom: 2px;
+}
+.me-link:hover { color: var(--red); border-color: var(--red); }
+
+/* ── FOOTER ────────────────────────────────── */
+footer {
+  max-width: 1400px; margin: 0 auto;
+  padding: 24px; border-top: 1px solid var(--rule);
+  font-family: var(--f-ui); font-size: 9.5px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--fg-mute);
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+}
+
+/* reveal sutil on scroll */
+.r { opacity: 0; transform: translateY(14px); transition: opacity 0.55s, transform 0.55s; }
+.r.on { opacity: 1; transform: none; }
+.r.d1 { transition-delay: 0.06s; } .r.d2 { transition-delay: 0.12s; }
+.r.d3 { transition-delay: 0.18s; } .r.d4 { transition-delay: 0.24s; }
+
+.loading { color: var(--fg-mute); font-family: var(--f-ui); font-size: 10.5px; letter-spacing: 0.2em; text-transform: uppercase; padding: 32px 0; }
 </style>
 </head>
 <body>
 
-<div class="hud hud-tl">
-  daniel lameira<br>
-  <span style="color:var(--fg-mute)">biblioteca aberta</span>
-</div>
-<div class="hud hud-tr">
-  <a href="index.html">home</a> ·
-  <a href="posts.html">arquivo</a>
-</div>
-<div class="hud hud-bl" id="hud-count">
-  <span id="item-count">—</span> itens · arraste à vontade<br>
-  <span style="color:var(--fg-mute)">scroll em qualquer direção</span>
-</div>
-<div class="hud hud-br">
-  <button id="grid-btn">arrumar em grid</button>
-  <button id="theme-btn">modo escuro</button>
-  <button id="reset-btn">resetar posições</button>
-</div>
+<nav>
+  <div class="nav-logo">
+    <a href="lab.html" class="nav-logo-title">daniel lameira</a>
+    <span class="nav-logo-sub">lab · mistura do lab + index</span>
+  </div>
+  <ul class="nav-links">
+    <li><span class="nav-sep">..·</span><a href="#escritos">escritos</a></li>
+    <li><span class="nav-sep">:·</span><a href="#drops">drops</a></li>
+    <li><span class="nav-sep">.·.</span><a href="#livros">livros</a></li>
+    <li><span class="nav-sep">-·.</span><a href="#obras">obras</a></li>
+    <li><span class="nav-sep">-·</span><a href="#me">me</a></li>
+    <li><button class="theme-btn" id="theme-btn">modo claro</button></li>
+  </ul>
+</nav>
 
-<div class="intro-banner" id="intro">
-  biblioteca <span style="color:var(--link)">aberta</span>
-  <span class="sub">arraste o que quiser — fica onde você deixar.</span>
-</div>
+<section class="hero">
+  <h1 class="hero-title">arte, criatividade,<br>livros, tecnologia<br><em>e consciência</em>.</h1>
+  <div class="hero-sub">
+    daniel lameira<br>
+    editor · poeta · diretor de livros<br>
+    antofágica, seiva
+  </div>
+</section>
 
-<main id="canvas"></main>
+<section class="section" id="escritos">
+  <div class="section-header">
+    <h2 class="section-title r">ESCRITOS</h2>
+    <p class="section-desc r d1">ensaios, poesia, anotações, projetos — texto em forma livre.</p>
+  </div>
+  <div class="escritos-grid" id="escritos-grid"><div class="loading">carregando —</div></div>
+</section>
 
-<script type="module">
-import * as Pretext from 'https://esm.sh/@chenglou/pretext';
+<section class="section" id="drops">
+  <div class="section-header">
+    <h2 class="section-title r">DROPS</h2>
+    <p class="section-desc r d1">indicações — livros, álbuns, podcasts, filmes, canais.</p>
+  </div>
+  <div class="drops-grid" id="drops-grid"><div class="loading">carregando —</div></div>
+</section>
+
+<section class="section" id="livros">
+  <div class="section-header">
+    <h2 class="section-title yellow r">LIVROS QUE DIRIGI</h2>
+    <p class="section-desc r d1">~200 títulos · desde 2003 · antofágica / seiva</p>
+  </div>
+  <div class="livros-grid" id="livros-grid"><div class="loading">carregando —</div></div>
+  <a href="livros.html" class="see-all-link">ver todos os livros →</a>
+</section>
+
+<section class="section" id="obras">
+  <div class="section-header">
+    <h2 class="section-title purple r">OBRAS VISUAIS</h2>
+    <p class="section-desc r d1">desenhos, pinturas, animações, vídeos.</p>
+  </div>
+  <div class="obras-grid" id="obras-grid"><div class="loading">carregando —</div></div>
+</section>
+
+<section class="section" id="me">
+  <div class="section-header">
+    <h2 class="section-title blue r">ME</h2>
+  </div>
+  <div class="me-grid">
+    <div class="r">
+      <h3 class="me-name">DANIEL<br><span>LAMEIRA</span></h3>
+      <div class="me-tags">
+        <span class="me-tag">arte</span>
+        <span class="me-tag">criatividade</span>
+        <span class="me-tag">livros</span>
+        <span class="me-tag">tecnologia</span>
+        <span class="me-tag">consciência</span>
+      </div>
+    </div>
+    <div class="r d1">
+      <div class="me-bio-label">— quem escreve</div>
+      <p class="me-bio" id="me-bio">Editor e pesquisador sobre tecnologia, arte e criatividade. Pai de um menino maravilhoso, fundador da Antofágica e da Seiva, editei muitos livros. Criei este caderno para registrar mudanças, pensamentos e indicações de conteúdos que gosto.</p>
+      <div class="me-links" id="me-links">
+        <a href="#" class="me-link">Instagram ↗</a>
+        <a href="#" class="me-link">Email ↗</a>
+        <a href="#" class="me-link">LinkedIn ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>© 2026 daniel lameira</div>
+  <div>lab — mistura do experimental com o tradicional</div>
+</footer>
+
+<script>
 const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
 
-const POEM_FONT = '15.5px "Source Serif 4", "Source Serif Pro", "Charter", "Iowan Old Style", Georgia, serif';
-const POEM_LINE_H = 24;
-const POEM_PARA_GAP = 14; // espaço entre parágrafos
-const POEM_PAD_X = 48;    // padding horizontal total (24+24)
-const POEM_MAX_LINES_PER_FORCED = 60;
-const CANVAS_PAD = 140;
-const BOOK_W = 120;
-
-/* ── storage / cache ─────────────────────── */
 async function cachedFetch(key, url, ttl = 5 * 60 * 1000) {
   try {
     const c = sessionStorage.getItem(key);
@@ -451,143 +478,29 @@ async function cachedFetch(key, url, ttl = 5 * 60 * 1000) {
   } catch(e) { return []; }
 }
 
-const POS_KEY = 'lab:pos:v2';
-const THEME_KEY = 'lab:theme';
-const Z_KEY = 'lab:zmax';
-let positions = (() => {
-  try { return JSON.parse(localStorage.getItem(POS_KEY) || '{}'); }
-  catch(e) { return {}; }
-})();
-/* Migration v6: layout de 3 colunas (obras | textos | livros) */
-(() => {
-  const MIG = 'lab:mig:v6-3cols';
-  try {
-    if (localStorage.getItem(MIG)) return;
-    positions = {};
-    localStorage.setItem(POS_KEY, '{}');
-    localStorage.setItem(MIG, '1');
-  } catch(e) {}
-})();
-function savePositions() {
-  try { localStorage.setItem(POS_KEY, JSON.stringify(positions)); } catch(e) {}
-}
-let zCounter = parseInt(localStorage.getItem(Z_KEY) || '10') || 10;
-function nextZ() { zCounter += 1; try { localStorage.setItem(Z_KEY, String(zCounter)); } catch(e){} return zCounter; }
-
-/* ── helpers ─────────────────────────────── */
 function escHtml(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function stripHtml(s) {
-  if (!s) return '';
-  // usa DOM pra stripar tags E decodificar entities (&uacute; → ú, etc.)
-  const tmp = document.createElement('div');
-  tmp.innerHTML = String(s);
-  return (tmp.textContent || tmp.innerText || '').replace(/\s+/g, ' ').trim();
-}
-function directusImg(id, w) {
-  if (!id) return null;
-  const tx = encodeURIComponent(JSON.stringify([['sharpen']]));
-  return `${DIRECTUS}/assets/${id}?width=${w}&quality=85&format=webp&transforms=${tx}`;
-}
-function sr(seed, min, max) {
-  const x = Math.sin(seed * 9301 + 49297) * 233280;
-  const frac = x - Math.floor(x);
-  return min + Math.abs(frac) * (max - min);
-}
 
-/* ── fetchs ──────────────────────────────── */
-async function fetchAllLivros() {
-  return cachedFetch('c:lab:allivros',
-    `${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=-ano&limit=500&fields=id,title,autor,Cover,ano,editora`);
-}
-async function fetchObras() {
-  return cachedFetch('c:lab:obras',
-    `${DIRECTUS}/items/obras?filter[status][_eq]=published&sort[]=order&limit=40&fields=id,title,type,year,image,video,order`);
-}
-async function fetchPoemas() {
-  // escritos do tipo poesia (ou tudo se nenhum tem tipo explicito)
-  return cachedFetch('c:lab:poemas',
-    `${DIRECTUS}/items/escritos?filter[status][_eq]=published&sort[]=-date&limit=5&fields=id,title,date,tipo,excerpt,content`);
-}
-async function fetchDropsMedia() {
-  // drops de tipo video / canal / musica / album / filme
-  return cachedFetch('c:lab:dropsmedia',
-    `${DIRECTUS}/items/drops?filter[status][_eq]=published&filter[type][_in]=video,canal,musica,album,filme,podcast&sort[]=order&limit=8&fields=id,title,author,type,link,note,order`);
-}
-
-/* ── render: LIVRO ───────────────────────── */
-function createBookEl(livro, pos) {
-  const el = document.createElement('div');
-  el.className = 'book';
-  el.dataset.id = 'book-' + livro.id;
-  el.dataset.kind = 'book';
-  el.style.left = pos.x + 'px';
-  el.style.top = pos.y + 'px';
-  el.style.transform = `rotate(${pos.rot.toFixed(2)}deg)`;
-  el.style.zIndex = pos.z || nextZ();
-  const coverId = livro.Cover;
-  const coverUrl = directusImg(coverId, 240);
-  el.innerHTML = `
-    <div class="cover ${coverUrl ? '' : 'no-img'}">
-      ${coverUrl
-        ? `<img src="${coverUrl}" alt="${escHtml(livro.title || '')}" loading="lazy" decoding="async" draggable="false">`
-        : 'sem capa'}
-    </div>
-    <div class="caption">
-      ${escHtml(livro.title || 'sem título')}
-      <small>${escHtml(livro.autor || '')}${livro.ano ? ' · ' + escHtml(livro.ano) : ''}</small>
-    </div>
-  `;
-  el.dataset.href = `livro.html?id=${livro.id}`;
-  return el;
-}
-
-/* ── parse conteúdo em blocos (parágrafos × linhas forçadas) ─── */
-function parseContentToBlocks(raw) {
-  if (!raw) return [];
+function stripHtmlToParagraphs(raw) {
+  if (!raw) return '';
   const tmp = document.createElement('div');
   tmp.innerHTML = String(raw);
   const pEls = tmp.querySelectorAll('p');
   if (pEls.length > 0) {
-    // HTML com <p>: cada <p> é um parágrafo. <br> dentro vira \n
     return Array.from(pEls).map(p => {
       p.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
-      const text = (p.textContent || '').replace(/\u00a0/g, ' ').trim();
-      if (!text) return null;
-      return text.split('\n').map(l => l.trim()).filter(Boolean);
-    }).filter(arr => arr && arr.length > 0);
+      const txt = (p.textContent || '').trim().replace(/\s+/g, ' ');
+      if (!txt) return '';
+      return `<p>${escHtml(txt).replace(/\n/g, '<br>')}</p>`;
+    }).filter(Boolean).join('');
   }
-  // Texto plain: \n\n separa parágrafos, \n simples mantém linha forçada
-  const plain = (tmp.textContent || '').replace(/\u00a0/g, ' ');
-  return plain.split(/\n\s*\n/).map(para =>
-    para.split('\n').map(l => l.trim()).filter(Boolean)
-  ).filter(arr => arr.length > 0);
+  const plain = tmp.textContent || '';
+  return plain.split(/\n\s*\n/).map(p => {
+    const t = p.trim();
+    return t ? `<p>${escHtml(t).replace(/\n/g, '<br>')}</p>` : '';
+  }).filter(Boolean).join('');
 }
 
-function preparePoemBlocks(raw) {
-  const blocks = parseContentToBlocks(raw);
-  return blocks.map(paragraph =>
-    paragraph.map(line => ({
-      text: line,
-      prepared: Pretext.prepareWithSegments(line, POEM_FONT)
-    }))
-  );
-}
-
-/* paleta de cores pros headers dos poemas */
-const POEM_HEADER_PALETTE = [
-  { bg: '#1a3e5c', fg: '#f8f5ec' },  // azul profundo
-  { bg: '#5c1a1f', fg: '#f8f5ec' },  // vinho
-  { bg: '#1f4a2e', fg: '#f8f5ec' },  // verde floresta
-  { bg: '#4a2e1a', fg: '#f8f5ec' },  // terracota
-  { bg: '#2d2842', fg: '#f8f5ec' },  // roxo profundo
-  { bg: '#3d391a', fg: '#f8f5ec' },  // oliva
-  { bg: '#10141a', fg: '#f8f5ec' },  // quase preto
-];
-function poemHeaderColor(id) {
-  const n = Math.abs(parseInt(id) || 0);
-  return POEM_HEADER_PALETTE[n % POEM_HEADER_PALETTE.length];
-}
-function fmtPoemDate(dateStr) {
+function fmtDate(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   if (isNaN(d)) return String(dateStr);
@@ -595,693 +508,190 @@ function fmtPoemDate(dateStr) {
   return `${d.getDate()} de ${months[d.getMonth()]}, ${d.getFullYear()}`;
 }
 
-/* ── render: POEMA (via Pretext — reflow editorial) ─── */
-function createPoemEl(escrito, pos) {
-  const el = document.createElement('article');
-  el.className = 'poem';
-  el.dataset.id = 'poem-' + escrito.id;
-  el.dataset.kind = 'poem';
-  el.style.left = pos.x + 'px';
-  el.style.top = pos.y + 'px';
-  el.style.zIndex = pos.z || 1;
-  if (pos.width) el.style.width = pos.width + 'px';
-  const tipo = escrito.tipo === 'projeto' ? 'projeto' : (escrito.tipo || 'escrito');
-  const raw = escrito.content || escrito.body || escrito.excerpt || '';
-  const color = poemHeaderColor(escrito.id);
-  const dateStr = fmtPoemDate(escrito.date);
-  el.innerHTML = `
-    <div class="poem-header" title="arraste daqui" style="background:${color.bg};color:${color.fg};">
-      <span class="poem-tag">— ${escHtml(tipo)}</span>
-      <span class="poem-title"><a href="post.html?id=${escrito.id}">${escHtml((escrito.title || '').toLowerCase())}</a></span>
-      ${dateStr ? `<span class="poem-date">${escHtml(dateStr)}</span>` : ''}
-    </div>
-    <div class="poem-body"></div>
-    <div class="poem-edge poem-edge-l" title="redimensionar"></div>
-    <div class="poem-edge poem-edge-r" title="redimensionar"></div>
-    <div class="poem-corner" title="redimensionar"></div>
-  `;
+function directusImg(id, w) {
+  if (!id) return null;
+  const tx = encodeURIComponent(JSON.stringify([['sharpen']]));
+  return `${DIRECTUS}/assets/${id}?width=${w}&quality=85&format=webp&transforms=${tx}`;
+}
+
+/* paleta de cores pros headers dos escritos */
+const HEADER_PALETTE = [
+  { bg: '#1a3e5c', fg: '#f8f5ec' },
+  { bg: '#5c1a1f', fg: '#f8f5ec' },
+  { bg: '#1f4a2e', fg: '#f8f5ec' },
+  { bg: '#4a2e1a', fg: '#f8f5ec' },
+  { bg: '#2d2842', fg: '#f8f5ec' },
+  { bg: '#3d391a', fg: '#f8f5ec' },
+  { bg: '#10141a', fg: '#f8f5ec' },
+];
+function headerColor(id) {
+  const n = Math.abs(parseInt(id) || 0);
+  return HEADER_PALETTE[n % HEADER_PALETTE.length];
+}
+
+/* ── fetchers ─────────────────────────────── */
+async function fetchEscritos() {
+  return cachedFetch('c:lab:escritos',
+    `${DIRECTUS}/items/escritos?filter[status][_eq]=published&sort[]=-date&limit=12&fields=id,title,date,tipo,excerpt,content`);
+}
+async function fetchDrops() {
+  return cachedFetch('c:lab:drops',
+    `${DIRECTUS}/items/drops?filter[status][_eq]=published&sort[]=order&limit=40&fields=id,title,author,type,cover,order`);
+}
+async function fetchLivros() {
+  return cachedFetch('c:lab:livros',
+    `${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=-ano&limit=40&fields=id,title,autor,Cover,ano`);
+}
+async function fetchObras() {
+  return cachedFetch('c:lab:obras',
+    `${DIRECTUS}/items/obras?filter[status][_eq]=published&sort[]=order&limit=16&fields=id,title,type,year,image,video,order`);
+}
+
+/* ── renderers ───────────────────────────── */
+function renderEscritos(escritos) {
+  const grid = document.getElementById('escritos-grid');
+  if (!escritos.length) { grid.innerHTML = '<div class="loading">sem escritos publicados.</div>'; return; }
+  grid.innerHTML = escritos.map((e, i) => {
+    const color = headerColor(e.id);
+    const tipo = e.tipo === 'projeto' ? 'projeto' : (e.tipo || 'escrito');
+    const body = stripHtmlToParagraphs(e.content || e.body || e.excerpt || '');
+    const dateStr = fmtDate(e.date);
+    const delay = i < 4 ? ` d${i}` : '';
+    return `
+      <a class="escrito-card r${delay}" href="post.html?id=${e.id}${e.tipo === 'projeto' ? '&tipo=projeto' : ''}">
+        <div class="escrito-header" style="background:${color.bg};color:${color.fg};">
+          <span class="escrito-tag">— ${escHtml(tipo)}</span>
+          <span class="escrito-title">${escHtml(e.title || 'sem título')}</span>
+          ${dateStr ? `<span class="escrito-date">${escHtml(dateStr)}</span>` : ''}
+        </div>
+        <div class="escrito-body">${body}</div>
+      </a>
+    `;
+  }).join('');
+}
+
+function renderDrops(drops) {
+  const grid = document.getElementById('drops-grid');
+  if (!drops.length) { grid.innerHTML = '<div class="loading">sem drops publicados.</div>'; return; }
+  grid.innerHTML = drops.map((d, i) => {
+    const coverUrl = d.cover ? directusImg(d.cover, 300) : null;
+    const coverHtml = coverUrl
+      ? `<img src="${coverUrl}" alt="${escHtml(d.title || '')}" loading="lazy" decoding="async">`
+      : `<div class="drop-cover-bg">${escHtml((d.type || '').slice(0, 16))}</div>`;
+    const type = d.type || 'drop';
+    const delay = i < 4 ? ` d${i % 4}` : '';
+    return `
+      <a class="drop-card r${delay}" href="drop.html?id=${d.id}" data-type="${escHtml(type)}">
+        <div class="drop-cover">
+          ${coverHtml}
+          <span class="drop-type-badge">${escHtml(type)}</span>
+        </div>
+        <div class="drop-info">
+          <div class="drop-title">${escHtml(d.title || '')}</div>
+          ${d.author ? `<div class="drop-author">${escHtml(d.author)}</div>` : ''}
+        </div>
+      </a>
+    `;
+  }).join('');
+}
+
+function renderLivros(livros) {
+  const grid = document.getElementById('livros-grid');
+  if (!livros.length) { grid.innerHTML = '<div class="loading">sem livros publicados.</div>'; return; }
+  grid.innerHTML = livros.map((l, i) => {
+    const coverUrl = l.Cover ? directusImg(l.Cover, 240) : null;
+    const coverHtml = coverUrl
+      ? `<img src="${coverUrl}" alt="${escHtml(l.title || '')}" loading="lazy" decoding="async">`
+      : `<div class="drop-cover-bg" style="height:100%;">capa</div>`;
+    const delay = i < 4 ? ` d${i % 4}` : '';
+    return `
+      <a class="livro-mini r${delay}" href="livro.html?id=${l.id}">
+        ${coverHtml}
+        <div class="livro-mini-overlay">
+          ${escHtml((l.title || '').toUpperCase())}
+          ${l.autor ? `<div class="livro-mini-author">${escHtml(l.autor)}${l.ano ? ' · ' + l.ano : ''}</div>` : ''}
+        </div>
+      </a>
+    `;
+  }).join('');
+}
+
+function renderObras(obras) {
+  const grid = document.getElementById('obras-grid');
+  if (!obras.length) { grid.innerHTML = '<div class="loading">sem obras publicadas.</div>'; return; }
+  grid.innerHTML = obras.map((o, i) => {
+    const imgUrl = o.image ? directusImg(o.image, 640) : null;
+    const posterAttr = imgUrl ? `poster="${imgUrl}"` : '';
+    let media;
+    if (o.video) {
+      media = `<video autoplay muted loop playsinline preload="metadata" ${posterAttr}><source src="${DIRECTUS}/assets/${o.video}" type="video/mp4"></video>`;
+    } else if (imgUrl) {
+      media = `<img src="${imgUrl}" alt="${escHtml(o.title || '')}" loading="lazy" decoding="async">`;
+    } else {
+      media = `<div class="drop-cover-bg" style="aspect-ratio:4/3;">${escHtml(o.type || 'obra')}</div>`;
+    }
+    const delay = i < 4 ? ` d${i % 4}` : '';
+    return `
+      <a class="obra-item r${delay}" href="obra.html?id=${o.id}">
+        ${media}
+        <div class="obra-overlay">
+          <div class="obra-overlay-title">${escHtml(o.title || '')}</div>
+          <div class="obra-overlay-meta">${escHtml(o.type || '')}${o.year ? ' · ' + escHtml(o.year) : ''}</div>
+        </div>
+      </a>
+    `;
+  }).join('');
+}
+
+async function renderAbout() {
   try {
-    el._blocks = preparePoemBlocks(raw);
-    el._raw = raw;
-  } catch(e) {
-    // fallback se Pretext falhar
-    el.querySelector('.poem-body').textContent = stripHtml(raw);
-    return el;
-  }
-  // inicializa resize handle
-  initResizeHandle(el);
-  // layout inicial
-  requestAnimationFrame(() => reflowPoem(el, []));
-  return el;
-}
-
-function initResizeHandle(poemEl) {
-  const bind = (handleEl, mode) => {
-    if (!handleEl) return;
-    const begin = (clientX) => {
-      const startW = poemEl.offsetWidth;
-      const startLeft = parseFloat(poemEl.style.left) || 0;
-      const startX = clientX;
-      poemEl.classList.add('resizing');
-      const move = ev => {
-        const evt = ev.touches ? ev.touches[0] : ev;
-        const dx = evt.clientX - startX;
-        let newW;
-        if (mode === 'left') {
-          newW = Math.max(260, Math.min(880, startW - dx));
-          const consumedDelta = startW - newW; // positivo se encolheu, negativo se cresceu
-          poemEl.style.width = newW + 'px';
-          poemEl.style.left  = (startLeft + consumedDelta) + 'px';
-        } else { // 'right' (ou corner)
-          newW = Math.max(260, Math.min(880, startW + dx));
-          poemEl.style.width = newW + 'px';
-        }
-        reflowPoem(poemEl, []);
-        if (ev.touches) ev.preventDefault();
-      };
-      const up = () => {
-        poemEl.classList.remove('resizing');
-        document.removeEventListener('mousemove', move);
-        document.removeEventListener('mouseup', up);
-        document.removeEventListener('touchmove', move);
-        document.removeEventListener('touchend', up);
-        const id = poemEl.dataset.id;
-        const cur = positions[id] || {};
-        positions[id] = {
-          ...cur,
-          width: poemEl.offsetWidth,
-          x: parseFloat(poemEl.style.left) || 0,
-          y: parseFloat(poemEl.style.top) || 0
-        };
-        savePositions();
-        reflowAllPoems();
-      };
-      document.addEventListener('mousemove', move);
-      document.addEventListener('mouseup', up);
-      document.addEventListener('touchmove', move, { passive: false });
-      document.addEventListener('touchend', up);
-    };
-    handleEl.addEventListener('mousedown', e => {
-      e.preventDefault(); e.stopPropagation();
-      begin(e.clientX);
-    });
-    handleEl.addEventListener('touchstart', e => {
-      e.preventDefault(); e.stopPropagation();
-      begin(e.touches[0].clientX);
-    }, { passive: false });
-  };
-  bind(poemEl.querySelector('.poem-edge-l'), 'left');
-  bind(poemEl.querySelector('.poem-edge-r'), 'right');
-  bind(poemEl.querySelector('.poem-corner'), 'right');
-}
-
-/* ── reflow: recalcula layout linhas do poema considerando obstáculos ─── */
-function reflowPoem(poemEl, obstacles) {
-  const blocks = poemEl._blocks;
-  if (!blocks || !blocks.length) return;
-  const body = poemEl.querySelector('.poem-body');
-  if (!body) return;
-  const poemCanvasLeft = parseFloat(poemEl.style.left) || 0;
-  const poemCanvasTop  = parseFloat(poemEl.style.top)  || 0;
-  const bodyAbsTop  = poemCanvasTop  + body.offsetTop;
-  const bodyAbsLeft = poemCanvasLeft + body.offsetLeft;
-  const poemWidth = body.clientWidth || (poemEl.offsetWidth - POEM_PAD_X);
-
-  // obstáculos em coord do body
-  const obs = obstacles.map(o => ({
-    x: o.left - bodyAbsLeft,
-    y: o.top  - bodyAbsTop,
-    w: o.width,
-    h: o.height
-  })).filter(o => o.y + o.h > 0);
-
-  function availableAtY(y) {
-    let ranges = [[0, poemWidth]];
-    for (const o of obs) {
-      if (o.y >= y + POEM_LINE_H || o.y + o.h <= y) continue;
-      const newR = [];
-      for (const [rs, re] of ranges) {
-        if (o.x + o.w <= rs || o.x >= re) { newR.push([rs, re]); continue; }
-        if (o.x > rs) newR.push([rs, o.x]);
-        if (o.x + o.w < re) newR.push([o.x + o.w, re]);
-      }
-      ranges = newR;
+    const res = await fetch('content/settings/about.json');
+    if (!res.ok) return;
+    const data = await res.json();
+    const bio = document.getElementById('me-bio');
+    if (bio && data.bio) bio.textContent = data.bio;
+    const links = document.getElementById('me-links');
+    if (links) {
+      const parts = [];
+      if (data.instagram) parts.push(`<a href="${data.instagram}" class="me-link" target="_blank" rel="noopener">Instagram ↗</a>`);
+      if (data.email)     parts.push(`<a href="mailto:${data.email}" class="me-link">Email ↗</a>`);
+      if (data.linkedin)  parts.push(`<a href="${data.linkedin}" class="me-link" target="_blank" rel="noopener">LinkedIn ↗</a>`);
+      if (parts.length) links.innerHTML = parts.join('');
     }
-    let best = [0, 0];
-    for (const r of ranges) if (r[1] - r[0] > best[1] - best[0]) best = r;
-    return { x: best[0], w: best[1] - best[0] };
-  }
-
-  const outLines = [];
-  let y = 0;
-  for (let pi = 0; pi < blocks.length; pi++) {
-    const paragraph = blocks[pi];
-    for (let li = 0; li < paragraph.length; li++) {
-      const forced = paragraph[li];
-      let cursor = { segmentIndex: 0, graphemeIndex: 0 };
-      let looped = 0;
-      while (looped++ < POEM_MAX_LINES_PER_FORCED) {
-        const avail = availableAtY(y);
-        if (avail.w < 40) { y += POEM_LINE_H; if (y > 8000) break; continue; }
-        const range = Pretext.layoutNextLineRange(forced.prepared, cursor, avail.w);
-        if (!range) break; // fim desta linha forçada
-        const mat = Pretext.materializeLineRange(forced.prepared, range);
-        outLines.push({ x: avail.x, y, text: mat.text });
-        cursor = range.end;
-        y += POEM_LINE_H;
-      }
-    }
-    if (pi < blocks.length - 1) y += POEM_PARA_GAP;
-  }
-
-  // diff-render: reusa divs, atualiza texto/posição
-  const existing = body.querySelectorAll('.poem-line');
-  for (let i = 0; i < outLines.length; i++) {
-    let el = existing[i];
-    if (!el) {
-      el = document.createElement('div');
-      el.className = 'poem-line';
-      body.appendChild(el);
-    }
-    if (el.textContent !== outLines[i].text) el.textContent = outLines[i].text;
-    el.style.left = outLines[i].x + 'px';
-    el.style.top  = outLines[i].y + 'px';
-  }
-  for (let i = outLines.length; i < existing.length; i++) existing[i].remove();
-  body.style.height = y + 'px';
-}
-
-/* coleta TODOS os livros/cards próximos a um poema como obstáculos */
-function collectObstaclesFor(poemEl) {
-  const pr = poemEl.getBoundingClientRect();
-  const prox = 60;
-  const out = [];
-  document.querySelectorAll('.book, .drop-card').forEach(el => {
-    const er = el.getBoundingClientRect();
-    if (er.right < pr.left - prox || er.left > pr.right + prox ||
-        er.bottom < pr.top - prox || er.top > pr.bottom + prox) return;
-    // coords em canvas (= style.left/top pros livros)
-    const x = parseFloat(el.style.left) || (er.left + window.scrollX);
-    const y = parseFloat(el.style.top)  || (er.top  + window.scrollY);
-    out.push({
-      left: x, top: y,
-      width:  el.offsetWidth  || er.width,
-      height: (el.offsetHeight || er.height) + 16
-    });
-  });
-  return out;
-}
-
-/* reflow (layout natural — livros não entram mais no texto) */
-function reflowAllPoems() {
-  document.querySelectorAll('.poem').forEach(p => reflowPoem(p, []));
-}
-
-/* COLISÃO: livros/drops são empurrados pra fora de qualquer poema */
-function avoidPoemOverlap(x, y, w, h) {
-  const MARGIN = 6;
-  document.querySelectorAll('.poem').forEach(p => {
-    const pl = parseFloat(p.style.left) || 0;
-    const pt = parseFloat(p.style.top)  || 0;
-    const pw = p.offsetWidth, ph = p.offsetHeight;
-    if (x + w <= pl - MARGIN || x >= pl + pw + MARGIN ||
-        y + h <= pt - MARGIN || y >= pt + ph + MARGIN) return;
-    // overlap: escolhe o lado mais próximo pra empurrar
-    const pushR = (pl + pw + MARGIN) - x;
-    const pushL = (x + w) - (pl - MARGIN);
-    const pushD = (pt + ph + MARGIN) - y;
-    const pushU = (y + h) - (pt - MARGIN);
-    const min = Math.min(pushR, pushL, pushD, pushU);
-    if (min === pushR) x = pl + pw + MARGIN;
-    else if (min === pushL) x = pl - w - MARGIN;
-    else if (min === pushD) y = pt + ph + MARGIN;
-    else y = pt - h - MARGIN;
-  });
-  return { x, y };
-}
-
-/* ── render: OBRA visual (coluna esquerda) ─── */
-function createObraEl(obra, pos) {
-  const el = document.createElement('div');
-  el.className = 'obra';
-  el.dataset.id = 'obra-' + obra.id;
-  el.dataset.kind = 'obra';
-  el.dataset.href = `obra.html?id=${obra.id}`;
-  el.style.left = pos.x + 'px';
-  el.style.top  = pos.y + 'px';
-  el.style.width = LAYOUT.OBRA_W + 'px';
-  el.style.zIndex = pos.z || 5;
-
-  const imgUrl = obra.image ? directusImg(obra.image, 720) : null;
-  const posterAttr = imgUrl ? `poster="${imgUrl}"` : '';
-  let mediaHtml;
-  if (obra.video) {
-    mediaHtml = `<video autoplay muted loop playsinline preload="metadata" ${posterAttr}><source src="${DIRECTUS}/assets/${obra.video}" type="video/mp4"></video>`;
-  } else if (imgUrl) {
-    mediaHtml = `<img src="${imgUrl}" alt="${escHtml(obra.title || '')}" loading="lazy" decoding="async" draggable="false">`;
-  } else {
-    mediaHtml = `<div class="obra-empty">sem mídia</div>`;
-  }
-
-  el.innerHTML = `
-    <div class="obra-media">${mediaHtml}</div>
-    <div class="obra-caption">
-      <div class="obra-title">${escHtml(obra.title || '')}</div>
-      <div class="obra-meta">${escHtml(obra.type || '')}${obra.year ? ' · ' + escHtml(obra.year) : ''}</div>
-    </div>
-  `;
-  return el;
-}
-
-/* ── render: DROP media ──────────────────── */
-function createDropEl(drop, pos) {
-  const el = document.createElement('div');
-  el.className = 'drop-card';
-  el.dataset.id = 'drop-' + drop.id;
-  el.dataset.kind = 'drop';
-  el.style.left = pos.x + 'px';
-  el.style.top = pos.y + 'px';
-  el.style.transform = `rotate(${(pos.rot||0).toFixed(2)}deg)`;
-  el.style.zIndex = pos.z || nextZ();
-  const isExternal = drop.link && /^https?:/.test(drop.link);
-  const href = isExternal ? drop.link : `drop.html?id=${drop.id}`;
-  const targetAttr = isExternal ? 'target="_blank" rel="noopener"' : '';
-  el.innerHTML = `
-    <div class="drop-tag">— ${escHtml(drop.type || 'drop')}</div>
-    <div class="drop-title">${escHtml(drop.title || '')}</div>
-    ${drop.author ? `<div class="drop-author">${escHtml(drop.author)}</div>` : ''}
-  `;
-  el.dataset.href = href;
-  el.dataset.external = isExternal ? '1' : '';
-  return el;
-}
-
-/* ── placement organizado ─────────────────── */
-/* Layout inicial: textos à esquerda (coluna), livros empilhados à direita,
-   drops abaixo dos textos. Itens com posição salva no localStorage
-   mantêm onde estavam. */
-/* 3 colunas: esquerda=obras, centro=textos+drops, direita=livros
-   projetado pra caber confortavelmente em 1440px (um monitor normal) */
-const LAYOUT = {
-  TOP: 40,
-  COL_GAP: 32,
-
-  OBRA_X: 40,
-  OBRA_W: 360,
-
-  TEXT_X: 40 + 360 + 32,          // 432
-  TEXT_W: 420,
-
-  BOOK_X: 40 + 360 + 32 + 420 + 32, // 884
-  BOOK_W: 460,
-  STACK_COLS: 3,                    // 3 pilhas dentro da coluna dos livros
-  STACK_STEP_X: 140,
-  STACK_STEP_Y: 13,
-
-  TEXT_STACK_GAP: 300,
-  OBRA_STACK_GAP: 260,
-  DROP_STACK_GAP: 140
-};
-
-function applyInitialLayout(obras, poemas, drops, livros) {
-  // ESQUERDA: obras visuais
-  let obraY = LAYOUT.TOP;
-  obras.forEach((o) => {
-    const k = 'obra-' + o.id;
-    if (!positions[k]) positions[k] = { x: LAYOUT.OBRA_X, y: obraY, z: 5 };
-    obraY += LAYOUT.OBRA_STACK_GAP;
-  });
-
-  // CENTRO: textos depois drops
-  let midY = LAYOUT.TOP;
-  poemas.forEach((p) => {
-    const k = 'poem-' + p.id;
-    if (!positions[k]) positions[k] = { x: LAYOUT.TEXT_X, y: midY, z: 1, width: LAYOUT.TEXT_W };
-    midY += LAYOUT.TEXT_STACK_GAP;
-  });
-  drops.forEach((d, i) => {
-    const k = 'drop-' + d.id;
-    if (!positions[k]) positions[k] = {
-      x: LAYOUT.TEXT_X, y: midY,
-      rot: sr((parseInt(d.id) || i) * 5, -1.2, 1.2), z: 5
-    };
-    midY += LAYOUT.DROP_STACK_GAP;
-  });
-
-  // DIREITA: livros empilhados em 3 pilhas
-  livros.forEach((l, i) => {
-    const k = 'book-' + l.id;
-    if (!positions[k]) {
-      const col = i % LAYOUT.STACK_COLS;
-      const row = Math.floor(i / LAYOUT.STACK_COLS);
-      positions[k] = {
-        x: LAYOUT.BOOK_X + col * LAYOUT.STACK_STEP_X,
-        y: LAYOUT.TOP + row * LAYOUT.STACK_STEP_Y,
-        rot: sr((parseInt(l.id) || i) * 7, -3.5, 3.5),
-        z: 10 + i
-      };
-    }
-  });
-}
-
-function computeCanvasSize(livrosCount, dropsCount, poemasCount, obrasCount) {
-  const stackRows = Math.ceil(livrosCount / LAYOUT.STACK_COLS);
-  const stackH = LAYOUT.TOP + stackRows * LAYOUT.STACK_STEP_Y + 260;
-  const obraH  = LAYOUT.TOP + obrasCount * LAYOUT.OBRA_STACK_GAP;
-  const midH   = LAYOUT.TOP + poemasCount * LAYOUT.TEXT_STACK_GAP + dropsCount * LAYOUT.DROP_STACK_GAP;
-  const h = Math.max(window.innerHeight, stackH, obraH, midH);
-  const w = Math.max(window.innerWidth,
-    LAYOUT.BOOK_X + LAYOUT.STACK_COLS * LAYOUT.STACK_STEP_X + 60);
-  return { w, h };
-}
-
-/* ── DRAG STATE ──────────────────────────── */
-let dragged = null;
-let dragKind = null;
-let dragOffsetX = 0, dragOffsetY = 0;
-let autoScrollRAF = 0;
-let repelRAF = 0;
-let edgeDx = 0, edgeDy = 0;
-let lastPointerX = 0, lastPointerY = 0;
-let dragStartX = 0, dragStartY = 0;
-const CLICK_THRESHOLD = 5; // px — abaixo disso é clique (não drag)
-
-function pointerDown(e) {
-  // não inicia drag se clicou em link, handle de resize ou edge
-  if (e.target.closest('.poem-title a, .poem-edge, .poem-corner')) return;
-  // poema só é arrastado pelo header; livro/drop em qualquer lugar
-  const poemHeader = e.target.closest('.poem-header');
-  const el = poemHeader
-    ? poemHeader.closest('.poem')
-    : e.target.closest('.book, .drop-card, .obra');
-  if (!el) return;
-  e.preventDefault();
-  const evt = e.touches ? e.touches[0] : e;
-  const rect = el.getBoundingClientRect();
-  dragOffsetX = evt.clientX - rect.left;
-  dragOffsetY = evt.clientY - rect.top;
-  dragged = el;
-  dragKind = el.dataset.kind;
-  // traz pra cima no z-index imediatamente
-  el.style.zIndex = nextZ();
-  el.classList.add('dragging');
-  document.body.classList.add('dragging');
-  lastPointerX = evt.clientX;
-  lastPointerY = evt.clientY;
-  dragStartX = evt.clientX;
-  dragStartY = evt.clientY;
-}
-
-function pointerMove(e) {
-  if (!dragged) return;
-  const evt = e.touches ? e.touches[0] : e;
-  lastPointerX = evt.clientX;
-  lastPointerY = evt.clientY;
-  let canvasX = evt.clientX + window.scrollX - dragOffsetX;
-  let canvasY = evt.clientY + window.scrollY - dragOffsetY;
-  // livros, drops e obras são empurrados pra fora de qualquer poema
-  if (dragKind === 'book' || dragKind === 'drop' || dragKind === 'obra') {
-    const pos = avoidPoemOverlap(canvasX, canvasY, dragged.offsetWidth, dragged.offsetHeight);
-    canvasX = pos.x;
-    canvasY = pos.y;
-  }
-  dragged.style.left = canvasX + 'px';
-  dragged.style.top = canvasY + 'px';
-  checkEdgeScroll(evt.clientX, evt.clientY);
-  if (e.touches) e.preventDefault();
-}
-
-function pointerUp() {
-  if (!dragged) return;
-  const dx = Math.abs(lastPointerX - dragStartX);
-  const dy = Math.abs(lastPointerY - dragStartY);
-  const wasClick = dx < CLICK_THRESHOLD && dy < CLICK_THRESHOLD;
-
-  const draggedEl = dragged;
-  const kind = dragKind;
-
-  // reset state SEMPRE primeiro
-  const id = draggedEl.dataset.id;
-  const x = parseFloat(draggedEl.style.left) || 0;
-  const y = parseFloat(draggedEl.style.top) || 0;
-  const m = (draggedEl.style.transform || '').match(/rotate\(([^)]+)deg\)/);
-  const rot = m ? parseFloat(m[1]) : 0;
-  const z = parseInt(draggedEl.style.zIndex) || zCounter;
-  const cur = positions[id] || {};
-  positions[id] = { ...cur, x, y, rot, z };
-  savePositions();
-  draggedEl.classList.remove('dragging');
-  document.body.classList.remove('dragging');
-  dragged = null;
-  dragKind = null;
-  stopEdgeScroll();
-
-  // se foi click (não drag) e é book/drop com href, abre
-  if (wasClick && (kind === 'book' || kind === 'drop' || kind === 'obra')) {
-    const href = draggedEl.dataset.href;
-    if (href) {
-      if (draggedEl.dataset.external) window.open(href, '_blank', 'noopener');
-      else window.location.href = href;
-    }
-  }
-}
-
-/* ── auto-scroll nas bordas ──────────────── */
-const EDGE = 110;
-const MAX_SPEED = 22;
-function checkEdgeScroll(cx, cy) {
-  const w = window.innerWidth, h = window.innerHeight;
-  edgeDx = 0; edgeDy = 0;
-  if (cx < EDGE)          edgeDx = -Math.round((EDGE - cx) / EDGE * MAX_SPEED);
-  else if (cx > w - EDGE) edgeDx = Math.round((cx - (w - EDGE)) / EDGE * MAX_SPEED);
-  if (cy < EDGE)          edgeDy = -Math.round((EDGE - cy) / EDGE * MAX_SPEED);
-  else if (cy > h - EDGE) edgeDy = Math.round((cy - (h - EDGE)) / EDGE * MAX_SPEED);
-  if ((edgeDx || edgeDy) && !autoScrollRAF) {
-    const tick = () => {
-      if (!dragged || (!edgeDx && !edgeDy)) { autoScrollRAF = 0; return; }
-      window.scrollBy(edgeDx, edgeDy);
-      if (dragged) {
-        const canvasX = lastPointerX + window.scrollX - dragOffsetX;
-        const canvasY = lastPointerY + window.scrollY - dragOffsetY;
-        dragged.style.left = canvasX + 'px';
-        dragged.style.top = canvasY + 'px';
-      }
-      autoScrollRAF = requestAnimationFrame(tick);
-    };
-    autoScrollRAF = requestAnimationFrame(tick);
-  }
-}
-function stopEdgeScroll() {
-  edgeDx = 0; edgeDy = 0;
-  if (autoScrollRAF) { cancelAnimationFrame(autoScrollRAF); autoScrollRAF = 0; }
-}
-
-/* ── REFLOW LOOP: chama reflowAllPoems a cada frame do drag ── */
-function startReflowLoop() {
-  const tick = () => {
-    if (!dragged) { repelRAF = 0; return; }
-    reflowAllPoems();
-    repelRAF = requestAnimationFrame(tick);
-  };
-  repelRAF = requestAnimationFrame(tick);
-}
-function stopReflowLoop() {
-  if (repelRAF) { cancelAnimationFrame(repelRAF); repelRAF = 0; }
-}
-
-/* ── ARRUMAR EM GRID ─────────────────────── */
-function arrangeInGrid() {
-  const items = Array.from(document.querySelectorAll('.book, .drop-card'));
-  // Mais espaço pros cards (drops + livros misturados)
-  const pad = 40;
-  const cellW = 170;
-  const cellH = 300;
-  const availW = Math.max(window.innerWidth, (document.body.scrollWidth || 0)) - pad * 2;
-  const cols = Math.max(1, Math.floor(availW / cellW));
-  items.forEach((el, i) => {
-    const col = i % cols;
-    const row = Math.floor(i / cols);
-    const x = pad + col * cellW;
-    const y = pad + row * cellH;
-    el.style.left = x + 'px';
-    el.style.top = y + 'px';
-    el.style.transform = 'rotate(0deg)';
-    const id = el.dataset.id;
-    positions[id] = { x, y, rot: 0, z: parseInt(el.style.zIndex) || zCounter };
-  });
-  // também reposiciona poemas em espaços livres (colunas após os items ou em posições de canto)
-  const poems = Array.from(document.querySelectorAll('.poem'));
-  poems.forEach((el, i) => {
-    // coloca em lateral direita
-    const x = pad + (cols * cellW) + 40;
-    const y = pad + i * 340;
-    el.style.left = x + 'px';
-    el.style.top = y + 'px';
-  });
-  savePositions();
-  // ajusta canvas pra caber tudo
-  const canvas = document.getElementById('canvas');
-  const totalRows = Math.ceil(items.length / cols);
-  const newH = pad * 2 + totalRows * cellH;
-  const newW = Math.max(window.innerWidth, pad * 2 + cols * cellW + 500);
-  canvas.style.height = newH + 'px';
-  canvas.style.width = newW + 'px';
-}
-
-/* ── THEME toggle ────────────────────────── */
-function applyTheme(mode) {
-  if (mode === 'dark') document.documentElement.classList.add('dark');
-  else document.documentElement.classList.remove('dark');
-  const btn = document.getElementById('theme-btn');
-  if (btn) btn.textContent = mode === 'dark' ? 'modo claro' : 'modo escuro';
-  try { localStorage.setItem(THEME_KEY, mode); } catch(e) {}
-}
-function toggleTheme() {
-  const cur = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-  applyTheme(cur === 'dark' ? 'light' : 'dark');
-}
-(() => {
-  try {
-    const saved = localStorage.getItem(THEME_KEY);
-    if (saved) applyTheme(saved);
   } catch(e) {}
-})();
+}
 
-/* ── INIT ────────────────────────────────── */
+function initReveal() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); obs.unobserve(e.target); } });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.r').forEach(el => obs.observe(el));
+}
+
+/* theme toggle */
+function applyTheme(mode) {
+  if (mode === 'light') document.documentElement.classList.add('light');
+  else document.documentElement.classList.remove('light');
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = mode === 'light' ? 'modo escuro' : 'modo claro';
+  try { localStorage.setItem('lab:theme', mode); } catch(e) {}
+}
+(() => { try { const s = localStorage.getItem('lab:theme'); if (s) applyTheme(s); } catch(e) {} })();
+document.getElementById('theme-btn').addEventListener('click', () => {
+  applyTheme(document.documentElement.classList.contains('light') ? 'dark' : 'light');
+});
+
 async function init() {
-  const [livros, poemas, drops, obras] = await Promise.all([
-    fetchAllLivros(), fetchPoemas(), fetchDropsMedia(), fetchObras()
+  const [escritos, drops, livros, obras] = await Promise.all([
+    fetchEscritos(), fetchDrops(), fetchLivros(), fetchObras()
   ]);
-  const total = livros.length + poemas.length + drops.length + obras.length;
-  if (!total) {
-    document.getElementById('item-count').textContent = '0';
-    document.querySelector('.hud-bl').innerHTML = '(nada carregou — directus offline?)';
-    return;
-  }
-  const { w: cw, h: ch } = computeCanvasSize(livros.length, drops.length, poemas.length, obras.length);
-  const canvas = document.getElementById('canvas');
-  canvas.style.width = cw + 'px';
-  canvas.style.height = ch + 'px';
-
-  // layout 3 colunas: obras | textos+drops | livros
-  applyInitialLayout(obras, poemas, drops, livros);
-
-  // Obras (coluna esquerda)
-  obras.forEach(o => {
-    const key = 'obra-' + o.id;
-    canvas.appendChild(createObraEl(o, positions[key]));
-  });
-
-  // Poemas (coluna centro)
-  poemas.forEach(p => {
-    const key = 'poem-' + p.id;
-    canvas.appendChild(createPoemEl(p, positions[key]));
-  });
-
-  // Drops (coluna centro, abaixo dos poemas)
-  drops.forEach(d => {
-    const key = 'drop-' + d.id;
-    canvas.appendChild(createDropEl(d, positions[key]));
-  });
-
-  // Livros (coluna direita, empilhados)
-  livros.forEach(l => {
-    const key = 'book-' + l.id;
-    canvas.appendChild(createBookEl(l, positions[key]));
-  });
-
-  document.getElementById('item-count').textContent = total;
-
-  // scroll inicial: começa no canto superior esquerdo (textos visíveis + parte dos livros)
-  window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
-
-  // banner de intro (sai rapidinho)
-  const intro = document.getElementById('intro');
-  requestAnimationFrame(() => intro.classList.add('on'));
-  setTimeout(() => intro.classList.remove('on'), 1400);
-
-  // listeners globais de drag
-  document.addEventListener('mousedown', pointerDown);
-  document.addEventListener('mousemove', pointerMove);
-  document.addEventListener('mouseup', pointerUp);
-  document.addEventListener('touchstart', pointerDown, { passive: false });
-  document.addEventListener('touchmove', pointerMove, { passive: false });
-  document.addEventListener('touchend', pointerUp);
-
-  // botões HUD
-  document.getElementById('grid-btn').addEventListener('click', arrangeInGrid);
-  document.getElementById('theme-btn').addEventListener('click', toggleTheme);
-  document.getElementById('reset-btn').addEventListener('click', () => {
-    if (!confirm('apagar posições customizadas e voltar ao layout inicial?')) return;
-    try {
-      localStorage.removeItem(POS_KEY);
-      localStorage.removeItem(Z_KEY);
-    } catch(e) {}
-    positions = {};
-    location.reload();
-  });
-
-  // ESPERA FONTS CARREGAREM antes do reflow — senão Pretext calcula com
-  // métrica da fonte fallback e texto vaza do card quando a Source Serif chega
-  (async () => {
-    try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch(e) {}
-    reflowAllPoems();
-    // Depois do reflow, reempilha poemas pela altura REAL pra não sobrepor
-    rearrangePoemColumn();
-    // Recalcula canvas height pra caber tudo
-    fitCanvasToContent();
-  })();
-
-  // arrumar em grid também faz reflow dos poemas depois
-  document.getElementById('grid-btn').addEventListener('click', () => {
-    setTimeout(() => { reflowAllPoems(); fitCanvasToContent(); }, 650);
-  }, true);
-}
-
-/* Reempilha 3 colunas pela altura REAL, evitando overlap:
-   - esquerda: obras (em LAYOUT.OBRA_X)
-   - centro:  poemas+drops (em LAYOUT.TEXT_X)
-   - direita: livros (mantém layout empilhado original, não reorganiza) */
-function rearrangePoemColumn() {
-  // coluna esquerda: obras
-  let obraY = LAYOUT.TOP;
-  Array.from(document.querySelectorAll('.obra'))
-    .filter(el => Math.abs((parseFloat(el.style.left) || 0) - LAYOUT.OBRA_X) < 10)
-    .sort((a, b) => (parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0))
-    .forEach(el => {
-      el.style.top = obraY + 'px';
-      const id = el.dataset.id;
-      positions[id] = { ...(positions[id] || {}), x: LAYOUT.OBRA_X, y: obraY };
-      obraY += el.offsetHeight + 28;
-    });
-
-  // coluna centro: poemas + drops
-  let midY = LAYOUT.TOP;
-  Array.from(document.querySelectorAll('.poem, .drop-card'))
-    .filter(el => Math.abs((parseFloat(el.style.left) || 0) - LAYOUT.TEXT_X) < 10)
-    .sort((a, b) => (parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0))
-    .forEach(el => {
-      el.style.top = midY + 'px';
-      const id = el.dataset.id;
-      positions[id] = { ...(positions[id] || {}), x: LAYOUT.TEXT_X, y: midY };
-      midY += el.offsetHeight + 24;
-    });
-
-  savePositions();
-}
-
-function fitCanvasToContent() {
-  const canvas = document.getElementById('canvas');
-  let maxX = window.innerWidth;
-  let maxY = window.innerHeight;
-  document.querySelectorAll('.book, .drop-card, .poem').forEach(el => {
-    const x = (parseFloat(el.style.left) || 0) + el.offsetWidth;
-    const y = (parseFloat(el.style.top)  || 0) + el.offsetHeight;
-    if (x > maxX) maxX = x;
-    if (y > maxY) maxY = y;
-  });
-  canvas.style.width  = (maxX + 80) + 'px';
-  canvas.style.height = (maxY + 80) + 'px';
+  renderEscritos(escritos);
+  renderDrops(drops);
+  renderLivros(livros);
+  renderObras(obras);
+  renderAbout();
+  // re-observa os novos elementos com classe .r
+  setTimeout(initReveal, 80);
 }
 
 init();
