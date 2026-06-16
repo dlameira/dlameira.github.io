@@ -60,6 +60,7 @@ body {
 }
 .menu .lbl { transition: color 0.12s ease; }
 .menu a:hover .lbl { color: #0000EE; }   /* azul de hyperlink */
+.menu .ico-sobre img { transform: scale(1.15); }   /* rosto ~15% maior */
 
 @media (max-width: 480px) {
   .menu { grid-template-columns: auto 42px; column-gap: 14px; }
@@ -90,7 +91,7 @@ body {
 
   <a href="index.html#me">
     <span class="lbl">sobre</span>
-    <span class="ico"><img src="icons/sobre.png" alt="" aria-hidden="true"></span>
+    <span class="ico ico-sobre"><img src="icons/sobre.png" alt="" aria-hidden="true"></span>
   </a>
 </nav>
 
