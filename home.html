@@ -57,7 +57,7 @@ body {
   transform-origin: center;
   transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-.menu .ico svg { display: block; width: 100%; height: 100%; }
+.menu .ico img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .menu a:hover .ico { transform: scale(1.12) rotate(-3deg); }
 .menu a:hover .lbl { opacity: 0.55; }
 
@@ -75,45 +75,22 @@ body {
 <nav class="menu">
   <a href="galeria.html">
     <span class="lbl">livros</span>
-    <span class="ico" aria-hidden="true">
-      <svg viewBox="0 0 48 48" fill="none" stroke="#111" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">
-        <path d="M10 14 Q9 25 10 35 Q15 34 20.5 35 Q19.5 24 20 14 Q15 12.5 10 14 Z"/>
-        <path d="M22.5 15 Q24.5 25 26.5 34 Q30.5 32.5 34.5 30.5 Q32 21 30 12.5 Q26 14 22.5 15 Z"/>
-      </svg>
-    </span>
+    <span class="ico"><img src="icons/livros.png" alt="" aria-hidden="true"></span>
   </a>
 
   <a href="posts.html">
     <span class="lbl">textos</span>
-    <span class="ico" aria-hidden="true">
-      <svg viewBox="0 0 48 48" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round">
-        <path d="M9 16 Q17 14.4 24 16 Q31 17.6 39 15.6"/>
-        <path d="M9 24 Q18 25.6 25 24 Q32 22.4 39 24.4"/>
-        <path d="M9 32 Q16 30.6 22 32 Q27 33.2 31 31.8"/>
-      </svg>
-    </span>
+    <span class="ico"><img src="icons/textos.png" alt="" aria-hidden="true"></span>
   </a>
 
   <a href="index.html#obras">
     <span class="lbl">artes</span>
-    <span class="ico" aria-hidden="true">
-      <svg viewBox="0 0 48 48" fill="none" stroke="#111" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">
-        <path d="M9 12 Q24 10.6 39 12 Q40.4 24 39 36 Q24 37.4 9 36 Q7.6 24 9 12 Z"/>
-        <path d="M12 32 Q18 22.5 22 27 Q25.5 31 28.5 24 Q31.5 19.5 36 27.5"/>
-        <circle cx="16.5" cy="19" r="2.2"/>
-      </svg>
-    </span>
+    <span class="ico"><img src="icons/artes.png" alt="" aria-hidden="true"></span>
   </a>
 
   <a href="index.html#me">
     <span class="lbl">sobre</span>
-    <span class="ico" aria-hidden="true">
-      <svg viewBox="0 0 48 48" fill="none" stroke="#111" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">
-        <path d="M12 36 Q10 22 12.5 17 Q16 9 24 9 Q32 9 35.5 17 Q38 23 36 36 Q33 33 31 36 Q29 38.5 27 35 Q25 38.5 23 35 Q21 38.5 19 35 Q16 38.5 12 36 Z"/>
-        <circle cx="20" cy="21" r="1.5" fill="#111" stroke="none"/>
-        <circle cx="28" cy="21" r="1.5" fill="#111" stroke="none"/>
-      </svg>
-    </span>
+    <span class="ico"><img src="icons/sobre.png" alt="" aria-hidden="true"></span>
   </a>
 </nav>
 
