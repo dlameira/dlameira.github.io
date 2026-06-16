@@ -1052,6 +1052,7 @@ async function renderLivros() {
       <div class="tab active" id="tab-livros-lista" onclick="livrosTab('lista')">LISTA</div>
       <div class="tab" id="tab-livros-ordenar" onclick="livrosTab('ordenar')">↕ ORDENAR</div>
       <div class="tab" id="tab-livros-novo" onclick="livrosTab('novo')">+ NOVO</div>
+      <div class="tab" id="tab-livros-importar" onclick="livrosTab('importar')">⇩ IMPORTAR</div>
       <div class="tab" id="tab-livros-bulk" onclick="livrosTab('bulk')">⬆ BULK</div>
     </div>
     <div id="livros-panel"></div>`;
@@ -1064,6 +1065,7 @@ function livrosTab(tab) {
   if (tab === 'lista') livrosCarregarLista();
   else if (tab === 'ordenar') livrosOrdenar();
   else if (tab === 'novo') livrosFormNovo();
+  else if (tab === 'importar') livrosImportar();
   else if (tab === 'bulk') livrosBulk();
 }
 
@@ -1442,6 +1444,132 @@ async function ordenarSalvar() {
   ordenarData.forEach((l, i) => { l.sort = i + 1; });
   if (fail) toast(`Salvou ${ok}, ${fail} falharam — clique SALVAR de novo.`, true);
   else toast(`Ordem salva! (${ok} livros). A galeria já reflete.`);
+}
+
+// ── LIVROS · IMPORTAR (da biblioteca/Metabooks) ───────────────────────────────
+let bibResultados = [];
+
+// "Sobrenome, Nome" -> "Nome Sobrenome" (mantém múltiplos separados por ;)
+function flipAutor(s) {
+  if (!s) return s;
+  return s.split(';').map(p => {
+    p = p.trim();
+    const m = p.match(/^([^,]+),\s*(.+)$/);
+    return m ? `${m[2].trim()} ${m[1].trim()}` : p;
+  }).filter(Boolean).join('; ');
+}
+
+// cardápios prontos por editora (termo usado em filter[editora][_icontains])
+const BIB_EDITORAS = [
+  { label: 'Aleph', term: 'aleph' },
+  { label: 'Antofágica', term: 'antof' },
+];
+
+function livrosImportar() {
+  const panel = document.getElementById('livros-panel');
+  panel.innerHTML = `
+    <div style="max-width:780px">
+      <div style="font-size:11px;color:var(--fg2);margin-bottom:14px;line-height:1.6">
+        Importe livros da biblioteca (Metabooks). Clique numa editora pra ver o cardápio completo,
+        ou busque por <strong>título</strong>/<strong>ISBN</strong>. O livro entra como <strong>rascunho</strong> —
+        revise (autor, ano, formato…) e publique pela aba LISTA.
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+        <span style="font-size:10px;color:var(--fg2);letter-spacing:0.08em">CARDÁPIO:</span>
+        ${BIB_EDITORAS.map(e => `<button class="btn btn-ghost btn-sm" onclick="bibCardapio('${e.term}','${esc(e.label)}')">📚 ${esc(e.label)}</button>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <input type="text" id="bib-q" placeholder="Título ou ISBN…" style="flex:1" onkeydown="if(event.key==='Enter')bibliotecaBuscar()">
+        <button class="btn btn-primary" onclick="bibliotecaBuscar()">BUSCAR</button>
+      </div>
+      <div id="bib-results"></div>
+    </div>`;
+  document.getElementById('bib-q').focus();
+}
+
+async function bibCardapio(term, label) {
+  const box = document.getElementById('bib-results');
+  box.innerHTML = '<div class="loading"><span class="spinner"></span>CARREGANDO CARDÁPIO…</div>';
+  try {
+    const res = await api('GET', `/items/biblioteca?filter[editora][_icontains]=${encodeURIComponent(term)}&limit=500&fields=id,isbn,titulo,autor,editora,ano,capa_url,sinopse&sort=titulo`);
+    bibResultados = res.data || [];
+    renderBibResultados(box, `${bibResultados.length} livros · ${esc(label)}`);
+  } catch(e) { box.innerHTML = `<div class="empty"><div class="empty-icon">⚠</div><h3>Erro</h3><p>${e.message}</p></div>`; }
+}
+
+async function bibliotecaBuscar() {
+  const q = document.getElementById('bib-q').value.trim();
+  const box = document.getElementById('bib-results');
+  if (!q) { box.innerHTML = ''; return; }
+  box.innerHTML = '<div class="loading"><span class="spinner"></span>BUSCANDO…</div>';
+  const isISBN = /^[0-9\-]{10,17}$/.test(q);
+  const filter = isISBN
+    ? `filter[isbn][_contains]=${encodeURIComponent(q.replace(/-/g, ''))}`
+    : `filter[titulo][_icontains]=${encodeURIComponent(q)}`;
+  try {
+    const res = await api('GET', `/items/biblioteca?${filter}&limit=40&fields=id,isbn,titulo,autor,editora,ano,capa_url,sinopse&sort=titulo`);
+    bibResultados = res.data || [];
+    renderBibResultados(box, isISBN ? `Resultado para ISBN ${esc(q)}` : `${bibResultados.length} resultado(s) para "${esc(q)}"`);
+  } catch(e) { box.innerHTML = `<div class="empty"><div class="empty-icon">⚠</div><h3>Erro</h3><p>${e.message}</p></div>`; }
+}
+
+function renderBibResultados(box, header) {
+  if (!bibResultados.length) { box.innerHTML = `<div class="empty"><div class="empty-icon">◌</div><h3>Nada encontrado</h3><p>Tente outro termo ou o ISBN.</p></div>`; return; }
+  box.innerHTML = `<div style="font-size:11px;color:var(--fg2);margin-bottom:10px">${header || ''}</div>` +
+    bibResultados.map(b => `
+      <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid rgba(232,232,216,0.06);align-items:center">
+        ${b.capa_url ? `<img src="${esc(b.capa_url)}" style="width:44px;height:62px;object-fit:cover;flex-shrink:0;background:var(--bg3)" alt="" loading="lazy">` : `<div style="width:44px;height:62px;background:var(--bg3);flex-shrink:0"></div>`}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px">${esc(b.titulo || '—')}</div>
+          <div style="font-size:11px;color:var(--fg2)">${esc(flipAutor(b.autor) || '—')} · ${esc(b.editora || '—')}${b.ano ? ' · ' + esc(b.ano) : ''}</div>
+          <div style="font-size:10px;color:var(--fg2)">ISBN ${esc(b.isbn || '—')}</div>
+        </div>
+        <button class="btn btn-yellow btn-sm" id="bib-btn-${b.id}" onclick="bibliotecaImportar(${b.id})">IMPORTAR</button>
+      </div>`).join('');
+}
+
+async function bibliotecaImportar(id) {
+  const b = bibResultados.find(x => x.id === id);
+  if (!b) return;
+  const btn = document.getElementById(`bib-btn-${id}`);
+  if (btn) { btn.disabled = true; btn.textContent = 'IMPORTANDO…'; }
+  try {
+    // evita duplicar pelo ISBN
+    if (b.isbn) {
+      const dup = await api('GET', `/items/livros?filter[isbn_fisico][_eq]=${encodeURIComponent(b.isbn)}&limit=1&fields=id,title`);
+      if (dup.data && dup.data.length) {
+        if (!confirm(`Já existe um livro com esse ISBN ("${dup.data[0].title}"). Importar mesmo assim?`)) {
+          if (btn) { btn.disabled = false; btn.textContent = 'IMPORTAR'; }
+          return;
+        }
+      }
+    }
+    // capa: Directus baixa a URL no servidor (sem problema de CORS)
+    let coverId = null;
+    if (b.capa_url) {
+      try {
+        const f = await api('POST', '/files/import', { url: b.capa_url });
+        coverId = f?.data?.id || null;
+      } catch(e) { /* segue sem capa */ }
+    }
+    const body = {
+      title:       b.titulo || 'Sem título',
+      autor:       flipAutor(b.autor) || null,
+      editora:     b.editora || null,
+      ano:         parseInt(b.ano) || null,
+      isbn_fisico: b.isbn || null,
+      sinopse:     b.sinopse || null,
+      status:      'draft',
+    };
+    if (coverId) body.Cover = coverId;
+    await api('POST', '/items/livros', body);
+    toast(`"${body.title}" importado como rascunho${coverId ? ' (com capa)' : ' (sem capa — adicione na edição)'}.`);
+    if (btn) { btn.textContent = '✓ IMPORTADO'; btn.classList.remove('btn-yellow'); btn.classList.add('btn-green'); }
+    loadCounts();
+  } catch(e) {
+    toast('Erro ao importar: ' + e.message, true);
+    if (btn) { btn.disabled = false; btn.textContent = 'IMPORTAR'; }
+  }
 }
 
 const PAPEIS = { autor:'Autor(a)', tradutor:'Tradução', capista:'Capa', arte_de_capa:'Arte de Capa', artes_internas:'Artes Internas', prefacio:'Prefácio', posfacio:'Posfácio', organizacao:'Organização' };
