@@ -21,17 +21,37 @@ body {
   color: #111;
 }
 
-/* topo: seta de voltar */
+/* topo: header */
 .top {
-  padding: 22px 28px 8px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 28px 14px;
+  flex-wrap: wrap;
 }
 .back {
-  display: inline-block;
+  display: inline-flex;
   text-decoration: none;
   color: #111;
   line-height: 1;
 }
-.back svg { display: block; width: 34px; height: 28px; }
+.back svg { display: block; width: 28px; height: 22px; }
+.brand {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.03em;
+  color: #111;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.topnav { font-size: 14px; color: #111; }
+.topnav a {
+  color: #111;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+}
+.topnav a:hover { color: #777; }
 
 /* GRID */
 .gal-wrap { overflow: hidden; }      /* recorta as bordas externas direita/baixo */
@@ -101,13 +121,17 @@ body {
 </head>
 <body>
 
-<div class="top">
-  <a class="back" href="livros.html" aria-label="voltar">
+<header class="top">
+  <a class="back" href="index.html" aria-label="início">
     <svg viewBox="0 0 34 28" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M13 4 L3 14 L13 24 M3 14 H32" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   </a>
-</div>
+  <a class="brand" href="index.html">DANIEL LAMEIRA</a>
+  <nav class="topnav">
+    <a href="livros.html">livros</a>, <a href="index.html#obras">arte</a>, <a href="posts.html">textos</a> e <a href="index.html#me">bio</a>
+  </nav>
+</header>
 
 <div class="gal-wrap">
   <div class="gal" id="gal">
