@@ -270,7 +270,8 @@ function renderFiltros(livros) {
 
 function renderGrid(livros) {
   const grid = document.getElementById('books-grid');
-  const filtered = filtroAtivo === 'todos' ? livros : livros.filter(l => l.editora && l.editora.split(';').map(e => e.trim()).includes(filtroAtivo));
+  const base = filtroAtivo === 'todos' ? livros : livros.filter(l => l.editora && l.editora.split(';').map(e => e.trim()).includes(filtroAtivo));
+  const filtered = filtroAtivo === 'todos' ? base : [...base].sort((a, b) => (a.autor || '').localeCompare(b.autor || '', 'pt'));
 
   document.getElementById('page-count').textContent = `${filtered.length} título${filtered.length !== 1 ? 's' : ''}`;
 
