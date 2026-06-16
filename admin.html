@@ -1051,6 +1051,7 @@ async function renderLivros() {
     <div class="tabs">
       <div class="tab active" id="tab-livros-lista" onclick="livrosTab('lista')">LISTA</div>
       <div class="tab" id="tab-livros-ordenar" onclick="livrosTab('ordenar')">↕ ORDENAR</div>
+      <div class="tab" id="tab-livros-tamanhos" onclick="livrosTab('tamanhos')">📐 TAMANHOS</div>
       <div class="tab" id="tab-livros-novo" onclick="livrosTab('novo')">+ NOVO</div>
       <div class="tab" id="tab-livros-importar" onclick="livrosTab('importar')">⇩ IMPORTAR</div>
       <div class="tab" id="tab-livros-bulk" onclick="livrosTab('bulk')">⬆ BULK</div>
@@ -1064,6 +1065,7 @@ function livrosTab(tab) {
   document.getElementById(`tab-livros-${tab}`).classList.add('active');
   if (tab === 'lista') livrosCarregarLista();
   else if (tab === 'ordenar') livrosOrdenar();
+  else if (tab === 'tamanhos') livrosFormatos();
   else if (tab === 'novo') livrosFormNovo();
   else if (tab === 'importar') livrosImportar();
   else if (tab === 'bulk') livrosBulk();
@@ -1337,6 +1339,96 @@ async function livrosPublicarRascunhos() {
   toast(fail ? `Publicados ${ok}, ${fail} falharam.` : `${ok} publicados!`, !!fail);
   livrosCarregarLista();
   loadCounts();
+}
+
+// ── LIVROS · TAMANHOS (formato físico, edição rápida) ─────────────────────────
+let formatosData = [];
+let formatosSoFaltam = false;
+const FMT_CANON = ['14x21', '16x23', '12x17'];
+function normFmt(s) { return String(s || '').toLowerCase().replace(/\s/g, '').replace(/cm$/, ''); }
+function fmtVazio(l) { return !l.formato || !String(l.formato).trim(); }
+
+async function livrosFormatos() {
+  const panel = document.getElementById('livros-panel');
+  panel.innerHTML = '<div class="loading"><span class="spinner"></span>CARREGANDO…</div>';
+  try {
+    const res = await api('GET', '/items/livros?limit=500&fields=id,title,autor,ano,Cover,formato&sort=title');
+    formatosData = (res.data || []).map(l => {
+      const n = normFmt(l.formato);
+      return { ...l, _orig: l.formato || '', _novo: FMT_CANON.includes(n) ? n : null };
+    });
+    renderFormatosLista();
+  } catch(e) { panel.innerHTML = `<div class="empty"><div class="empty-icon">⚠</div><h3>Erro</h3><p>${e.message}</p></div>`; }
+}
+
+function formatosVisiveis() {
+  return formatosSoFaltam ? formatosData.filter(fmtVazio) : formatosData;
+}
+function formatosMudados() {
+  return formatosData.filter(l => l._novo && (l._novo + 'cm') !== (l.formato || ''));
+}
+
+function renderFormatosLista() {
+  const panel = document.getElementById('livros-panel');
+  const semFmt = formatosData.filter(fmtVazio).length;
+  const lista = formatosVisiveis();
+  panel.innerHTML = `
+    <div style="position:sticky;top:60px;background:var(--bg);z-index:10;padding:10px 0;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:8px;border-bottom:1px solid rgba(232,232,216,0.06)">
+      <button class="btn btn-yellow btn-sm" id="fmt-save" onclick="formatosSalvar()">SALVAR FORMATOS${formatosMudados().length ? ` (${formatosMudados().length})` : ''}</button>
+      <div class="toggle-wrap" onclick="formatosToggleFiltro()" style="cursor:crosshair">
+        <div class="toggle ${formatosSoFaltam ? 'on' : ''}"></div>
+        <span class="toggle-label">só os sem formato (${semFmt})</span>
+      </div>
+      <span style="font-size:11px;color:var(--fg2)">${lista.length} livros · clique no formato de cada</span>
+    </div>
+    ${lista.map(l => formatoRow(l)).join('') || '<div class="empty"><div class="empty-icon">✓</div><h3>Todos com formato</h3></div>'}`;
+}
+
+function formatoBtns(l) {
+  return FMT_CANON.map(f => `<button class="btn btn-sm ${l._novo === f ? 'btn-yellow' : 'btn-ghost'}" onclick="formatoSet(${l.id},'${f}')">${f.replace('x', '×')}</button>`).join('');
+}
+
+function formatoRow(l) {
+  const isOther = l.formato && !FMT_CANON.includes(normFmt(l.formato));
+  return `
+    <div style="display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(232,232,216,0.05)">
+      ${l.Cover ? `<img src="${directusImg(l.Cover, 60)}" style="width:34px;height:48px;object-fit:cover;flex-shrink:0;background:var(--bg3)" alt="" loading="lazy">` : `<div style="width:34px;height:48px;background:var(--bg3);flex-shrink:0"></div>`}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(l.title || '—')}</div>
+        <div style="font-size:10px;color:var(--fg2)">${esc(l.autor || '')}${l.ano ? ' · ' + l.ano : ''}${isOther ? ` · <span style="color:var(--yellow)">atual: ${esc(l.formato)}</span>` : ''}</div>
+      </div>
+      <div class="row-actions" id="fmt-btns-${l.id}" style="flex-shrink:0">${formatoBtns(l)}</div>
+    </div>`;
+}
+
+function formatoSet(id, f) {
+  const l = formatosData.find(x => x.id === id);
+  if (!l) return;
+  l._novo = (l._novo === f) ? null : f;   // clicar de novo desmarca
+  const box = document.getElementById('fmt-btns-' + id);
+  if (box) box.innerHTML = formatoBtns(l);
+  const save = document.getElementById('fmt-save');
+  if (save) save.textContent = `SALVAR FORMATOS${formatosMudados().length ? ` (${formatosMudados().length})` : ''}`;
+}
+
+function formatosToggleFiltro() {
+  formatosSoFaltam = !formatosSoFaltam;
+  renderFormatosLista();
+}
+
+async function formatosSalvar() {
+  const changed = formatosMudados();
+  if (!changed.length) { toast('Nada para salvar.'); return; }
+  toast(`Salvando ${changed.length} formato(s)…`);
+  let ok = 0, fail = 0;
+  const pool = 6;
+  for (let i = 0; i < changed.length; i += pool) {
+    const slice = changed.slice(i, i + pool);
+    const results = await Promise.allSettled(slice.map(l => api('PATCH', `/items/livros/${l.id}`, { formato: l._novo + 'cm' })));
+    results.forEach((r, k) => { if (r.status === 'fulfilled') { slice[k].formato = slice[k]._novo + 'cm'; ok++; } else fail++; });
+  }
+  toast(fail ? `Salvou ${ok}, ${fail} falharam.` : `${ok} formato(s) salvos! A galeria já reflete o tamanho.`, !!fail);
+  renderFormatosLista();
 }
 
 // ── LIVROS · ORDENAR (drag & drop → campo sort) ───────────────────────────────
