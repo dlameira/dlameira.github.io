@@ -1389,7 +1389,7 @@ function onOrdDragEnd() {
 // auto-scroll ao arrastar perto das bordas da janela
 let _ordScrollRAF = null;
 let _ordPointerY = 0;
-function _ordTrackPointer(e) { _ordPointerY = e.clientY; }
+function _ordTrackPointer(e) { if (e.clientY > 0) _ordPointerY = e.clientY; }
 function _ordAutoScrollTick() {
   const edge = 110;       // zona sensível (px) no topo e na base
   const maxSpeed = 24;    // px por frame no limite da borda
@@ -1401,10 +1401,14 @@ function _ordAutoScrollTick() {
   _ordScrollRAF = requestAnimationFrame(_ordAutoScrollTick);
 }
 function _ordStartAutoScroll() {
+  // 'drag' dispara continuamente na origem com a posição real do cursor (mais
+  // confiável que 'dragover', que não cobre áreas fora da grade)
+  document.addEventListener('drag', _ordTrackPointer);
   document.addEventListener('dragover', _ordTrackPointer);
   if (!_ordScrollRAF) _ordScrollRAF = requestAnimationFrame(_ordAutoScrollTick);
 }
 function _ordStopAutoScroll() {
+  document.removeEventListener('drag', _ordTrackPointer);
   document.removeEventListener('dragover', _ordTrackPointer);
   if (_ordScrollRAF) { cancelAnimationFrame(_ordScrollRAF); _ordScrollRAF = null; }
 }
