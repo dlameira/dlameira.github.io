@@ -1358,6 +1358,8 @@ function onOrdDragStart(e) {
   _ordDragId = c.dataset.id;
   e.dataTransfer.effectAllowed = 'move';
   c.style.opacity = '0.35';
+  _ordPointerY = e.clientY;
+  _ordStartAutoScroll();
 }
 function onOrdDragOver(e) {
   e.preventDefault();
@@ -1368,6 +1370,7 @@ function onOrdDragOver(e) {
 }
 function onOrdDrop(e) {
   e.preventDefault();
+  _ordStopAutoScroll();
   const target = e.target.closest('.ord-card');
   if (!target || _ordDragId == null) return;
   const from = ordenarData.findIndex(x => String(x.id) === String(_ordDragId));
@@ -1379,7 +1382,31 @@ function onOrdDrop(e) {
 }
 function onOrdDragEnd() {
   _ordDragId = null;
+  _ordStopAutoScroll();
   document.querySelectorAll('.ord-card').forEach(el => { el.style.opacity = ''; el.style.outline = ''; });
+}
+
+// auto-scroll ao arrastar perto das bordas da janela
+let _ordScrollRAF = null;
+let _ordPointerY = 0;
+function _ordTrackPointer(e) { _ordPointerY = e.clientY; }
+function _ordAutoScrollTick() {
+  const edge = 110;       // zona sensível (px) no topo e na base
+  const maxSpeed = 24;    // px por frame no limite da borda
+  const vh = window.innerHeight;
+  let dy = 0;
+  if (_ordPointerY > 0 && _ordPointerY < edge)        dy = -maxSpeed * (1 - _ordPointerY / edge);
+  else if (_ordPointerY > vh - edge && _ordPointerY <= vh) dy =  maxSpeed * (1 - (vh - _ordPointerY) / edge);
+  if (dy) window.scrollBy(0, dy);
+  _ordScrollRAF = requestAnimationFrame(_ordAutoScrollTick);
+}
+function _ordStartAutoScroll() {
+  document.addEventListener('dragover', _ordTrackPointer);
+  if (!_ordScrollRAF) _ordScrollRAF = requestAnimationFrame(_ordAutoScrollTick);
+}
+function _ordStopAutoScroll() {
+  document.removeEventListener('dragover', _ordTrackPointer);
+  if (_ordScrollRAF) { cancelAnimationFrame(_ordScrollRAF); _ordScrollRAF = null; }
 }
 
 async function ordenarSalvar() {
