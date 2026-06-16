@@ -1414,22 +1414,34 @@ function _ordStopAutoScroll() {
 }
 
 async function ordenarSalvar() {
-  // renumera a ordem visível para sort = 1..N; grava só o que mudou
+  // relê a ordem real do banco (verdade), pra não confiar em estado de memória
+  // que pode ter dessincronizado se algum PATCH anterior falhou
+  let dbMap = {};
+  try {
+    const cur = await api('GET', '/items/livros?filter[status][_eq]=published&limit=500&fields=id,sort');
+    (cur.data || []).forEach(x => { dbMap[x.id] = x.sort; });
+  } catch(e) { toast('Erro ao ler ordem atual: ' + e.message, true); return; }
+
+  // renumera a ordem visível para sort = 1..N; grava só o que difere do banco
   const updates = [];
   ordenarData.forEach((l, i) => {
     const novo = i + 1;
-    if (l.sort !== novo) { updates.push({ id: l.id, sort: novo }); l.sort = novo; }
+    if (dbMap[l.id] !== novo) updates.push({ id: l.id, sort: novo });
   });
   if (!updates.length) { toast('A ordem já está salva.'); return; }
+
   toast(`Salvando ${updates.length} posições…`);
-  try {
-    const pool = 8;
-    for (let i = 0; i < updates.length; i += pool) {
-      await Promise.all(updates.slice(i, i + pool).map(u =>
-        api('PATCH', `/items/livros/${u.id}`, { sort: u.sort })));
-    }
-    toast(`Ordem salva! (${updates.length} livros). A galeria já reflete.`);
-  } catch(e) { toast('Erro ao salvar: ' + e.message, true); }
+  let ok = 0, fail = 0;
+  const pool = 6;
+  for (let i = 0; i < updates.length; i += pool) {
+    const results = await Promise.allSettled(updates.slice(i, i + pool).map(u =>
+      api('PATCH', `/items/livros/${u.id}`, { sort: u.sort })));
+    results.forEach(r => { if (r.status === 'fulfilled') ok++; else fail++; });
+  }
+  // sincroniza a memória com a nova ordem (1..N)
+  ordenarData.forEach((l, i) => { l.sort = i + 1; });
+  if (fail) toast(`Salvou ${ok}, ${fail} falharam — clique SALVAR de novo.`, true);
+  else toast(`Ordem salva! (${ok} livros). A galeria já reflete.`);
 }
 
 const PAPEIS = { autor:'Autor(a)', tradutor:'Tradução', capista:'Capa', arte_de_capa:'Arte de Capa', artes_internas:'Artes Internas', prefacio:'Prefácio', posfacio:'Posfácio', organizacao:'Organização' };
