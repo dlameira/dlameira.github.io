@@ -32,23 +32,19 @@ body {
 
 .menu {
   margin-top: 56px;
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-}
-
-.menu a {
   display: grid;
-  grid-template-columns: 150px 50px;
+  grid-template-columns: auto 46px;   /* largura = conteúdo real, centralizada */
+  column-gap: 20px;
+  row-gap: 30px;
   align-items: center;
-  column-gap: 22px;
-  text-decoration: none;
-  color: #111;
 }
+.menu a { display: contents; }
 .menu .lbl {
   text-align: right;
   font-size: 22px;
   letter-spacing: 0.04em;
+  color: #111;
+  text-decoration: none;
 }
 .menu .ico {
   width: 46px;
@@ -62,7 +58,7 @@ body {
 .menu a:hover .lbl { opacity: 0.55; }
 
 @media (max-width: 480px) {
-  .menu a { grid-template-columns: 120px 42px; column-gap: 16px; }
+  .menu { grid-template-columns: auto 40px; column-gap: 14px; }
   .menu .lbl { font-size: 18px; }
   .menu .ico { width: 40px; height: 40px; }
 }
