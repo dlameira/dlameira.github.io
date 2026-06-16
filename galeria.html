@@ -7,12 +7,17 @@
 <link rel="preconnect" href="https://directus-production-afdd.up.railway.app" crossorigin>
 <link rel="dns-prefetch" href="https://directus-production-afdd.up.railway.app">
 <style>
+@font-face { font-family: 'AuthenticSans'; src: url('fonts/60b11050899817005a227b9e.otf') format('opentype'); }
+@font-face { font-family: 'OffBit'; src: url('fonts/OffBit-101Bold.otf') format('opentype'); }
+@font-face { font-family: 'GTPressura'; src: url('fonts/gt-pressura-mono-regular.ttf') format('truetype'); }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
   --line: #000;
   --lw: 2px;
   --cols: 6;
+  --f-brand: 'AuthenticSans', 'OffBit', sans-serif;
 }
 
 html, body { background: #ffffff; }
@@ -37,14 +42,15 @@ body {
 }
 .back svg { display: block; width: 28px; height: 22px; }
 .brand {
+  font-family: var(--f-brand);
   font-weight: 700;
-  font-size: 15px;
-  letter-spacing: 0.03em;
+  font-size: 16px;
+  letter-spacing: 0.04em;
   color: #111;
   text-decoration: none;
   white-space: nowrap;
 }
-.topnav { font-size: 14px; color: #111; }
+.topnav { font-family: var(--f-brand); font-size: 15px; color: #111; }
 .topnav a {
   color: #111;
   text-decoration: underline;
