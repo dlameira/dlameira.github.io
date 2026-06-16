@@ -33,7 +33,7 @@ body {
 .menu {
   margin-top: 56px;
   display: grid;
-  grid-template-columns: auto 46px;   /* largura = conteúdo real, centralizada */
+  grid-template-columns: auto 48px;   /* largura = conteúdo real, centralizada */
   column-gap: 20px;
   row-gap: 30px;
   align-items: center;
@@ -47,20 +47,24 @@ body {
   text-decoration: none;
 }
 .menu .ico {
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   display: block;
-  transform-origin: center;
-  transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-.menu .ico img { display: block; width: 100%; height: 100%; object-fit: contain; }
-.menu a:hover .ico { transform: scale(1.12) rotate(-3deg); }
-.menu a:hover .lbl { opacity: 0.55; }
+.menu .ico img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;   /* pixel art nítido, sem borrar */
+}
+.menu .lbl { transition: color 0.12s ease; }
+.menu a:hover .lbl { color: #0000EE; }   /* azul de hyperlink */
 
 @media (max-width: 480px) {
-  .menu { grid-template-columns: auto 40px; column-gap: 14px; }
+  .menu { grid-template-columns: auto 42px; column-gap: 14px; }
   .menu .lbl { font-size: 18px; }
-  .menu .ico { width: 40px; height: 40px; }
+  .menu .ico { width: 42px; height: 42px; }
 }
 </style>
 </head>
