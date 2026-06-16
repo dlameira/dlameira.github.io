@@ -1050,6 +1050,7 @@ async function renderLivros() {
   content.innerHTML = `
     <div class="tabs">
       <div class="tab active" id="tab-livros-lista" onclick="livrosTab('lista')">LISTA</div>
+      <div class="tab" id="tab-livros-ordenar" onclick="livrosTab('ordenar')">↕ ORDENAR</div>
       <div class="tab" id="tab-livros-novo" onclick="livrosTab('novo')">+ NOVO</div>
       <div class="tab" id="tab-livros-bulk" onclick="livrosTab('bulk')">⬆ BULK</div>
     </div>
@@ -1061,6 +1062,7 @@ function livrosTab(tab) {
   document.querySelectorAll('[id^="tab-livros-"]').forEach(t => t.classList.remove('active'));
   document.getElementById(`tab-livros-${tab}`).classList.add('active');
   if (tab === 'lista') livrosCarregarLista();
+  else if (tab === 'ordenar') livrosOrdenar();
   else if (tab === 'novo') livrosFormNovo();
   else if (tab === 'bulk') livrosBulk();
 }
@@ -1301,6 +1303,102 @@ async function livrosDeletar(id, title) {
     livrosCarregarLista();
     loadCounts();
   } catch(e) { toast('Erro: ' + e.message, true); }
+}
+
+// ── LIVROS · ORDENAR (drag & drop → campo sort) ───────────────────────────────
+let ordenarData = [];
+let _ordDragId = null;
+
+async function livrosOrdenar() {
+  const panel = document.getElementById('livros-panel');
+  panel.innerHTML = '<div class="loading"><span class="spinner"></span>CARREGANDO…</div>';
+  try {
+    // mesma ordem que a galeria pública usa
+    const res = await api('GET', '/items/livros?filter[status][_eq]=published&sort[]=sort&sort[]=-ano&limit=500&fields=id,title,autor,Cover,sort');
+    ordenarData = res.data || [];
+    renderOrdenarGrid();
+  } catch(e) {
+    panel.innerHTML = `<div class="empty"><div class="empty-icon">⚠</div><h3>Erro</h3><p>${e.message}</p></div>`;
+  }
+}
+
+function renderOrdenarGrid() {
+  const panel = document.getElementById('livros-panel');
+  panel.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;position:sticky;top:60px;background:var(--bg);padding:8px 0;z-index:10">
+      <button class="btn btn-yellow" onclick="ordenarSalvar()">SALVAR ORDEM</button>
+      <button class="btn btn-ghost" onclick="livrosOrdenar()">↺ DESCARTAR</button>
+      <span style="font-size:11px;color:var(--fg2)">Arraste as capas para reordenar — a posição 1 aparece primeiro na galeria. ${ordenarData.length} livros publicados.</span>
+    </div>
+    <div id="ord-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px"></div>`;
+  const grid = document.getElementById('ord-grid');
+  ordenarData.forEach((l, i) => {
+    const card = document.createElement('div');
+    card.className = 'ord-card';
+    card.draggable = true;
+    card.dataset.id = l.id;
+    card.style.cssText = 'position:relative;cursor:grab;border:1px solid rgba(232,232,216,0.1);background:var(--bg2);border-radius:2px;overflow:hidden';
+    card.innerHTML = `
+      <div style="position:absolute;top:3px;left:3px;background:rgba(10,10,8,0.82);color:var(--yellow);font-size:10px;padding:1px 5px;border-radius:2px;z-index:2;pointer-events:none">${i + 1}</div>
+      ${l.Cover
+        ? `<img src="${directusImg(l.Cover, 200)}" style="width:100%;aspect-ratio:2/3;object-fit:cover;display:block;pointer-events:none" alt="">`
+        : `<div style="aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;color:var(--fg2);font-size:9px">sem capa</div>`}
+      <div style="padding:5px 6px;font-size:9px;line-height:1.3;color:var(--fg2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none">${esc(l.title || '')}</div>`;
+    grid.appendChild(card);
+  });
+  grid.addEventListener('dragstart', onOrdDragStart);
+  grid.addEventListener('dragover', onOrdDragOver);
+  grid.addEventListener('drop', onOrdDrop);
+  grid.addEventListener('dragend', onOrdDragEnd);
+}
+
+function onOrdDragStart(e) {
+  const c = e.target.closest('.ord-card');
+  if (!c) return;
+  _ordDragId = c.dataset.id;
+  e.dataTransfer.effectAllowed = 'move';
+  c.style.opacity = '0.35';
+}
+function onOrdDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const c = e.target.closest('.ord-card');
+  document.querySelectorAll('.ord-card').forEach(el => el.style.outline = '');
+  if (c && c.dataset.id !== _ordDragId) c.style.outline = '2px solid var(--red)';
+}
+function onOrdDrop(e) {
+  e.preventDefault();
+  const target = e.target.closest('.ord-card');
+  if (!target || _ordDragId == null) return;
+  const from = ordenarData.findIndex(x => String(x.id) === String(_ordDragId));
+  const to   = ordenarData.findIndex(x => String(x.id) === String(target.dataset.id));
+  if (from < 0 || to < 0 || from === to) return;
+  const [moved] = ordenarData.splice(from, 1);
+  ordenarData.splice(to, 0, moved);
+  renderOrdenarGrid();
+}
+function onOrdDragEnd() {
+  _ordDragId = null;
+  document.querySelectorAll('.ord-card').forEach(el => { el.style.opacity = ''; el.style.outline = ''; });
+}
+
+async function ordenarSalvar() {
+  // renumera a ordem visível para sort = 1..N; grava só o que mudou
+  const updates = [];
+  ordenarData.forEach((l, i) => {
+    const novo = i + 1;
+    if (l.sort !== novo) { updates.push({ id: l.id, sort: novo }); l.sort = novo; }
+  });
+  if (!updates.length) { toast('A ordem já está salva.'); return; }
+  toast(`Salvando ${updates.length} posições…`);
+  try {
+    const pool = 8;
+    for (let i = 0; i < updates.length; i += pool) {
+      await Promise.all(updates.slice(i, i + pool).map(u =>
+        api('PATCH', `/items/livros/${u.id}`, { sort: u.sort })));
+    }
+    toast(`Ordem salva! (${updates.length} livros). A galeria já reflete.`);
+  } catch(e) { toast('Erro ao salvar: ' + e.message, true); }
 }
 
 const PAPEIS = { autor:'Autor(a)', tradutor:'Tradução', capista:'Capa', arte_de_capa:'Arte de Capa', artes_internas:'Artes Internas', prefacio:'Prefácio', posfacio:'Posfácio', organizacao:'Organização' };
