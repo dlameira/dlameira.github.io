@@ -1079,7 +1079,12 @@ async function livrosCarregarLista() {
       panel.innerHTML = `<div class="empty"><div class="empty-icon">◌</div><h3>Nenhum livro ainda</h3></div>`;
       return;
     }
+    const nRascunhos = livrosData.filter(l => l.status !== 'published').length;
     panel.innerHTML = `
+      ${nRascunhos ? `<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--fg2)">${nRascunhos} rascunho(s) — não aparecem na galeria nem em ORDENAR até publicar.</span>
+        <button class="btn btn-green btn-sm" onclick="livrosPublicarRascunhos()">PUBLICAR TODOS OS RASCUNHOS</button>
+      </div>` : ''}
       <table class="items-table">
         <thead><tr>
           <th style="width:60px">CAPA</th>
@@ -1087,7 +1092,7 @@ async function livrosCarregarLista() {
           <th>AUTOR</th>
           <th>ANO</th>
           <th>STATUS</th>
-          <th style="width:120px"></th>
+          <th style="width:240px"></th>
         </tr></thead>
         <tbody>
           ${livrosData.map(l => `
@@ -1098,6 +1103,7 @@ async function livrosCarregarLista() {
               <td style="color:var(--fg2)">${l.ano || '—'}</td>
               <td><span class="badge ${l.status === 'published' ? 'badge-published' : 'badge-draft'}">${l.status === 'published' ? 'publicado' : 'rascunho'}</span></td>
               <td class="row-actions">
+                <button class="btn btn-sm ${l.status === 'published' ? 'btn-ghost' : 'btn-green'}" onclick="livrosTogglePublish(${l.id}, ${l.status !== 'published'})">${l.status === 'published' ? 'DESPUBLICAR' : 'PUBLICAR'}</button>
                 <button class="btn btn-ghost btn-sm" onclick="livrosEditar(${l.id})">EDITAR</button>
                 <button class="btn btn-danger btn-sm" onclick="livrosDeletar(${l.id},'${esc(l.title)}')">✕</button>
               </td>
@@ -1305,6 +1311,32 @@ async function livrosDeletar(id, title) {
     livrosCarregarLista();
     loadCounts();
   } catch(e) { toast('Erro: ' + e.message, true); }
+}
+
+async function livrosTogglePublish(id, publish) {
+  try {
+    await api('PATCH', `/items/livros/${id}`, { status: publish ? 'published' : 'draft' });
+    toast(publish ? 'Publicado!' : 'Despublicado.');
+    livrosCarregarLista();
+    loadCounts();
+  } catch(e) { toast('Erro: ' + e.message, true); }
+}
+
+async function livrosPublicarRascunhos() {
+  const ids = livrosData.filter(l => l.status !== 'published').map(l => l.id);
+  if (!ids.length) { toast('Nenhum rascunho.'); return; }
+  if (!confirm(`Publicar ${ids.length} rascunho(s)? Eles passam a aparecer na galeria (no fim, até você reordenar).`)) return;
+  toast(`Publicando ${ids.length}…`);
+  let ok = 0, fail = 0;
+  const pool = 6;
+  for (let i = 0; i < ids.length; i += pool) {
+    const results = await Promise.allSettled(ids.slice(i, i + pool).map(id =>
+      api('PATCH', `/items/livros/${id}`, { status: 'published' })));
+    results.forEach(r => { if (r.status === 'fulfilled') ok++; else fail++; });
+  }
+  toast(fail ? `Publicados ${ok}, ${fail} falharam.` : `${ok} publicados!`, !!fail);
+  livrosCarregarLista();
+  loadCounts();
 }
 
 // ── LIVROS · ORDENAR (drag & drop → campo sort) ───────────────────────────────
