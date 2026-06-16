@@ -1448,6 +1448,19 @@ async function ordenarSalvar() {
 
 // ── LIVROS · IMPORTAR (da biblioteca/Metabooks) ───────────────────────────────
 let bibResultados = [];
+let livrosIsbnSet = null;   // ISBNs já na coleção (normalizados)
+
+// normaliza ISBN: só dígitos e X, ignora hifens/espaços em qualquer posição
+function normIsbn(s) { return String(s || '').replace(/[^0-9Xx]/g, '').toUpperCase(); }
+
+async function ensureLivrosIsbns(force) {
+  if (livrosIsbnSet && !force) return livrosIsbnSet;
+  const res = await api('GET', '/items/livros?limit=500&fields=isbn_fisico,isbn_ebook');
+  const set = new Set();
+  (res.data || []).forEach(l => { [l.isbn_fisico, l.isbn_ebook].forEach(v => { const n = normIsbn(v); if (n) set.add(n); }); });
+  livrosIsbnSet = set;
+  return set;
+}
 
 // "Sobrenome, Nome" -> "Nome Sobrenome" (mantém múltiplos separados por ;)
 function flipAutor(s) {
@@ -1494,6 +1507,7 @@ async function bibCardapio(term, label) {
   try {
     const res = await api('GET', `/items/biblioteca?filter[editora][_icontains]=${encodeURIComponent(term)}&limit=500&fields=id,isbn,titulo,autor,editora,ano,capa_url,sinopse&sort=titulo`);
     bibResultados = res.data || [];
+    await ensureLivrosIsbns();
     renderBibResultados(box, `${bibResultados.length} livros · ${esc(label)}`);
   } catch(e) { box.innerHTML = `<div class="empty"><div class="empty-icon">⚠</div><h3>Erro</h3><p>${e.message}</p></div>`; }
 }
@@ -1510,23 +1524,30 @@ async function bibliotecaBuscar() {
   try {
     const res = await api('GET', `/items/biblioteca?${filter}&limit=40&fields=id,isbn,titulo,autor,editora,ano,capa_url,sinopse&sort=titulo`);
     bibResultados = res.data || [];
+    await ensureLivrosIsbns();
     renderBibResultados(box, isISBN ? `Resultado para ISBN ${esc(q)}` : `${bibResultados.length} resultado(s) para "${esc(q)}"`);
   } catch(e) { box.innerHTML = `<div class="empty"><div class="empty-icon">⚠</div><h3>Erro</h3><p>${e.message}</p></div>`; }
 }
 
 function renderBibResultados(box, header) {
   if (!bibResultados.length) { box.innerHTML = `<div class="empty"><div class="empty-icon">◌</div><h3>Nada encontrado</h3><p>Tente outro termo ou o ISBN.</p></div>`; return; }
-  box.innerHTML = `<div style="font-size:11px;color:var(--fg2);margin-bottom:10px">${header || ''}</div>` +
-    bibResultados.map(b => `
-      <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid rgba(232,232,216,0.06);align-items:center">
+  const set = livrosIsbnSet || new Set();
+  const jaTemCount = bibResultados.filter(b => set.has(normIsbn(b.isbn))).length;
+  const headerFull = `${header || ''}${jaTemCount ? ` · <span style="color:var(--green)">${jaTemCount} já na sua lista</span>` : ''}`;
+  box.innerHTML = `<div style="font-size:11px;color:var(--fg2);margin-bottom:10px">${headerFull}</div>` +
+    bibResultados.map(b => {
+      const jaTem = !!b.isbn && set.has(normIsbn(b.isbn));
+      return `
+      <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid rgba(232,232,216,0.06);align-items:center;${jaTem ? 'opacity:0.6' : ''}">
         ${b.capa_url ? `<img src="${esc(b.capa_url)}" style="width:44px;height:62px;object-fit:cover;flex-shrink:0;background:var(--bg3)" alt="" loading="lazy">` : `<div style="width:44px;height:62px;background:var(--bg3);flex-shrink:0"></div>`}
         <div style="flex:1;min-width:0">
-          <div style="font-size:13px">${esc(b.titulo || '—')}</div>
+          <div style="font-size:13px">${esc(b.titulo || '—')}${jaTem ? ` <span style="color:var(--green);font-size:10px;letter-spacing:0.06em">✓ JÁ NA LISTA</span>` : ''}</div>
           <div style="font-size:11px;color:var(--fg2)">${esc(flipAutor(b.autor) || '—')} · ${esc(b.editora || '—')}${b.ano ? ' · ' + esc(b.ano) : ''}</div>
           <div style="font-size:10px;color:var(--fg2)">ISBN ${esc(b.isbn || '—')}</div>
         </div>
-        <button class="btn btn-yellow btn-sm" id="bib-btn-${b.id}" onclick="bibliotecaImportar(${b.id})">IMPORTAR</button>
-      </div>`).join('');
+        <button class="btn btn-sm ${jaTem ? 'btn-green' : 'btn-yellow'}" id="bib-btn-${b.id}" onclick="bibliotecaImportar(${b.id})">${jaTem ? '✓ NA LISTA' : 'IMPORTAR'}</button>
+      </div>`;
+    }).join('');
 }
 
 async function bibliotecaImportar(id) {
@@ -1564,6 +1585,7 @@ async function bibliotecaImportar(id) {
     };
     if (coverId) body.Cover = coverId;
     await api('POST', '/items/livros', body);
+    if (livrosIsbnSet && b.isbn) livrosIsbnSet.add(normIsbn(b.isbn));
     toast(`"${body.title}" importado como rascunho${coverId ? ' (com capa)' : ' (sem capa — adicione na edição)'}.`);
     if (btn) { btn.textContent = '✓ IMPORTADO'; btn.classList.remove('btn-yellow'); btn.classList.add('btn-green'); }
     loadCounts();
