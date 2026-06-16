@@ -57,7 +57,7 @@ body {
 
 .cell img {
   /* escala vinda do formato físico (--scale): altura manda; largura limitada p/ não estourar */
-  max-height: calc(var(--scale, 0.68) * 100%);
+  max-height: calc(var(--scale, 0.75) * 100%);
   max-width: 86%;
   width: auto;
   height: auto;
@@ -133,12 +133,12 @@ async function fetchLivros() {
 // escala (0..1) da capa a partir do formato físico.
 // a maior dimensão em cm = altura do livro; mapeia [12cm..26cm] -> [0.50..0.90]
 function escalaFormato(formato) {
-  if (!formato) return 0.68;
+  if (!formato) return 0.75;
   const nums = (formato.match(/[\d.]+/g) || []).map(Number).filter(n => n > 0);
-  if (!nums.length) return 0.68;
+  if (!nums.length) return 0.75;
   const altura = Math.max(...nums);                 // ignora espessura/largura menores
-  const s = 0.50 + (altura - 12) / (26 - 12) * (0.90 - 0.50);
-  return Math.max(0.45, Math.min(0.92, s));
+  const s = 0.55 + (altura - 12) / (26 - 12) * (0.99 - 0.55);
+  return Math.max(0.50, Math.min(0.99, s));
 }
 
 function render(livros) {
