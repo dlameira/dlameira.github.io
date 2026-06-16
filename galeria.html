@@ -88,6 +88,14 @@ body {
   height: auto;
   object-fit: contain;          /* capa inteira: nem esticada, nem cortada */
   display: block;
+  transform-origin: center;
+  backface-visibility: hidden;
+  transition: transform 0.32s cubic-bezier(0.22, 0.61, 0.36, 1),
+              box-shadow 0.32s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.cell:hover img {
+  transform: scale(1.045);
+  box-shadow: 0 9px 24px rgba(0, 0, 0, 0.16);
 }
 
 .cell .ph {
@@ -97,20 +105,6 @@ body {
   font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
   color: #bbb;
 }
-
-/* legenda no hover */
-.cell .cap {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  padding: 10px 12px;
-  background: linear-gradient(transparent, rgba(255,255,255,0.96) 40%);
-  opacity: 0;
-  transition: opacity 0.15s;
-  pointer-events: none;
-}
-.cell:hover .cap { opacity: 1; }
-.cell .cap .t { font-size: 11px; font-weight: 600; line-height: 1.2; }
-.cell .cap .a { font-size: 10px; color: #666; margin-top: 2px; }
 
 .loading {
   grid-column: 1 / -1;
@@ -179,10 +173,10 @@ function render(livros) {
     a.className = 'cell';
     a.href = `livro.html?id=${livro.id}`;
     a.style.setProperty('--scale', escalaFormato(livro.formato).toFixed(3));
-    a.innerHTML = (covId
+    a.title = `${livro.title || ''}${livro.autor ? ' — ' + livro.autor : ''}`;
+    a.innerHTML = covId
       ? `<img src="${directusImg(covId, px(400))}" alt="${livro.title || ''}" loading="lazy">`
-      : `<div class="ph">capa</div>`)
-      + `<div class="cap"><div class="t">${livro.title || ''}</div><div class="a">${livro.autor || ''}</div></div>`;
+      : `<div class="ph">capa</div>`;
     gal.appendChild(a);
   });
 }
