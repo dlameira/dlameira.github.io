@@ -125,7 +125,7 @@ function directusImg(id, width) {
 function px(n) { return Math.round(n * (window.devicePixelRatio || 1)); }
 
 async function fetchLivros() {
-  const res = await fetch(`${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=-ano&limit=500&fields=id,title,autor,Cover,formato`);
+  const res = await fetch(`${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=sort&sort[]=-ano&limit=500&fields=id,title,autor,Cover,formato`);
   const data = await res.json();
   return data.data || [];
 }
