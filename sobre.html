@@ -20,14 +20,13 @@ body { color: #111; font-family: var(--f); -webkit-font-smoothing: antialiased; 
 .topnav a { color: #111; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
 .topnav a:hover { color: #0000EE; }
 
-.wrap { max-width: 620px; margin: 0 auto; padding: 60px 28px 100px; }
-.face { width: 84px; height: auto; image-rendering: pixelated; display: block; margin-bottom: 28px; }
-.h1 { font-weight: 700; font-size: clamp(30px, 5vw, 46px); letter-spacing: 0.01em; margin-bottom: 24px; }
-.bio { font-size: 19px; line-height: 1.75; color: #1a1a1a; }
+.wrap { max-width: 640px; margin: 0 auto; padding: 52px 28px 110px; }
+.face { width: 88px; height: auto; image-rendering: pixelated; display: block; margin-bottom: 30px; }
+.h1 { font-weight: 700; font-size: clamp(30px, 5vw, 46px); letter-spacing: 0.01em; margin-bottom: 26px; }
+.bio { font-size: 18px; line-height: 1.75; color: #1a1a1a; }
 .bio p { margin-bottom: 20px; }
-.contact { margin-top: 34px; font-size: 15px; }
-.contact a { color: #0000EE; text-decoration: underline; text-underline-offset: 2px; }
-.loading { font-size: 13px; letter-spacing: 0.1em; color: #aaa; }
+.bio p:last-child { margin-bottom: 0; }
+.bio a { color: #0000EE; text-decoration: underline; text-underline-offset: 2px; }
 </style>
 </head>
 <body>
@@ -43,26 +42,26 @@ body { color: #111; font-family: var(--f); -webkit-font-smoothing: antialiased; 
 <div class="wrap">
   <img class="face" src="icons/sobre.png" alt="Daniel Lameira">
   <h1 class="h1">Sobre</h1>
-  <div class="bio" id="bio"><span class="loading">carregando…</span></div>
-  <div class="contact" id="contact"></div>
+  <div class="bio">
+    <p>Talvez curioso seja a palavra primeira que escolheria para a ridícula tarefa de se auto-descrever.</p>
+
+    <p>Ser pai, fazer arte, editar livros, empreender e pesquisar (sem muita disciplina) os encontros do mundo artístico, das tecnologias, da criatividade e do inconsciente têm sido algumas das formas de canalizar essa curiosidade na minha vida.</p>
+
+    <p>Fundei e dirijo a Seiva, escola e editora sobre arte e criatividade. Além de livros e cursos, lá temos encontros abertos, newsletters, podcast e outros conteúdos que dialogam com esses interesses.</p>
+
+    <p>Acolher o desejo de criar além do fazer profissional foi um dos movimentos mais importantes da minha vida, e é em torno dessa busca que tenho caminhado nos últimos anos.</p>
+
+    <p>Organizo também o curso Vida do Livro, referência em educação sobre mercado editorial, que já formou mais de 3.500 alunos; onde divido o que aprendi em 20 anos trabalhando com livros e algumas das minhas inquietações com o mercado.</p>
+
+    <p>Fui cofundador e diretor criativo da Antofágica, editora de clássicos literários para novos tempos, e atuei também como diretor editorial da Aleph, e tenho muito carinho pelas criações que ajudei em ambas.</p>
+
+    <p>Como consultor, trabalhei com dezenas de autores e com marcas como Globo, CCXP, Boutique Filmes, Fósforo e TAG, além de passagens por Intrínseca, Novo Século, LeYa, FNAC e Livraria da Vila.</p>
+
+    <p>Me formei em História, mas além do passado me interessa imensamente o futuro. Alguma tentativa de reencontrar coisas boas que têm se escondido nesse horizonte inalcançável que, me parece, está à frente e dentro de nós.</p>
+
+    <p>Criei este site para reunir alguns desses trabalhos e pensamentos.</p>
+  </div>
 </div>
 
-<script>
-async function init() {
-  try {
-    const a = await fetch('content/settings/about.json').then(r => r.json());
-    const bio = (a.bio || '').split(/\n{2,}/).map(p => `<p>${p}</p>`).join('');
-    document.getElementById('bio').innerHTML = bio || '<p>—</p>';
-    const links = [];
-    if (a.email) links.push(`<a href="mailto:${a.email}">${a.email}</a>`);
-    if (a.instagram) links.push(`<a href="${a.instagram}" target="_blank" rel="noopener">instagram</a>`);
-    if (a.linkedin) links.push(`<a href="${a.linkedin}" target="_blank" rel="noopener">linkedin</a>`);
-    document.getElementById('contact').innerHTML = links.join(' · ');
-  } catch(e) {
-    document.getElementById('bio').innerHTML = '<p>—</p>';
-  }
-}
-init();
-</script>
 </body>
 </html>
