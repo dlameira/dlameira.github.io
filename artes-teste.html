@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Artes (teste grade) — Daniel Lameira</title>
+<link rel="preconnect" href="https://directus-production-afdd.up.railway.app" crossorigin>
+<style>
+@font-face { font-family: 'Neue Haas Grotesk'; font-weight: 400; font-style: normal; font-display: swap; src: url('fonts/NeueHaasDisplay-Roman.ttf') format('truetype'); }
+@font-face { font-family: 'Neue Haas Grotesk'; font-weight: 700; font-style: normal; font-display: swap; src: url('fonts/NeueHaasDisplay-Bold.ttf') format('truetype'); }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --line: #000;
+  --lw: 2px;
+  --cols: 6;
+  --f-brand: 'Neue Haas Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+html, body { background: #ffffff; }
+body { font-family: var(--f-brand); color: #111; }
+
+.top { display: flex; align-items: center; gap: 16px; padding: 20px 28px 14px; flex-wrap: wrap; }
+.back { display: inline-flex; text-decoration: none; color: #111; line-height: 1; }
+.back svg { display: block; width: 28px; height: 22px; }
+.brand { font-weight: 700; font-size: 16px; letter-spacing: 0.04em; color: #111; text-decoration: none; white-space: nowrap; }
+.topnav { font-size: 15px; color: #111; }
+.topnav a { color: #111; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.topnav a:hover { color: #777; }
+
+/* GRID — mesma estrutura da galeria de livros */
+.gal-wrap { overflow: hidden; }
+.gal {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  margin: 0 calc(-1 * var(--lw)) calc(-1 * var(--lw)) 0;
+}
+.cell {
+  border-right: var(--lw) solid var(--line);
+  border-bottom: var(--lw) solid var(--line);
+  aspect-ratio: 1 / 1.04;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: #fff;
+  text-decoration: none;
+  position: relative;
+}
+.cell img, .cell video {
+  max-height: 86%;
+  max-width: 86%;
+  width: auto;
+  height: auto;
+  object-fit: contain;        /* obra inteira, sem cortar nem esticar */
+  display: block;
+  transform-origin: center;
+  backface-visibility: hidden;
+  transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.cell:hover img, .cell:hover video { transform: scale(1.018); }
+
+.loading {
+  grid-column: 1 / -1;
+  padding: 80px 0;
+  text-align: center;
+  font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #aaa;
+}
+
+@media (max-width: 1100px) { :root { --cols: 4; } }
+@media (max-width: 700px)  { :root { --cols: 3; } .cell { padding: 12px; } }
+@media (max-width: 460px)  { :root { --cols: 2; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a class="back" href="index.html" aria-label="início">
+    <svg viewBox="0 0 34 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 4 L3 14 L13 24 M3 14 H32" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
+  <a class="brand" href="index.html">DANIEL LAMEIRA</a>
+  <nav class="topnav"><a href="livros.html">livros</a>, <a href="textos.html">textos</a>, <a href="artes.html">artes</a> e <a href="sobre.html">sobre</a></nav>
+</header>
+
+<div class="gal-wrap">
+  <div class="gal" id="gal"><div class="loading">carregando…</div></div>
+</div>
+
+<script>
+const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
+function img(id, w) { return `${DIRECTUS}/assets/${id}?width=${w}&quality=85&format=webp`; }
+function px(n) { return Math.round(n * (window.devicePixelRatio || 1)); }
+
+(async () => {
+  const gal = document.getElementById('gal');
+  try {
+    const r = await fetch(`${DIRECTUS}/items/obras?filter[status][_eq]=published&sort[]=order&limit=200&fields=id,title,type,year,image,video`);
+    const obras = (await r.json()).data || [];
+    if (!obras.length) { gal.innerHTML = '<div class="loading">nada por aqui</div>'; return; }
+    gal.innerHTML = '';
+    obras.forEach(o => {
+      const a = document.createElement('a');
+      a.className = 'cell';
+      a.href = `obra.html?id=${o.id}`;
+      a.title = `${o.title || ''}${o.year ? ' · ' + o.year : ''}`;
+      if (o.image) a.innerHTML = `<img src="${img(o.image, px(400))}" alt="${o.title || ''}" loading="lazy">`;
+      else if (o.video) a.innerHTML = `<video src="${DIRECTUS}/assets/${o.video}" muted loop autoplay playsinline preload="auto"></video>`;
+      gal.appendChild(a);
+    });
+  } catch (e) { gal.innerHTML = '<div class="loading">erro ao carregar</div>'; }
+})();
+</script>
+</body>
+</html>
