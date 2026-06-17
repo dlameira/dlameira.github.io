@@ -32,6 +32,8 @@ body { color: #111; font-family: var(--f); -webkit-font-smoothing: antialiased; 
 .row:hover .ttl { color: #0000EE; }
 .row .exc { font-size: 14px; color: #666; line-height: 1.55; margin-top: 7px; }
 </style>
+<script>try{document.documentElement.dataset.theme=localStorage.theme||(matchMedia('(prefers-color-scheme:dark)').matches?"dark":"light")}catch(e){}</script>
+<link rel="stylesheet" href="theme.css">
 </head>
 <body>
 
@@ -73,5 +75,6 @@ async function init() {
 }
 init();
 </script>
+<script src="theme.js"></script>
 </body>
 </html>

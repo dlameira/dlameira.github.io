@@ -25,15 +25,17 @@ body { color: #111; font-family: var(--f); -webkit-font-smoothing: antialiased; 
 .h1 { font-weight: 700; font-size: clamp(30px, 5vw, 48px); letter-spacing: 0.01em; margin-bottom: 36px; }
 .loading { padding: 60px 0; text-align: center; font-size: 13px; letter-spacing: 0.1em; color: #aaa; }
 
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 36px 28px; }
-.item { text-decoration: none; color: #111; display: block; }
-.media { width: 100%; aspect-ratio: 1/1; background: #f3f3f1; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-.media img, .media video { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.15s; }
+.grid { column-width: 250px; column-gap: 30px; }
+.item { text-decoration: none; color: #111; display: inline-block; width: 100%; margin-bottom: 34px; break-inside: avoid; }
+.media { width: 100%; overflow: hidden; line-height: 0; }
+.media img, .media video { width: 100%; height: auto; display: block; transition: opacity 0.15s; }
 .item:hover .media img, .item:hover .media video { opacity: 0.82; }
-.cap { margin-top: 10px; }
+.cap { margin-top: 10px; line-height: 1.3; }
 .cap .t { font-weight: 700; font-size: 15px; line-height: 1.2; }
 .cap .m { font-size: 12px; color: #888; margin-top: 3px; letter-spacing: 0.02em; }
 </style>
+<script>try{document.documentElement.dataset.theme=localStorage.theme||(matchMedia('(prefers-color-scheme:dark)').matches?"dark":"light")}catch(e){}</script>
+<link rel="stylesheet" href="theme.css">
 </head>
 <body>
 
@@ -75,5 +77,6 @@ async function init() {
 }
 init();
 </script>
+<script src="theme.js"></script>
 </body>
 </html>

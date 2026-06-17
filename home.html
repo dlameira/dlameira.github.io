@@ -68,6 +68,8 @@ body {
   .menu .ico { width: 42px; height: 42px; }
 }
 </style>
+<script>try{document.documentElement.dataset.theme=localStorage.theme||(matchMedia('(prefers-color-scheme:dark)').matches?"dark":"light")}catch(e){}</script>
+<link rel="stylesheet" href="theme.css">
 </head>
 <body>
 
@@ -95,5 +97,6 @@ body {
   </a>
 </nav>
 
+<script src="theme.js"></script>
 </body>
 </html>
