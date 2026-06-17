@@ -162,13 +162,13 @@ async function fetchLivros() {
 // escala (0..1) da capa a partir do formato físico.
 // a maior dimensão em cm = altura do livro; mapeia [12cm..26cm] -> [0.50..0.90]
 function escalaFormato(formato) {
-  if (!formato) return 0.75;
+  if (!formato) return 0.675;
   const nums = (formato.match(/[\d.]+/g) || []).map(Number).filter(n => n > 0);
-  if (!nums.length) return 0.75;
+  if (!nums.length) return 0.675;
   const altura = Math.max(...nums);                 // ignora espessura/largura menores
   const s = 0.55 + (altura - 12) / (26 - 12) * (0.99 - 0.55);
-  // teto = tamanho de um 16x23; livros maiores (20x26 etc.) aparecem como 16x23
-  return Math.max(0.50, Math.min(0.90, s));
+  // teto = tamanho de um 16x23; tudo 10% menor que o tamanho-base
+  return 0.9 * Math.max(0.50, Math.min(0.90, s));
 }
 
 function render(livros) {
