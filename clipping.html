@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preload" href="fonts/NeueHaasDisplay-Roman.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="fonts/NeueHaasDisplay-Bold.ttf" as="font" type="font/ttf" crossorigin>
+<title>Clipping — Daniel Lameira</title>
+<style>
+@font-face { font-family: 'Neue Haas Grotesk'; font-weight: 400; font-style: normal; font-display: block; src: url('fonts/NeueHaasDisplay-Roman.ttf') format('truetype'); }
+@font-face { font-family: 'Neue Haas Grotesk'; font-weight: 700; font-style: normal; font-display: block; src: url('fonts/NeueHaasDisplay-Bold.ttf') format('truetype'); }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --f: 'Neue Haas Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+html, body { background: #fff; }
+body { color: #111; font-family: var(--f); -webkit-font-smoothing: antialiased; }
+
+.top { display: flex; align-items: center; gap: 16px; padding: 20px 28px 14px; flex-wrap: wrap; }
+.back { display: inline-flex; text-decoration: none; color: #111; line-height: 1; }
+.back svg { display: block; width: 28px; height: 22px; }
+.brand { font-weight: 700; font-size: 16px; letter-spacing: 0.04em; color: #111; text-decoration: none; white-space: nowrap; }
+.topnav { font-size: 15px; color: #111; }
+.topnav a { color: #111; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.topnav a:hover { color: #0000EE; }
+
+.wrap { max-width: 720px; margin: 0 auto; padding: 40px 28px 110px; }
+.h1 { font-weight: 700; font-size: clamp(30px, 5vw, 48px); letter-spacing: 0.01em; margin-bottom: 10px; }
+.intro { font-size: 14px; color: #888; margin-bottom: 40px; max-width: 560px; line-height: 1.5; }
+
+.sec { margin-bottom: 40px; }
+.sec-label { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #aaa; padding-bottom: 10px; border-bottom: 1px solid #e8e8e6; margin-bottom: 4px; }
+
+.row { display: block; text-decoration: none; color: #111; padding: 13px 0; border-bottom: 1px solid #f0f0ee; }
+.row:hover .t { color: #0000EE; }
+.row .t { font-size: 16px; line-height: 1.3; transition: color 0.12s; }
+.row .s { font-size: 12px; color: #999; margin-top: 3px; letter-spacing: 0.02em; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a class="back" href="sobre.html" aria-label="sobre">
+    <svg viewBox="0 0 34 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 4 L3 14 L13 24 M3 14 H32" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
+  <a class="brand" href="index.html">DANIEL LAMEIRA</a>
+  <nav class="topnav"><a href="livros.html">livros</a>, <a href="textos.html">textos</a>, <a href="artes.html">artes</a> e <a href="sobre.html">sobre</a></nav>
+</header>
+
+<div class="wrap">
+  <h1 class="h1">Clipping</h1>
+  <p class="intro">Algumas conversas, entrevistas e participações por aí.</p>
+
+  <div class="sec">
+    <div class="sec-label">Vídeos</div>
+    <a class="row" href="https://www.youtube.com/watch?v=tgvmcPuQa04" target="_blank" rel="noopener"><div class="t">Papo com Pinsky</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=0Jz5s5JyQ7o" target="_blank" rel="noopener"><div class="t">O Futuro do Livro</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=EgRCC0MrE3o" target="_blank" rel="noopener"><div class="t">Tendências que estão moldando o futuro do livro</div><div class="s">com Rejane Dias e Talita Facchini</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=dOai-wp2XSc" target="_blank" rel="noopener"><div class="t">Capas e capistas</div><div class="s">com Giovanna Cianelli</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=bS2mSLdDvQA" target="_blank" rel="noopener"><div class="t">Distopias na literatura — 20ª FIL</div><div class="s">com Aline Valek</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=fbGiPxeoczg" target="_blank" rel="noopener"><div class="t">Como abrir uma editora de livros?</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=nqDjkNwHRjQ" target="_blank" rel="noopener"><div class="t">Uma visão carinhosa porém crítica do mercado editorial</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=1oiar5yDmZ0" target="_blank" rel="noopener"><div class="t">Paternidade e livros</div><div class="s">Tricô de Pais</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=lWalVkgAAVA" target="_blank" rel="noopener"><div class="t">Video-games são vilões?</div><div class="s">Tricô de Pais</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=b77ewDFVzdU" target="_blank" rel="noopener"><div class="t">Reconexão com a cultura nerd</div><div class="s">Cápsula Nerd · com Érico Borgo</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=LZAgn7LLkHg" target="_blank" rel="noopener"><div class="t">O processo de produção e o preço do livro</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=rV4p7K6yB1E" target="_blank" rel="noopener"><div class="t">Livros pra ter, livros pra ler: o livro como objeto de desejo</div><div class="s">Flip</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=rq20P-OHRAU" target="_blank" rel="noopener"><div class="t">Como trabalhar em uma editora?</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=zdmR6vOeG2Q" target="_blank" rel="noopener"><div class="t">Por que ler George Orwell em 2021?</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=1Xq5PREOyRM" target="_blank" rel="noopener"><div class="t">Criando “1984”, com Rafael Coutinho</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=ioPMO4cyOnY" target="_blank" rel="noopener"><div class="t">Podcasts de editoras</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=uRghP-ZdMpw" target="_blank" rel="noopener"><div class="t">Vivemos o apocalipse dos livros?</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=RouF0njejpI" target="_blank" rel="noopener"><div class="t">Palavra de quem edita</div><div class="s">Antofágica</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=CIk8Vb1rGgs" target="_blank" rel="noopener"><div class="t">As escolhas artísticas dos livros da Antofágica</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=os2ZfeWjx7o" target="_blank" rel="noopener"><div class="t">Como funciona o mercado editorial brasileiro</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=EdB19jad5wo" target="_blank" rel="noopener"><div class="t">Vida do livro: como entender o mercado editorial</div><div class="s">Vassoler debate</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=W074ghMAwiw" target="_blank" rel="noopener"><div class="t">As tretas do mercado editorial</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=G6gSyrFeP9g" target="_blank" rel="noopener"><div class="t">Quanto custa um livro?</div><div class="s">All About That Book</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=bw0nnktp7Gc" target="_blank" rel="noopener"><div class="t">Respondendo dúvidas sobre o mercado livreiro</div></a>
+    <a class="row" href="https://www.youtube.com/watch?v=WPqu1n4sdBg" target="_blank" rel="noopener"><div class="t">Entrevista (versão completa)</div></a>
+  </div>
+
+  <div class="sec">
+    <div class="sec-label">Podcasts</div>
+    <a class="row" href="https://open.spotify.com/episode/5XWngi8PUR2XFlKP0DFGVe" target="_blank" rel="noopener"><div class="t">Como vender livros</div><div class="s">Braincast #243</div></a>
+    <a class="row" href="https://creators.spotify.com/pod/show/podcast-do-publishnews/episodes/228---Uma-imerso-pelo-mundo-do-livro-com-Daniel-Lameira-e1ludbm/a-a8au1fh" target="_blank" rel="noopener"><div class="t">Uma imersão pelo mundo do livro</div><div class="s">Podcast do PublishNews #228</div></a>
+    <a class="row" href="https://open.spotify.com/episode/2FJ3GFgDjueLp5kPsfgV9n" target="_blank" rel="noopener"><div class="t">IA e arte: tecnologia, cooperação e ética</div><div class="s">Podcast do PublishNews #405 · FLIP 2025</div></a>
+    <a class="row" href="https://podcasters.spotify.com/pod/show/12trabalhos/episodes/S05E12---O-futuro-das-publicaes-nacionais--com-Daniel-Lameira-ekc4h1" target="_blank" rel="noopener"><div class="t">O futuro das publicações nacionais</div><div class="s">Os 12 Trabalhos do Escritor</div></a>
+  </div>
+
+  <div class="sec">
+    <div class="sec-label">Entrevistas</div>
+    <a class="row" href="https://www.matinaljornalismo.com.br/parentese/edicao-mensal/entrevista-edicao-mensal/daniel-lameira-a-leitura-como-experiencia/" target="_blank" rel="noopener"><div class="t">A leitura como experiência</div><div class="s">Parêntese · Matinal</div></a>
+    <a class="row" href="https://screamyell.com.br/site/2024/04/09/entrevista-daniel-lameira-fala-sobre-a-seiva-misto-de-editora-escola-e-comunidade-que-visa-incentivar-a-paixao-pelo-ato-de-criar/" target="_blank" rel="noopener"><div class="t">Sobre a Seiva: editora, escola e comunidade</div><div class="s">Scream &amp; Yell · 2024</div></a>
+    <a class="row" href="https://www.projetodraft.com/como-a-seiva-quer-ajudar-voce-a-destravar-o-seu-lado-artistico-e-a-exercitar-o-cerebro-de-forma-criativa/" target="_blank" rel="noopener"><div class="t">Como a Seiva quer destravar o seu lado artístico</div><div class="s">Projeto Draft</div></a>
+    <a class="row" href="https://www.publishnews.com.br/materias/2024/01/16/seiva-nova-plataforma-de-adriano-fromer-e-daniel-lameira-quer-ir-alem-do-oficio-editorial" target="_blank" rel="noopener"><div class="t">Seiva quer ir além do ofício editorial</div><div class="s">PublishNews · 2024</div></a>
+    <a class="row" href="https://www.pontozero.net.br/2016/09/28/entrevista-daniel-lameira-da-editora-aleph/" target="_blank" rel="noopener"><div class="t">Daniel Lameira, da Editora Aleph</div><div class="s">Ponto Zero · 2016</div></a>
+  </div>
+
+  <div class="sec">
+    <div class="sec-label">Reconhecimento</div>
+    <a class="row" href="https://www.publishnews.com.br/materias/2020/12/21/um-registro-da-historia-do-mercado-editorial-brasileiro" target="_blank" rel="noopener"><div class="t">No livro “100 nomes da edição no Brasil”, entre os editores do futuro</div><div class="s">Leonardo Neto · 2020</div></a>
+    <a class="row" href="https://snel.org.br/editor-de-ficcao-cientifica-vence-premio-jovens-talentos/" target="_blank" rel="noopener"><div class="t">Prêmio Jovens Talentos</div><div class="s">SNEL / Frankfurt · 2015</div></a>
+  </div>
+</div>
+
+</body>
+</html>
