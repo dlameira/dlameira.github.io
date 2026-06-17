@@ -317,6 +317,21 @@ label { font-size: 11px; color: var(--fg2); letter-spacing: 0.05em; display: blo
   #main { margin-left: 0; }
 }
 
+/* editor rich text (escritos) */
+.rt-toolbar { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.rt-btn { font-family: var(--f-ui); font-size: 12px; padding: 6px 10px; border: 1px solid rgba(17,17,17,0.18); background: var(--bg); color: var(--fg); cursor: pointer; border-radius: 2px; line-height: 1; }
+.rt-btn:hover { border-color: var(--fg); }
+.rt-editor { min-height: 420px; border: 1px solid rgba(17,17,17,0.15); border-radius: 2px; padding: 20px 22px; font-family: var(--f-body); font-size: 16px; line-height: 1.75; color: var(--fg); background: var(--bg); overflow-y: auto; outline: none; }
+.rt-editor:focus { border-color: rgba(17,17,17,0.45); }
+.rt-editor:empty::before { content: 'Escreva aqui…'; color: rgba(17,17,17,0.3); }
+.rt-editor p { margin-bottom: 14px; }
+.rt-editor h2 { font-size: 23px; font-weight: 700; margin: 20px 0 8px; }
+.rt-editor h3 { font-size: 18px; font-weight: 700; margin: 16px 0 6px; }
+.rt-editor a { color: #0000EE; text-decoration: underline; }
+.rt-editor blockquote { border-left: 2px solid var(--fg); padding-left: 14px; margin: 14px 0; color: #555; }
+.rt-editor ul, .rt-editor ol { margin: 0 0 14px 22px; }
+.rt-editor li { margin-bottom: 5px; }
+
 /* acentos funcionais (apagar / erro) seguem em vermelho */
 .btn-danger { border-color: rgba(200,30,30,0.45) !important; color: #c81e1e !important; }
 .btn-danger:hover { background: rgba(200,30,30,0.08) !important; }
@@ -2115,22 +2130,47 @@ function escritosFormNovo(item = null) {
           </div>
         </div>
       </div>
-      <div class="editor-wrap">
-        <div class="field">
-          <label style="margin-bottom:6px">TEXTO (MARKDOWN)</label>
-          <textarea id="f-body" oninput="previewMd()" placeholder="# Título&#10;&#10;Escreva em markdown…">${esc(item?.content || '')}</textarea>
+      <div class="field full">
+        <label style="margin-bottom:6px">TEXTO</label>
+        <div class="rt-toolbar">
+          <button type="button" class="rt-btn" title="Negrito" onmousedown="rtCmd(event,'bold')"><b>B</b></button>
+          <button type="button" class="rt-btn" title="Itálico" onmousedown="rtCmd(event,'italic')"><i>I</i></button>
+          <button type="button" class="rt-btn" title="Subtítulo" onmousedown="rtBlock(event,'h2')">H2</button>
+          <button type="button" class="rt-btn" title="Subtítulo menor" onmousedown="rtBlock(event,'h3')">H3</button>
+          <button type="button" class="rt-btn" title="Parágrafo" onmousedown="rtBlock(event,'p')">¶</button>
+          <button type="button" class="rt-btn" title="Citação" onmousedown="rtBlock(event,'blockquote')">❝</button>
+          <button type="button" class="rt-btn" title="Lista" onmousedown="rtCmd(event,'insertUnorderedList')">• lista</button>
+          <button type="button" class="rt-btn" title="Inserir link" onmousedown="rtLink(event)">🔗 link</button>
+          <button type="button" class="rt-btn" title="Remover link" onmousedown="rtCmd(event,'unlink')">🔗✕</button>
+          <button type="button" class="rt-btn" title="Limpar formatação" onmousedown="rtCmd(event,'removeFormat')">limpar</button>
         </div>
-        <div>
-          <label style="margin-bottom:6px">PREVIEW</label>
-          <div class="editor-preview" id="md-preview"></div>
-        </div>
+        <div id="rt-editor" class="rt-editor" contenteditable="true"></div>
       </div>
       <div style="display:flex;gap:10px;margin-top:16px">
         <button class="btn btn-primary" onclick="escritosSalvar(${item?.id || 'null'})">${item ? 'SALVAR' : 'CRIAR ESCRITO'}</button>
         <button class="btn btn-ghost" onclick="escritosTab('lista')">CANCELAR</button>
       </div>
     </div>`;
-  previewMd();
+  const _rt = document.getElementById('rt-editor');
+  if (_rt) _rt.innerHTML = item?.content || '';
+}
+
+function rtCmd(e, cmd) { e.preventDefault(); document.execCommand(cmd, false, null); const ed = document.getElementById('rt-editor'); if (ed) ed.focus(); }
+function rtBlock(e, tag) { e.preventDefault(); document.execCommand('formatBlock', false, '<' + tag + '>'); const ed = document.getElementById('rt-editor'); if (ed) ed.focus(); }
+function rtLink(e) {
+  e.preventDefault();
+  const url = prompt('URL do link (https://…):', 'https://');
+  if (url && url !== 'https://') document.execCommand('createLink', false, url.trim());
+  const ed = document.getElementById('rt-editor'); if (ed) ed.focus();
+}
+function rtGetContent() {
+  const ed = document.getElementById('rt-editor');
+  if (!ed) return null;
+  let html = ed.innerHTML.trim();
+  if (!html || html === '<br>' || html === '<p><br></p>') return null;
+  // links externos abrem em nova aba
+  html = html.replace(/<a (?![^>]*\btarget=)([^>]*href="https?:\/\/[^"]*"[^>]*)>/gi, '<a target="_blank" rel="noopener" $1>');
+  return html;
 }
 
 async function escritosEditar(id) {
@@ -2140,7 +2180,6 @@ async function escritosEditar(id) {
   escritosTab('novo');
   document.getElementById('tab-esc-novo').textContent = 'EDITAR';
   escritosFormNovo(full.data);
-  previewMd();
 }
 
 async function escritosSalvar(id) {
@@ -2153,7 +2192,7 @@ async function escritosSalvar(id) {
     slug:     slugVal,
     date:     document.getElementById('f-date').value.trim() || null,
     excerpt:  document.getElementById('f-excerpt').value.trim() || null,
-    content:  document.getElementById('f-body').value || null,
+    content:  rtGetContent(),
     tipo:     document.getElementById('f-tipo').value || null,
     featured: document.getElementById('tog-featured').classList.contains('on'),
     status:   document.getElementById('tog-status').classList.contains('on') ? 'published' : 'draft',
