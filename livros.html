@@ -78,22 +78,27 @@ body {
   background: #fff;
   text-decoration: none;
   position: relative;
+  overflow: hidden;             /* trava qualquer estouro dentro da célula */
 }
 
+/* imagem absoluta e centralizada: não estica a célula (corrige Safari/iPhone) */
 .cell img {
-  /* escala vinda do formato físico (--scale): altura manda; largura limitada p/ não estourar */
-  max-height: calc(var(--scale, 0.75) * 100%);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-height: calc(var(--scale, 0.75) * 100%);   /* escala pelo formato físico */
   max-width: 86%;
   width: auto;
   height: auto;
   object-fit: contain;          /* capa inteira: nem esticada, nem cortada */
   display: block;
+  transform: translate(-50%, -50%);
   transform-origin: center;
   backface-visibility: hidden;
   transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 .cell:hover img {
-  transform: scale(1.018);
+  transform: translate(-50%, -50%) scale(1.018);
 }
 
 .cell .ph {
