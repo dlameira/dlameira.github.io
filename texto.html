@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Texto — Daniel Lameira</title>
+<link rel="preconnect" href="https://directus-production-afdd.up.railway.app" crossorigin>
+<style>
+@font-face { font-family: 'Neue Haas Grotesk'; font-weight: 400; font-style: normal; font-display: swap; src: url('fonts/NeueHaasDisplay-Roman.ttf') format('truetype'); }
+@font-face { font-family: 'Neue Haas Grotesk'; font-weight: 700; font-style: normal; font-display: swap; src: url('fonts/NeueHaasDisplay-Bold.ttf') format('truetype'); }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --f: 'Neue Haas Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+html, body { background: #fff; }
+body { color: #111; font-family: var(--f); -webkit-font-smoothing: antialiased; }
+
+.top { display: flex; align-items: center; gap: 16px; padding: 20px 28px 14px; flex-wrap: wrap; }
+.back { display: inline-flex; text-decoration: none; color: #111; line-height: 1; }
+.back svg { display: block; width: 28px; height: 22px; }
+.brand { font-weight: 700; font-size: 16px; letter-spacing: 0.04em; color: #111; text-decoration: none; white-space: nowrap; }
+.topnav { font-size: 15px; color: #111; }
+.topnav a { color: #111; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.topnav a:hover { color: #0000EE; }
+
+.wrap { max-width: 680px; margin: 0 auto; padding: 40px 28px 100px; }
+.loading { padding: 60px 0; text-align: center; font-size: 13px; letter-spacing: 0.1em; color: #aaa; }
+.tag { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #aaa; margin-bottom: 14px; }
+.title { font-weight: 700; font-size: clamp(28px, 5vw, 44px); line-height: 1.08; letter-spacing: 0.01em; margin-bottom: 28px; }
+
+.body { font-size: 18px; line-height: 1.8; color: #1a1a1a; }
+.body p { margin-bottom: 22px; }
+.body h2 { font-weight: 700; font-size: 26px; margin: 38px 0 14px; }
+.body h3 { font-weight: 700; font-size: 21px; margin: 30px 0 12px; }
+.body a { color: #0000EE; }
+.body blockquote { border-left: 2px solid #111; padding-left: 18px; margin: 22px 0; color: #555; }
+.body img { max-width: 100%; height: auto; display: block; margin: 24px 0; }
+.body ul, .body ol { margin: 0 0 22px 22px; }
+.body li { margin-bottom: 8px; }
+
+.nav { display: flex; justify-content: space-between; gap: 20px; margin-top: 64px; padding-top: 24px; border-top: 1px solid #e8e8e6; }
+.nav a { text-decoration: none; color: #111; max-width: 48%; }
+.nav a:hover .nt { color: #0000EE; }
+.nd { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #aaa; margin-bottom: 5px; }
+.nt { font-weight: 700; font-size: 15px; line-height: 1.2; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a class="back" href="textos.html" aria-label="textos">
+    <svg viewBox="0 0 34 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 4 L3 14 L13 24 M3 14 H32" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
+  <a class="brand" href="index.html">DANIEL LAMEIRA</a>
+  <nav class="topnav"><a href="galeria.html">livros</a>, <a href="textos.html">textos</a>, <a href="artes.html">artes</a> e <a href="sobre.html">sobre</a></nav>
+</header>
+
+<div class="wrap">
+  <article id="content"><div class="loading">carregando…</div></article>
+</div>
+
+<script>
+const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
+function fmtData(d) {
+  if (!d) return '';
+  const m = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const dt = new Date(d + 'T00:00:00');
+  return `${m[dt.getMonth()]} ${dt.getFullYear()}`;
+}
+function renderBody(str) {
+  if (!str) return '';
+  const s = String(str);
+  if (/<(p|br|div|h[1-6]|strong|em|b|i|a\s|ul|ol|li|blockquote|img|figure|hr)[\s>/]/i.test(s)) return s;
+  return '<p>' + s
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm,'</p><h3>$1</h3><p>').replace(/^## (.+)$/gm,'</p><h2>$1</h2><p>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
+    .replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>') + '</p>';
+}
+async function init() {
+  const id = new URLSearchParams(location.search).get('id');
+  const box = document.getElementById('content');
+  if (!id) { box.innerHTML = '<div class="loading">texto não encontrado</div>'; return; }
+  try {
+    const [pr, allr] = await Promise.all([
+      fetch(`${DIRECTUS}/items/escritos/${id}`).then(r => r.json()),
+      fetch(`${DIRECTUS}/items/escritos?filter[status][_eq]=published&sort[]=-date&limit=200&fields=id,title,tipo`).then(r => r.json())
+    ]);
+    const p = pr.data;
+    if (!p) { box.innerHTML = '<div class="loading">texto não encontrado</div>'; return; }
+    document.title = `${p.title} — Daniel Lameira`;
+    const tag = [p.tipo && p.tipo !== 'escrito' ? p.tipo.toUpperCase() : '', fmtData(p.date)].filter(Boolean).join(' · ');
+    box.innerHTML = `
+      ${tag ? `<div class="tag">${tag}</div>` : ''}
+      <h1 class="title">${p.title || ''}</h1>
+      <div class="body">${renderBody(p.content)}</div>
+      <div class="nav" id="nav"></div>`;
+    const all = (allr.data || []).filter(x => x.tipo !== 'projeto');
+    const i = all.findIndex(x => String(x.id) === String(id));
+    const nav = document.getElementById('nav');
+    let h = '';
+    h += (i > 0) ? `<a href="texto.html?id=${all[i-1].id}"><div class="nd">← anterior</div><div class="nt">${all[i-1].title || ''}</div></a>` : '<span></span>';
+    h += (i !== -1 && i < all.length - 1) ? `<a href="texto.html?id=${all[i+1].id}" style="text-align:right"><div class="nd">próximo →</div><div class="nt">${all[i+1].title || ''}</div></a>` : '<span></span>';
+    nav.innerHTML = h;
+  } catch(e) { box.innerHTML = '<div class="loading">erro ao carregar</div>'; }
+}
+init();
+</script>
+</body>
+</html>

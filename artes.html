@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Obra — Daniel Lameira</title>
+<title>Artes — Daniel Lameira</title>
 <link rel="preconnect" href="https://directus-production-afdd.up.railway.app" crossorigin>
 <style>
 @font-face { font-family: 'Neue Haas Grotesk'; font-weight: 400; font-style: normal; font-display: swap; src: url('fonts/NeueHaasDisplay-Roman.ttf') format('truetype'); }
@@ -21,21 +21,24 @@ body { color: #111; font-family: var(--f); -webkit-font-smoothing: antialiased; 
 .topnav a { color: #111; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
 .topnav a:hover { color: #0000EE; }
 
-.wrap { max-width: 860px; margin: 0 auto; padding: 36px 28px 100px; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 40px 28px 100px; }
+.h1 { font-weight: 700; font-size: clamp(30px, 5vw, 48px); letter-spacing: 0.01em; margin-bottom: 36px; }
 .loading { padding: 60px 0; text-align: center; font-size: 13px; letter-spacing: 0.1em; color: #aaa; }
-.media { width: 100%; background: #f3f3f1; display: flex; align-items: center; justify-content: center; margin-bottom: 26px; }
-.media img, .media video { max-width: 100%; max-height: 78vh; display: block; }
-.title { font-weight: 700; font-size: clamp(26px, 4vw, 40px); line-height: 1.08; letter-spacing: 0.01em; }
-.meta { font-size: 13px; color: #888; letter-spacing: 0.04em; margin-top: 8px; }
-.desc { font-size: 17px; line-height: 1.7; color: #222; margin-top: 20px; max-width: 640px; }
-.link { display: inline-block; margin-top: 18px; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; background: #111; text-decoration: none; padding: 11px 24px; }
-.link:hover { opacity: 0.82; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 36px 28px; }
+.item { text-decoration: none; color: #111; display: block; }
+.media { width: 100%; aspect-ratio: 1/1; background: #f3f3f1; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.media img, .media video { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.15s; }
+.item:hover .media img, .item:hover .media video { opacity: 0.82; }
+.cap { margin-top: 10px; }
+.cap .t { font-weight: 700; font-size: 15px; line-height: 1.2; }
+.cap .m { font-size: 12px; color: #888; margin-top: 3px; letter-spacing: 0.02em; }
 </style>
 </head>
 <body>
 
 <header class="top">
-  <a class="back" href="artes.html" aria-label="artes">
+  <a class="back" href="index.html" aria-label="início">
     <svg viewBox="0 0 34 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 4 L3 14 L13 24 M3 14 H32" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </a>
   <a class="brand" href="index.html">DANIEL LAMEIRA</a>
@@ -43,30 +46,31 @@ body { color: #111; font-family: var(--f); -webkit-font-smoothing: antialiased; 
 </header>
 
 <div class="wrap">
-  <div id="content"><div class="loading">carregando…</div></div>
+  <h1 class="h1">Artes</h1>
+  <div id="grid"><div class="loading">carregando…</div></div>
 </div>
 
 <script>
 const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
-function img(id, w) { return `${DIRECTUS}/assets/${id}?${w ? 'width=' + w + '&' : ''}quality=90&format=webp`; }
+function img(id, w) { return `${DIRECTUS}/assets/${id}?${w ? 'width=' + w + '&' : ''}quality=85&format=webp`; }
 async function init() {
-  const id = new URLSearchParams(location.search).get('id');
-  const box = document.getElementById('content');
-  if (!id) { box.innerHTML = '<div class="loading">obra não encontrada</div>'; return; }
+  const box = document.getElementById('grid');
   try {
-    const o = (await fetch(`${DIRECTUS}/items/obras/${id}`).then(r => r.json())).data;
-    if (!o) { box.innerHTML = '<div class="loading">obra não encontrada</div>'; return; }
-    document.title = `${o.title} — Daniel Lameira`;
-    let media = '';
-    if (o.image) media = `<img src="${img(o.image, 1400)}" alt="${o.title || ''}">`;
-    else if (o.video) media = `<video src="${DIRECTUS}/assets/${o.video}" controls playsinline></video>`;
-    const meta = [o.type, o.year].filter(Boolean).join(' · ');
-    box.innerHTML = `
-      ${media ? `<div class="media">${media}</div>` : ''}
-      <h1 class="title">${o.title || ''}</h1>
-      ${meta ? `<div class="meta">${meta}</div>` : ''}
-      ${o.description ? `<div class="desc">${o.description}</div>` : ''}
-      ${o.link ? `<a class="link" href="${o.link}" target="_blank" rel="noopener">Ver ↗</a>` : ''}`;
+    const r = await fetch(`${DIRECTUS}/items/obras?filter[status][_eq]=published&sort[]=order&limit=200&fields=id,title,type,year,image,video`);
+    const obras = (await r.json()).data || [];
+    if (!obras.length) { box.innerHTML = '<div class="loading">nada por aqui ainda</div>'; return; }
+    box.className = 'grid';
+    box.innerHTML = obras.map(o => {
+      let media;
+      if (o.image) media = `<img src="${img(o.image, 600)}" alt="${o.title || ''}" loading="lazy">`;
+      else if (o.video) media = `<video src="${DIRECTUS}/assets/${o.video}#t=0.1" muted playsinline preload="metadata"></video>`;
+      else media = '';
+      const meta = [o.type, o.year].filter(Boolean).join(' · ');
+      return `<a class="item" href="obra.html?id=${o.id}">
+        <div class="media">${media}</div>
+        <div class="cap"><div class="t">${o.title || ''}</div>${meta ? `<div class="m">${meta}</div>` : ''}</div>
+      </a>`;
+    }).join('');
   } catch(e) { box.innerHTML = '<div class="loading">erro ao carregar</div>'; }
 }
 init();

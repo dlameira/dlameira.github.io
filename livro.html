@@ -5,501 +5,162 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Livro — Daniel Lameira</title>
 <link rel="preconnect" href="https://directus-production-afdd.up.railway.app" crossorigin>
-<link rel="dns-prefetch" href="https://directus-production-afdd.up.railway.app">
 <style>
-@font-face { font-family: 'OffBit'; src: url('fonts/OffBit-101Bold.otf') format('opentype'); }
-@font-face { font-family: 'AuthenticSans'; src: url('fonts/60b11050899817005a227b9e.otf') format('opentype'); }
-@font-face { font-family: 'GTPressura'; src: url('fonts/gt-pressura-mono-regular.ttf') format('truetype'); }
-@font-face { font-family: 'MyriadPro'; src: url('fonts/MyriadPro-Regular.otf') format('opentype'); }
-
+@font-face { font-family: 'Neue Haas Grotesk'; font-weight: 400; font-style: normal; font-display: swap; src: url('fonts/NeueHaasDisplay-Roman.ttf') format('truetype'); }
+@font-face { font-family: 'Neue Haas Grotesk'; font-weight: 700; font-style: normal; font-display: swap; src: url('fonts/NeueHaasDisplay-Bold.ttf') format('truetype'); }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --f: 'Neue Haas Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+html, body { background: #fff; }
+body { color: #111; font-family: var(--f); -webkit-font-smoothing: antialiased; }
 
-:root {
-  --bg: #0a0a08; --fg: #e8e8d8; --red: #E8320A;
-  --green: #00ff41; --blue: #3355ff; --purple: #cc44ff; --yellow: #f2e04a;
-  --f-title: 'AuthenticSans', 'OffBit', monospace;
-  --f-ui: 'GTPressura', monospace;
-  --f-body: 'MyriadPro', sans-serif;
-}
+/* HEADER */
+.top { display: flex; align-items: center; gap: 16px; padding: 20px 28px 14px; flex-wrap: wrap; }
+.back { display: inline-flex; text-decoration: none; color: #111; line-height: 1; }
+.back svg { display: block; width: 28px; height: 22px; }
+.brand { font-weight: 700; font-size: 16px; letter-spacing: 0.04em; color: #111; text-decoration: none; white-space: nowrap; }
+.topnav { font-size: 15px; color: #111; }
+.topnav a { color: #111; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.topnav a:hover { color: #0000EE; }
 
-html { overflow-x: hidden; }
-body { background: var(--bg); color: var(--fg); font-family: var(--f-body); overflow-x: hidden; cursor: crosshair; }
+/* WRAP */
+.wrap { max-width: 920px; margin: 0 auto; padding: 30px 28px 100px; }
+.loading { padding: 80px 0; text-align: center; font-size: 13px; letter-spacing: 0.1em; color: #aaa; }
 
-body::before {
-  content: ''; position: fixed; inset: 0;
-  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
-  pointer-events: none; z-index: 997;
-}
+/* BOOK HEADER */
+.book { display: grid; grid-template-columns: 260px 1fr; gap: 48px; align-items: start; }
+.cover img { width: 100%; display: block; box-shadow: 0 2px 14px rgba(0,0,0,0.12); }
+.cover .ph { width: 100%; aspect-ratio: 2/3; background: #f0f0ee; display: flex; align-items: center; justify-content: center; font-size: 11px; letter-spacing: 0.1em; color: #bbb; }
+.info { display: flex; flex-direction: column; gap: 14px; padding-top: 4px; }
+.editora { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: #888; }
+.title { font-weight: 700; font-size: clamp(28px, 4vw, 46px); line-height: 1.04; letter-spacing: 0.01em; }
+.subtitle { font-size: 16px; color: #555; line-height: 1.4; margin-top: -4px; }
+.autor { font-size: 13px; letter-spacing: 0.04em; color: #333; }
 
-/* NAV */
-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-  display: flex; justify-content: space-between; align-items: flex-start;
-  padding: 16px 24px; background: var(--bg);
-  border-bottom: 1px solid rgba(232,50,10,0.25);
-}
-.nav-logo { display: flex; flex-direction: column; gap: 3px; }
-.nav-logo-title { font-family: var(--f-title); font-size: 26px; color: var(--red); letter-spacing: 0.06em; line-height: 1; text-decoration: none; }
-.nav-logo-sub { font-family: var(--f-ui); font-size: 8.5px; color: rgba(232,50,10,0.55); letter-spacing: 0.04em; line-height: 1.45; }
-.nav-links { display: flex; align-items: center; list-style: none; gap: 0; flex-wrap: wrap; justify-content: flex-end; }
-.nav-sep { color: var(--red); font-size: 11px; padding: 0 5px; opacity: 0.6; }
-.nav-links a { font-family: var(--f-ui); font-size: 11.5px; color: var(--fg); text-decoration: none; letter-spacing: 0.06em; padding: 2px 4px; transition: color 0.15s; }
-.nav-links a:hover { color: var(--red); }
-.nav-links a.active { color: var(--yellow); }
+.meta { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px 20px; padding-top: 16px; margin-top: 6px; border-top: 1px solid #e8e8e6; }
+.meta-item { display: flex; flex-direction: column; gap: 3px; }
+.meta-label { font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #aaa; }
+.meta-val { font-size: 13px; color: #222; }
+.colab-link { color: #0000EE; text-decoration: none; }
+.colab-link:hover { text-decoration: underline; }
 
-/* LAYOUT */
-.livro-wrap {
-  padding: 96px 24px 100px;
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 64px;
-  max-width: 1100px;
-  margin: 0 auto;
-  align-items: start;
-}
-
-/* BACK */
-.back-btn {
-  display: inline-block;
-  font-family: var(--f-ui);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--fg);
-  text-decoration: none;
-  border: 1px solid var(--yellow);
-  padding: 10px 28px;
-  margin-bottom: 48px;
-  transition: background 0.15s, color 0.15s;
-}
-.back-btn:hover { background: var(--yellow); color: var(--bg); }
-
-/* HEADER DO LIVRO */
-.livro-header {
-  display: grid;
-  grid-template-columns: 220px 1fr;
-  gap: 40px;
-  margin-bottom: 56px;
-  align-items: start;
-}
-
-.livro-cover-img {
-  width: 220px;
-  aspect-ratio: 2/3;
-  object-fit: cover;
-  display: block;
-  filter: contrast(1.05) brightness(0.9);
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 8px 8px 0 rgba(242,224,74,0.08);
-}
-
-.livro-cover-placeholder {
-  width: 220px;
-  aspect-ratio: 2/3;
-  background: #1a100a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--f-ui);
-  font-size: 9px;
-  letter-spacing: 0.15em;
-  color: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.06);
-}
-
-.livro-info {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding-top: 4px;
-}
-
-.livro-editora-badge {
-  display: inline-block;
-  font-family: var(--f-ui);
-  font-size: 8px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--yellow);
-  border: 1px solid rgba(242,224,74,0.4);
-  padding: 4px 10px;
-  width: fit-content;
-}
-
-.livro-title {
-  font-family: var(--f-title);
-  font-size: clamp(28px, 4vw, 56px);
-  letter-spacing: 0.03em;
-  line-height: 1.02;
-}
-
-.livro-subtitle {
-  font-family: var(--f-ui);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  color: rgba(232,232,216,0.4);
-  line-height: 1.5;
-  margin-top: -8px;
-}
-
-.livro-autor {
-  font-family: var(--f-ui);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(232,232,216,0.5);
-}
-
-.livro-meta-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(232,50,10,0.12);
-}
-
-.livro-meta-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.livro-meta-label {
-  font-family: var(--f-ui);
-  font-size: 7.5px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(242,224,74,0.4);
-}
-
-.livro-meta-val {
-  font-family: var(--f-ui);
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  color: rgba(232,232,216,0.55);
-}
-
-.colab-link { color: var(--yellow); text-decoration: none; border-bottom: 1px solid rgba(242,224,74,0.3); transition: border-color 0.15s; }
-.colab-link:hover { border-color: var(--yellow); }
-
-.livro-buy-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--f-ui);
-  font-size: 9px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--bg);
-  background: var(--yellow);
-  text-decoration: none;
-  padding: 12px 24px;
-  margin-top: 8px;
-  width: fit-content;
-  transition: opacity 0.15s;
-}
-.livro-buy-btn:hover { opacity: 0.85; }
+.buy { display: inline-block; margin-top: 18px; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; background: #111; text-decoration: none; padding: 12px 26px; width: fit-content; transition: opacity 0.15s; }
+.buy:hover { opacity: 0.82; }
 
 /* SINOPSE */
-.livro-sinopse-label {
-  font-family: var(--f-ui);
-  font-size: 8.5px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(242,224,74,0.45);
-  margin-bottom: 16px;
-}
+.sec { margin-top: 56px; }
+.sec-label { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #aaa; margin-bottom: 14px; }
+.prose { font-size: 17px; line-height: 1.75; color: #222; max-width: 680px; }
+.prose p { margin-bottom: 18px; }
+.prose p:last-child { margin-bottom: 0; }
+.prose a { color: #0000EE; }
 
-.livro-sinopse {
-  font-family: var(--f-body);
-  font-size: 18px;
-  line-height: 1.8;
-  color: rgba(232,232,216,0.7);
-}
+/* OUTROS */
+.outros { margin-top: 72px; border-top: 1px solid #e8e8e6; padding-top: 28px; }
+.outros-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 10px; margin-top: 14px; }
+.thumb { display: block; aspect-ratio: 2/3; background: #f0f0ee; overflow: hidden; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.15s; }
+.thumb:hover img { opacity: 0.78; }
 
-.livro-sinopse p { margin-bottom: 20px; }
-.livro-sinopse p:last-child { margin-bottom: 0; }
-
-/* SIDEBAR — outros livros */
-.livro-sidebar {
-  position: sticky;
-  top: 88px;
-}
-
-.sidebar-label {
-  font-family: var(--f-ui);
-  font-size: 8.5px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(242,224,74,0.5);
-  margin-bottom: 14px;
-}
-
-.sidebar-livros-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 3px;
-}
-
-.sidebar-livro-thumb {
-  aspect-ratio: 2/3;
-  overflow: hidden;
-  cursor: crosshair;
-  text-decoration: none;
-  display: block;
-  border: 1px solid rgba(255,255,255,0.04);
-  transition: border-color 0.15s;
-  position: relative;
-}
-.sidebar-livro-thumb:hover { border-color: var(--yellow); }
-.sidebar-livro-thumb img { width: 100%; height: 100%; object-fit: cover; filter: contrast(1.05) saturate(0.7); display: block; }
-.sidebar-livro-thumb-ph { width: 100%; height: 100%; background: #1a100a; display: flex; align-items: center; justify-content: center; font-family: var(--f-ui); font-size: 6px; letter-spacing: 0.1em; color: rgba(255,255,255,0.1); }
-
-/* FOOTER */
-footer {
-  border-top: 1px solid rgba(232,50,10,0.18);
-  padding: 18px 24px;
-  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
-}
-footer span { font-family: var(--f-ui); font-size: 8.5px; letter-spacing: 0.13em; text-transform: uppercase; color: rgba(232,232,216,0.14); }
-
-/* RESPONSIVE */
-@media (max-width: 900px) {
-  .livro-wrap { grid-template-columns: 1fr; }
-  .livro-sidebar { position: static; margin-top: 48px; border-top: 1px solid rgba(242,224,74,0.12); padding-top: 32px; }
-}
-@media (max-width: 560px) {
-  .livro-header { grid-template-columns: 1fr; }
-  .livro-cover-img, .livro-cover-placeholder { width: 100%; max-width: 280px; }
+@media (max-width: 640px) {
+  .book { grid-template-columns: 1fr; gap: 28px; }
+  .cover { max-width: 240px; }
 }
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="nav-logo">
-    <a href="index.html" class="nav-logo-title">daniel lameira</a>
-    <span class="nav-logo-sub">arte, criatividade, livros,<br>tecnologia e consciência</span>
-  </div>
-  <ul class="nav-links">
-    <li><span class="nav-sep">..·</span><a href="index.html#escritos">Escritos</a></li>
-    <li><span class="nav-sep">:·</span><a href="drops.html">Drops</a></li>
-    <li><span class="nav-sep">.·.</span><a href="livros.html" class="active">Livros</a></li>
-    <li><span class="nav-sep">-·.</span><a href="index.html#obras">Obras</a></li>
-    <li><span class="nav-sep">-·</span><a href="index.html#me">Me</a></li>
-  </ul>
-</nav>
+<header class="top">
+  <a class="back" href="index.html" aria-label="início">
+    <svg viewBox="0 0 34 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 4 L3 14 L13 24 M3 14 H32" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
+  <a class="brand" href="index.html">DANIEL LAMEIRA</a>
+  <nav class="topnav"><a href="galeria.html">livros</a>, <a href="textos.html">textos</a>, <a href="artes.html">artes</a> e <a href="sobre.html">sobre</a></nav>
+</header>
 
-<div class="livro-wrap">
-
-  <!-- COLUNA PRINCIPAL -->
-  <main id="livro-main">
-    <a href="livros.html" class="back-btn">← todos os livros</a>
-    <div id="livro-content">
-      <div style="font-family:var(--f-ui);font-size:10px;letter-spacing:0.1em;color:rgba(232,232,216,0.3);">carregando...</div>
-    </div>
-  </main>
-
-  <!-- SIDEBAR -->
-  <aside class="livro-sidebar" id="livro-sidebar">
-    <div class="sidebar-label">— outros livros</div>
-    <div class="sidebar-livros-grid" id="sidebar-livros-grid"></div>
-    <a href="livros.html" style="display:block;margin-top:12px;font-family:var(--f-ui);font-size:8.5px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(242,224,74,0.4);text-decoration:none;">ver todos →</a>
-  </aside>
-
+<div class="wrap">
+  <div id="content"><div class="loading">carregando…</div></div>
 </div>
-
-<footer>
-  <span>© 2026 Daniel Lameira</span>
-  <span>made by hand</span>
-</footer>
 
 <script>
 const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
-
-function directusImg(id, width) {
+function directusImg(id, w) {
   if (!id) return null;
-  const transforms = encodeURIComponent(JSON.stringify([['sharpen']]));
-  return `${DIRECTUS}/assets/${id}?${width ? 'width=' + width + '&' : ''}quality=90&format=webp&transforms=${transforms}`;
+  return `${DIRECTUS}/assets/${id}?${w ? 'width=' + w + '&' : ''}quality=90&format=webp`;
 }
-
-// Renderiza markdown simples (espelha previewMd do admin.html)
 function renderMarkdown(str) {
   if (!str) return '';
   const s = String(str);
-  if (/<(p|br|div|h[1-6]|strong|em|b|i|a\s|ul|ol|li|blockquote|img|figure|hr)[\s>/]/i.test(s)) {
-    return s;
-  }
+  if (/<(p|br|div|h[1-6]|strong|em|b|i|a\s|ul|ol|li|blockquote|img|figure|hr)[\s>/]/i.test(s)) return s;
   return '<p>' + s
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
-    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
-    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
-    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g,'<em>$1</em>')
-    .replace(/`(.+?)`/g,'<code>$1</code>')
-    .replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2">$1</a>')
-    .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
-    .replace(/^---$/gm,'<hr>')
-    .replace(/\n\n/g,'</p><p>')
-    .replace(/\n/g,'<br>') + '</p>';
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>') + '</p>';
 }
+const PAPEL = { tradutor:'Tradução', capista:'Capa', arte_de_capa:'Arte de capa', artes_internas:'Artes internas', autor:'Autor', prefacio:'Prefácio', posfacio:'Posfácio', organizacao:'Organização' };
 
-async function fetchLivro(id) {
-  const res = await fetch(`${DIRECTUS}/items/livros/${id}?fields=*,colaboradores.papel,colaboradores.colaboradores_id.name,colaboradores.colaboradores_id.website`);
-  const data = await res.json();
-  return data.data;
-}
-
-async function fetchOutros(currentId) {
-  const res = await fetch(`${DIRECTUS}/items/livros?filter[status][_eq]=published&limit=30&fields=id,title,Cover`);
-  const data = await res.json();
-  return (data.data || []).filter(l => l.id !== currentId);
-}
-
-function formatMeta(livro) {
+function metaHtml(l) {
   const items = [];
-  if (livro.editora)    items.push({ label: 'Editora',    val: livro.editora });
-  if (livro.ano)        items.push({ label: 'Ano',        val: livro.ano });
-  if (livro.paginas)    items.push({ label: 'Páginas',    val: livro.paginas });
-  if (livro.colecao)    items.push({ label: 'Coleção',    val: livro.colecao });
-  if (livro.formato)    items.push({ label: 'Formato',    val: livro.formato });
-  if (livro.idioma)     items.push({ label: 'Idioma',     val: livro.idioma });
-  if (livro.isbn_fisico) items.push({ label: 'ISBN Físico', val: livro.isbn_fisico });
-  if (livro.isbn_ebook)  items.push({ label: 'ISBN Ebook',  val: livro.isbn_ebook });
-  return items.map(i => `
-    <div class="livro-meta-item">
-      <span class="livro-meta-label">${i.label}</span>
-      <span class="livro-meta-val">${i.val}</span>
-    </div>`).join('');
-}
-
-const PAPEL_LABEL = { tradutor: 'Tradução', capista: 'Capa', arte_de_capa: 'Arte de capa', artes_internas: 'Artes internas', autor: 'Autor' };
-
-function colabLink(c) {
-  const p = c.colaboradores_id || {};
-  if (!p.name) return '';
-  return p.website
-    ? `<a href="${p.website}" target="_blank" rel="noopener" class="colab-link">${p.name}</a>`
-    : p.name;
-}
-
-function formatFichaTecnica(livro) {
-  const colabs = livro.colaboradores || [];
-  let items = [];
-
-  if (colabs.length > 0) {
-    // Agrupar por papel
-    const byPapel = {};
-    colabs.forEach(c => {
-      const p = c.papel || 'colaborador';
-      if (!byPapel[p]) byPapel[p] = [];
-      byPapel[p].push(c);
+  if (l.ano) items.push(['Ano', l.ano]);
+  if (l.paginas) items.push(['Páginas', l.paginas]);
+  if (l.formato) items.push(['Formato', l.formato]);
+  if (l.colecao) items.push(['Coleção', l.colecao]);
+  if (l.isbn_fisico) items.push(['ISBN', l.isbn_fisico]);
+  // ficha técnica (colaboradores agrupados por papel) ou campos texto
+  const colabs = l.colaboradores || [];
+  if (colabs.length) {
+    const by = {};
+    colabs.forEach(c => { const p = c.papel || 'colaborador'; (by[p] ||= []).push(c); });
+    Object.entries(by).forEach(([p, cs]) => {
+      const val = cs.map(c => { const x = c.colaboradores_id || {}; if (!x.name) return ''; return x.website ? `<a class="colab-link" href="${x.website}" target="_blank" rel="noopener">${x.name}</a>` : x.name; }).filter(Boolean).join(', ');
+      if (val) items.push([PAPEL[p] || p, val]);
     });
-    items = Object.entries(byPapel).map(([papel, cs]) => ({
-      label: PAPEL_LABEL[papel] || papel,
-      val: cs.map(colabLink).filter(Boolean).join(', ')
-    }));
   } else {
-    // Fallback: campos texto antigos
-    if (livro.tradutor)       items.push({ label: 'Tradução',       val: livro.tradutor });
-    if (livro.capista)        items.push({ label: 'Capa',           val: livro.capista });
-    if (livro.arte_de_capa)   items.push({ label: 'Arte de capa',   val: livro.arte_de_capa });
-    if (livro.artes_internas) items.push({ label: 'Artes internas', val: livro.artes_internas });
+    if (l.tradutor) items.push(['Tradução', l.tradutor]);
+    if (l.capista) items.push(['Capa', l.capista]);
+    if (l.arte_de_capa) items.push(['Arte de capa', l.arte_de_capa]);
+    if (l.artes_internas) items.push(['Artes internas', l.artes_internas]);
   }
-
-  if (items.length === 0) return '';
-  return `
-    <div style="padding-top:16px;border-top:1px solid rgba(232,50,10,0.12);">
-      <div class="livro-sinopse-label" style="margin-bottom:12px;">— ficha técnica</div>
-      <div class="livro-meta-row">
-        ${items.map(i => `
-          <div class="livro-meta-item">
-            <span class="livro-meta-label">${i.label}</span>
-            <span class="livro-meta-val">${i.val}</span>
-          </div>`).join('')}
-      </div>
-    </div>`;
+  return items.map(([k, v]) => `<div class="meta-item"><span class="meta-label">${k}</span><span class="meta-val">${v}</span></div>`).join('');
 }
 
 async function init() {
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get('id');
-
-  if (!id) {
-    document.getElementById('livro-content').innerHTML =
-      '<p style="font-family:var(--f-ui);font-size:11px;color:rgba(232,232,216,0.3);">Livro não encontrado.</p>';
-    return;
-  }
-
-  const [livro, outros] = await Promise.all([
-    fetchLivro(id),
-    fetchOutros(parseInt(id))
-  ]);
-
-  if (!livro) {
-    document.getElementById('livro-content').innerHTML =
-      '<p style="font-family:var(--f-ui);font-size:11px;color:rgba(232,232,216,0.3);">Livro não encontrado.</p>';
-    return;
-  }
-
-  document.title = `${livro.title} — Daniel Lameira`;
-
-  const coverId = livro.Cover || livro.cover;
-  const coverHtml = coverId
-    ? `<img src="${directusImg(coverId, 600)}" alt="${livro.title}" class="livro-cover-img">`
-    : `<div class="livro-cover-placeholder">capa</div>`;
-
-  const buyBtn = livro.link_compra
-    ? `<a href="${livro.link_compra}" target="_blank" rel="noopener" class="livro-buy-btn">Comprar ↗</a>`
-    : '';
-
-  const sinopseHtml = livro.sinopse
-    ? `<div class="livro-sinopse-label">— sinopse</div>
-       <div class="livro-sinopse">${renderMarkdown(livro.sinopse)}</div>`
-    : '';
-
-  const notasHtml = livro.notas
-    ? `<div style="margin-top:48px;padding-top:24px;border-top:1px solid rgba(232,50,10,0.12);">
-         <div class="livro-sinopse-label">— bastidores</div>
-         <div class="livro-sinopse">${renderMarkdown(livro.notas)}</div>
-       </div>`
-    : '';
-
-  document.getElementById('livro-content').innerHTML = `
-    <div class="livro-header">
-      <div>${coverHtml}</div>
-      <div class="livro-info">
-        ${livro.editora ? `<span class="livro-editora-badge">${livro.editora}</span>` : ''}
-        <h1 class="livro-title">${(livro.title || '').toUpperCase()}</h1>
-        ${livro.subtitle ? `<p class="livro-subtitle">${livro.subtitle}</p>` : ''}
-        ${livro.autor ? `<div class="livro-autor">${livro.autor}</div>` : ''}
-        <div class="livro-meta-row">${formatMeta(livro)}</div>
-        ${formatFichaTecnica(livro)}
-        ${buyBtn}
+  const id = new URLSearchParams(location.search).get('id');
+  const box = document.getElementById('content');
+  if (!id) { box.innerHTML = '<div class="loading">livro não encontrado</div>'; return; }
+  try {
+    const [lr, or_] = await Promise.all([
+      fetch(`${DIRECTUS}/items/livros/${id}?fields=*,colaboradores.papel,colaboradores.colaboradores_id.name,colaboradores.colaboradores_id.website`).then(r => r.json()),
+      fetch(`${DIRECTUS}/items/livros?filter[status][_eq]=published&sort[]=sort&sort[]=-ano&limit=18&fields=id,title,Cover`).then(r => r.json())
+    ]);
+    const l = lr.data;
+    if (!l) { box.innerHTML = '<div class="loading">livro não encontrado</div>'; return; }
+    document.title = `${l.title} — Daniel Lameira`;
+    const cov = l.Cover || l.cover;
+    box.innerHTML = `
+      <div class="book">
+        <div class="cover">${cov ? `<img src="${directusImg(cov, 600)}" alt="${l.title || ''}">` : `<div class="ph">capa</div>`}</div>
+        <div class="info">
+          ${l.editora ? `<div class="editora">${l.editora}</div>` : ''}
+          <h1 class="title">${l.title || ''}</h1>
+          ${l.subtitle ? `<div class="subtitle">${l.subtitle}</div>` : ''}
+          ${l.autor ? `<div class="autor">${l.autor}</div>` : ''}
+          <div class="meta">${metaHtml(l)}</div>
+          ${l.link_compra ? `<a class="buy" href="${l.link_compra}" target="_blank" rel="noopener">Comprar ↗</a>` : ''}
+        </div>
       </div>
-    </div>
-    ${sinopseHtml}
-    ${notasHtml}
-  `;
-
-  // sidebar outros livros
-  const grid = document.getElementById('sidebar-livros-grid');
-  outros.slice(0, 12).forEach(l => {
-    const covId = l.Cover || l.cover;
-    const a = document.createElement('a');
-    a.href = `livro.html?id=${l.id}`;
-    a.className = 'sidebar-livro-thumb';
-    a.title = l.title;
-    a.innerHTML = covId
-      ? `<img src="${directusImg(covId, 150)}" alt="${l.title}">`
-      : `<div class="sidebar-livro-thumb-ph">capa</div>`;
-    grid.appendChild(a);
-  });
+      ${l.sinopse ? `<div class="sec"><div class="sec-label">sinopse</div><div class="prose">${renderMarkdown(l.sinopse)}</div></div>` : ''}
+      ${l.notas ? `<div class="sec"><div class="sec-label">bastidores</div><div class="prose">${renderMarkdown(l.notas)}</div></div>` : ''}
+      <div class="outros">
+        <div class="sec-label">outros livros</div>
+        <div class="outros-grid">${(or_.data || []).filter(x => String(x.id) !== String(id)).slice(0, 12).map(x => {
+          const c = x.Cover || x.cover;
+          return `<a class="thumb" href="livro.html?id=${x.id}" title="${x.title || ''}">${c ? `<img src="${directusImg(c, 180)}" alt="${x.title || ''}" loading="lazy">` : ''}</a>`;
+        }).join('')}</div>
+      </div>`;
+  } catch(e) { box.innerHTML = '<div class="loading">erro ao carregar</div>'; }
 }
-
 init();
 </script>
-
 </body>
 </html>

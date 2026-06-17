@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sobre — Daniel Lameira</title>
+<style>
+@font-face { font-family: 'Neue Haas Grotesk'; font-weight: 400; font-style: normal; font-display: swap; src: url('fonts/NeueHaasDisplay-Roman.ttf') format('truetype'); }
+@font-face { font-family: 'Neue Haas Grotesk'; font-weight: 700; font-style: normal; font-display: swap; src: url('fonts/NeueHaasDisplay-Bold.ttf') format('truetype'); }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --f: 'Neue Haas Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+html, body { background: #fff; }
+body { color: #111; font-family: var(--f); -webkit-font-smoothing: antialiased; }
+
+.top { display: flex; align-items: center; gap: 16px; padding: 20px 28px 14px; flex-wrap: wrap; }
+.back { display: inline-flex; text-decoration: none; color: #111; line-height: 1; }
+.back svg { display: block; width: 28px; height: 22px; }
+.brand { font-weight: 700; font-size: 16px; letter-spacing: 0.04em; color: #111; text-decoration: none; white-space: nowrap; }
+.topnav { font-size: 15px; color: #111; }
+.topnav a { color: #111; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.topnav a:hover { color: #0000EE; }
+
+.wrap { max-width: 620px; margin: 0 auto; padding: 60px 28px 100px; }
+.face { width: 84px; height: auto; image-rendering: pixelated; display: block; margin-bottom: 28px; }
+.h1 { font-weight: 700; font-size: clamp(30px, 5vw, 46px); letter-spacing: 0.01em; margin-bottom: 24px; }
+.bio { font-size: 19px; line-height: 1.75; color: #1a1a1a; }
+.bio p { margin-bottom: 20px; }
+.contact { margin-top: 34px; font-size: 15px; }
+.contact a { color: #0000EE; text-decoration: underline; text-underline-offset: 2px; }
+.loading { font-size: 13px; letter-spacing: 0.1em; color: #aaa; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a class="back" href="index.html" aria-label="início">
+    <svg viewBox="0 0 34 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 4 L3 14 L13 24 M3 14 H32" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
+  <a class="brand" href="index.html">DANIEL LAMEIRA</a>
+  <nav class="topnav"><a href="galeria.html">livros</a>, <a href="textos.html">textos</a>, <a href="artes.html">artes</a> e <a href="sobre.html">sobre</a></nav>
+</header>
+
+<div class="wrap">
+  <img class="face" src="icons/sobre.png" alt="Daniel Lameira">
+  <h1 class="h1">Sobre</h1>
+  <div class="bio" id="bio"><span class="loading">carregando…</span></div>
+  <div class="contact" id="contact"></div>
+</div>
+
+<script>
+async function init() {
+  try {
+    const a = await fetch('content/settings/about.json').then(r => r.json());
+    const bio = (a.bio || '').split(/\n{2,}/).map(p => `<p>${p}</p>`).join('');
+    document.getElementById('bio').innerHTML = bio || '<p>—</p>';
+    const links = [];
+    if (a.email) links.push(`<a href="mailto:${a.email}">${a.email}</a>`);
+    if (a.instagram) links.push(`<a href="${a.instagram}" target="_blank" rel="noopener">instagram</a>`);
+    if (a.linkedin) links.push(`<a href="${a.linkedin}" target="_blank" rel="noopener">linkedin</a>`);
+    document.getElementById('contact').innerHTML = links.join(' · ');
+  } catch(e) {
+    document.getElementById('bio').innerHTML = '<p>—</p>';
+  }
+}
+init();
+</script>
+</body>
+</html>
