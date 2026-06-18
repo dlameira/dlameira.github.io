@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preload" href="fonts/NeueHaasDisplay-Roman.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="fonts/NeueHaasDisplay-Medium.ttf" as="font" type="font/ttf" crossorigin>
 <link rel="preload" href="fonts/NeueHaasDisplay-Bold.ttf" as="font" type="font/ttf" crossorigin>
 
 <title>Texto — Daniel Lameira</title>
@@ -13,6 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&display=swap" rel="stylesheet">
 <style>
 @font-face { font-family: 'Neue Haas Grotesk'; font-weight: 400; font-style: normal; font-display: block; src: url('fonts/NeueHaasDisplay-Roman.ttf') format('truetype'); }
+@font-face { font-family: 'Neue Haas Grotesk'; font-weight: 500; font-style: normal; font-display: block; src: url('fonts/NeueHaasDisplay-Medium.ttf') format('truetype'); }
 @font-face { font-family: 'Neue Haas Grotesk'; font-weight: 700; font-style: normal; font-display: block; src: url('fonts/NeueHaasDisplay-Bold.ttf') format('truetype'); }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root { --f: 'Neue Haas Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
@@ -21,9 +23,9 @@ body { color: #111; font-family: var(--f); -webkit-font-smoothing: antialiased; 
 
 .top { display: flex; align-items: center; gap: 16px; padding: 20px 28px 14px; flex-wrap: wrap; }
 .back { display: inline-flex; text-decoration: none; color: #111; line-height: 1; }
-.back svg { display: block; width: 28px; height: 22px; }
-.brand { font-weight: 700; font-size: 16px; letter-spacing: 0.04em; color: #111; text-decoration: none; white-space: nowrap; }
-.topnav { font-size: 15px; color: #111; }
+.back svg { display: block; width: 24px; height: 19px; }
+.brand { font-weight: 500; font-size: 16px; letter-spacing: 0.04em; color: #111; text-decoration: none; white-space: nowrap; }
+.topnav { font-weight: 500; font-size: 15px; color: #111; }
 .topnav a { color: #111; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
 .topnav a:hover { color: #0000EE; }
 
@@ -53,7 +55,7 @@ body { color: #111; font-family: var(--f); -webkit-font-smoothing: antialiased; 
 
 <header class="top">
   <a class="back" href="textos.html" aria-label="textos">
-    <svg viewBox="0 0 34 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 4 L3 14 L13 24 M3 14 H32" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg viewBox="0 0 34 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 4 L3 14 L13 24 M3 14 H32" stroke="#111" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </a>
   <a class="brand" href="index.html">DANIEL LAMEIRA</a>
   <nav class="topnav"><a href="livros.html">livros</a>, <a href="textos.html">textos</a>, <a href="artes.html">artes</a> e <a href="sobre.html">sobre</a></nav>
