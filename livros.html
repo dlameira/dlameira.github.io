@@ -229,9 +229,18 @@ function render(livros) {
 let allLivros = [];
 let currentEditora = null;
 
+// editoras de um livro, já normalizadas: separa co-edições (";" "/") e
+// remove o prefixo "Editora " pra unir duplicatas (Aleph / Editora Aleph)
+function editorasDe(livro) {
+  return (livro.editora || '')
+    .split(/\s*[;/]\s*/)
+    .map(e => e.trim().replace(/^editora\s+/i, '').trim())
+    .filter(Boolean);
+}
+
 function applyFilter() {
   const list = currentEditora
-    ? allLivros.filter(l => (l.editora || '').trim() === currentEditora)
+    ? allLivros.filter(l => editorasDe(l).includes(currentEditora))
     : allLivros;
   render(list);
 }
@@ -242,7 +251,7 @@ function buildFilter() {
   const menu = document.getElementById('filterMenu');
   const label = document.getElementById('filterLabel');
 
-  const editoras = [...new Set(allLivros.map(l => (l.editora || '').trim()).filter(Boolean))]
+  const editoras = [...new Set(allLivros.flatMap(editorasDe))]
     .sort((a, b) => a.localeCompare(b, 'pt', { sensitivity: 'base' }));
 
   // sem editoras cadastradas: nem mostra o filtro
