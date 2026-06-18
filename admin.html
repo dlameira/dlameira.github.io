@@ -1145,7 +1145,6 @@ function livrosFormNovo(item = null) {
             <div id="cover-preview">${item?.Cover ? `<img src="${directusImg(item.Cover, 240)}" id="cover-img">` : `<div class="cover-upload-text">Arraste a capa aqui</div>`}</div>
           </div>
           <input type="hidden" id="cover-id" value="${item?.Cover || ''}">
-          <input type="text" id="f-cover-url" placeholder="ou cole a URL de uma imagem de capa (substitui a atual)" style="margin-top:8px">
         </div>
         <div class="field">
           <label>TÍTULO *</label>
@@ -1307,12 +1306,6 @@ async function livrosSalvar(id) {
   if (fileInput.files[0] && !covId) {
     try { const f = await uploadFile(fileInput.files[0]); body.Cover = f.id; }
     catch(e) { toast('Erro no upload: ' + e.message, true); return; }
-  }
-  // capa por URL (baixada pelo servidor) — substitui a capa atual
-  const coverUrl = document.getElementById('f-cover-url')?.value.trim();
-  if (coverUrl) {
-    try { const f = await api('POST', '/files/import', { url: coverUrl }); body.Cover = f.data.id; }
-    catch(e) { toast('Erro ao importar capa da URL: ' + e.message, true); return; }
   }
   try {
     if (id) {
