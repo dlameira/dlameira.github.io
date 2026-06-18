@@ -68,7 +68,7 @@ async function init() {
     box.innerHTML = obras.map(o => {
       let media;
       if (o.image) media = `<img src="${img(o.image, 1200)}" alt="${o.title || ''}" loading="lazy">`;
-      else if (o.video) media = `<video src="${DIRECTUS}/assets/${o.video}" muted loop autoplay playsinline preload="auto"></video>`;
+      else if (o.video) media = `<video src="${DIRECTUS}/assets/${o.video}" controls playsinline preload="metadata"></video>`;
       else media = '';
       const meta = [o.type, o.year].filter(Boolean).join(' · ');
       return `<a class="item" href="obra.html?id=${o.id}">
