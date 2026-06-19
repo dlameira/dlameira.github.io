@@ -2022,6 +2022,12 @@ function diagRender() {
   stage.style.width = (diagRightUnits() * diagScale) + 'px';
   stage.innerHTML = diagObras.slice().sort((a, b) => a.layout_z - b.layout_z).map(diagPieceHTML).join('');
   stage.onpointerdown = diagPointerDown;
+  stage.querySelectorAll('.diag-piece').forEach(el => {
+    const id = +el.dataset.id, m = el.querySelector('img,video');
+    if (!m) return;
+    if (m.tagName === 'IMG') { m.complete ? diagFit(id) : (m.onload = () => diagFit(id)); }
+    else { m.readyState >= 1 ? diagFit(id) : (m.onloadedmetadata = () => diagFit(id)); }
+  });
   // roda do mouse vertical → rola na horizontal (igual à página)
   wrap.onwheel = (ev) => { if (Math.abs(ev.deltaY) > Math.abs(ev.deltaX)) { wrap.scrollLeft += ev.deltaY; ev.preventDefault(); } };
   diagRenderToolbar();
@@ -2031,7 +2037,7 @@ function diagRender() {
 function diagOnResize() { if (document.getElementById('diag-stage')) diagRender(); }
 
 function diagMediaHTML(o) {
-  const st = `width:100%;height:100%;object-fit:cover;object-position:${o.layout_posx}% ${o.layout_posy}%;display:block;pointer-events:none;user-select:none`;
+  const st = `width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;user-select:none`;
   if (o.image) return `<img src="${directusImg(o.image, 600)}" style="${st}" draggable="false" alt="">`;
   if (o.video) return `<video src="${DIRECTUS}/assets/${o.video}" style="${st}" muted playsinline preload="metadata"></video>`;
   return '';
@@ -2040,12 +2046,22 @@ function diagMediaHTML(o) {
 function diagPieceHTML(o) {
   const sel = o.id === diagSel;
   const x = o.layout_x * diagScale, y = o.layout_y * diagScale, w = o.layout_w * diagScale, h = o.layout_h * diagScale;
-  const outline = sel ? (diagCrop ? '2px dashed #ffd23f' : '2px solid var(--red)') : '1px solid rgba(255,255,255,0.15)';
+  const outline = sel ? '2px solid var(--red)' : '1px solid rgba(255,255,255,0.15)';
   return `
-    <div class="diag-piece" data-id="${o.id}" style="position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;z-index:${o.layout_z};outline:${outline};cursor:${sel && diagCrop ? 'move' : 'grab'};box-sizing:border-box;overflow:hidden;background:#111;touch-action:none">
+    <div class="diag-piece" data-id="${o.id}" style="position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;z-index:${o.layout_z};outline:${outline};cursor:grab;box-sizing:border-box;overflow:hidden;background:transparent;touch-action:none">
       ${diagMediaHTML(o)}
-      ${sel ? `<div class="diag-handle" data-handle="se" style="position:absolute;right:-7px;bottom:-7px;width:14px;height:14px;background:${diagCrop ? '#ffd23f' : 'var(--red)'};border:2px solid #fff;border-radius:50%;cursor:nwse-resize;z-index:9999"></div>` : ''}
+      ${sel ? `<div class="diag-handle" data-handle="se" style="position:absolute;right:-7px;bottom:-7px;width:14px;height:14px;background:var(--red);border:2px solid #fff;border-radius:50%;cursor:nwse-resize;z-index:9999"></div>` : ''}
     </div>`;
+}
+
+// ajusta a largura do quadro à proporção real da mídia (imagem nunca cortada)
+function diagFit(id) {
+  const o = diagObras.find(x => x.id === id); if (!o) return;
+  const m = document.querySelector(`.diag-piece[data-id="${id}"] img, .diag-piece[data-id="${id}"] video`);
+  const W = m && (m.naturalWidth || m.videoWidth), H = m && (m.naturalHeight || m.videoHeight);
+  if (!W || !H) return;
+  o.layout_w = o.layout_h * (W / H);
+  diagApplyPiece(o);
 }
 
 function diagRenderToolbar() {
@@ -2056,10 +2072,7 @@ function diagRenderToolbar() {
   tb.innerHTML = `
     <span style="font-size:12px;margin-right:4px;font-weight:600">${esc(o.title || '(sem título)')}</span>
     <button class="btn btn-ghost btn-sm" onclick="diagZ(1)">↥ frente</button>
-    <button class="btn btn-ghost btn-sm" onclick="diagZ(-1)">↧ trás</button>
-    <button class="btn btn-sm ${diagCrop ? 'btn-primary' : 'btn-ghost'}" onclick="diagToggleCrop()">✂ recortar${diagCrop ? ' (ON)' : ''}</button>
-    <button class="btn btn-ghost btn-sm" onclick="diagResetFrame()">↺ proporção original</button>
-    ${diagCrop ? `<span style="font-size:11px;color:var(--fg2)">modo recorte: a alça muda o quadro · arraste a imagem pra reposicionar</span>` : ''}`;
+    <button class="btn btn-ghost btn-sm" onclick="diagZ(-1)">↧ trás</button>`;
 }
 
 function diagPointerDown(e) {
@@ -2069,8 +2082,8 @@ function diagPointerDown(e) {
   const id = +piece.dataset.id;
   if (id !== diagSel) { diagSel = id; diagCrop = false; diagRender(); }
   const o = diagObras.find(x => x.id === diagSel);
-  const mode = handle ? 'resize' : (diagCrop ? 'pan' : 'move');
-  _diagDrag = { mode, crop: diagCrop, id, sx: e.clientX, sy: e.clientY, ox: o.layout_x, oy: o.layout_y, ow: o.layout_w, oh: o.layout_h, opx: o.layout_posx, opy: o.layout_posy };
+  const mode = handle ? 'resize' : 'move';
+  _diagDrag = { mode, id, sx: e.clientX, sy: e.clientY, ox: o.layout_x, oy: o.layout_y, ow: o.layout_w, oh: o.layout_h };
   window.addEventListener('pointermove', diagPointerMove);
   window.addEventListener('pointerup', diagPointerUp, { once: true });
   e.preventDefault();
@@ -2084,19 +2097,12 @@ function diagPointerMove(e) {
   if (_diagDrag.mode === 'move') {
     o.layout_x = Math.max(0, _diagDrag.ox + du);                       // livre pra direita (cresce o palco)
     o.layout_y = Math.max(0, Math.min(100 - o.layout_h, _diagDrag.oy + dv));
-  } else if (_diagDrag.mode === 'resize') {
-    if (_diagDrag.crop) {                                              // recorte: muda o quadro livremente
-      o.layout_w = Math.max(5, _diagDrag.ow + du);
-      o.layout_h = Math.max(5, _diagDrag.oh + dv);
-    } else {                                                           // normal: proporcional (mantém aspecto)
-      const aspect = _diagDrag.oh / _diagDrag.ow;
-      const nw = Math.max(5, _diagDrag.ow + du);
-      o.layout_w = nw; o.layout_h = nw * aspect;
-    }
-  } else if (_diagDrag.mode === 'pan') {                              // reposiciona a imagem dentro do quadro
-    const fw = o.layout_w * diagScale, fh = o.layout_h * diagScale;
-    o.layout_posx = Math.max(0, Math.min(100, _diagDrag.opx - (e.clientX - _diagDrag.sx) / fw * 100));
-    o.layout_posy = Math.max(0, Math.min(100, _diagDrag.opy - (e.clientY - _diagDrag.sy) / fh * 100));
+  } else if (_diagDrag.mode === 'resize') {                            // proporcional: largura puxa, altura segue a proporção da imagem
+    const m = document.querySelector(`.diag-piece[data-id="${o.id}"] img, .diag-piece[data-id="${o.id}"] video`);
+    const W = (m && (m.naturalWidth || m.videoWidth)) || _diagDrag.ow;
+    const H = (m && (m.naturalHeight || m.videoHeight)) || _diagDrag.oh;
+    const nw = Math.max(5, _diagDrag.ow + du);
+    o.layout_w = nw; o.layout_h = nw * (H / W);
   }
   diagApplyPiece(o);
   diagDirty = true; diagUpdateStatus();
@@ -2124,18 +2130,6 @@ function diagZ(dir) {
   const o = diagObras.find(x => x.id === diagSel); if (!o) return;
   const zs = diagObras.map(x => x.layout_z);
   o.layout_z = dir > 0 ? Math.max(...zs) + 1 : Math.min(...zs) - 1;
-  diagDirty = true; diagRender();
-}
-
-function diagToggleCrop() { diagCrop = !diagCrop; diagRender(); }
-
-function diagResetFrame() {
-  const o = diagObras.find(x => x.id === diagSel); if (!o) return;
-  const m = document.querySelector(`.diag-piece[data-id="${o.id}"] img, .diag-piece[data-id="${o.id}"] video`);
-  let ar = 1;
-  if (m && m.naturalWidth) ar = m.naturalHeight / m.naturalWidth;
-  else if (m && m.videoWidth) ar = m.videoHeight / m.videoWidth;
-  o.layout_h = o.layout_w * ar; o.layout_posx = 50; o.layout_posy = 50;
   diagDirty = true; diagRender();
 }
 
