@@ -1624,18 +1624,28 @@ function onOrdDragEnd() {
   document.querySelectorAll('.ord-card').forEach(el => { el.style.opacity = ''; el.style.outline = ''; });
 }
 
-// auto-scroll ao arrastar perto das bordas da janela
+// auto-scroll ao arrastar perto do topo/base da janela
 let _ordScrollRAF = null;
 let _ordPointerY = 0;
+let _ordZoneSince = 0;     // timestamp de quando o cursor entrou na zona de borda (0 = fora)
 function _ordTrackPointer(e) { if (e.clientY > 0) _ordPointerY = e.clientY; }
-function _ordAutoScrollTick() {
-  const edge = 110;       // zona sensível (px) no topo e na base
-  const maxSpeed = 24;    // px por frame no limite da borda
+function _ordAutoScrollTick(ts) {
+  const edge = 180;        // zona sensível (px): pega a 1ª/última fileira visível, não só a borda extrema
+  const dwell = 700;       // ms parado na zona antes de começar a rolar
+  const maxSpeed = 28;     // px por frame no limite da borda
   const vh = window.innerHeight;
-  let dy = 0;
-  if (_ordPointerY > 0 && _ordPointerY < edge)        dy = -maxSpeed * (1 - _ordPointerY / edge);
-  else if (_ordPointerY > vh - edge && _ordPointerY <= vh) dy =  maxSpeed * (1 - (vh - _ordPointerY) / edge);
-  if (dy) window.scrollBy(0, dy);
+  const y = _ordPointerY;
+  let dir = 0, intensity = 0;
+  if (y > 0 && y < edge)              { dir = -1; intensity = 1 - y / edge; }
+  else if (y > vh - edge && y <= vh)  { dir =  1; intensity = 1 - (vh - y) / edge; }
+  if (dir) {
+    if (!_ordZoneSince) _ordZoneSince = ts;          // entrou na zona: começa a contar
+    if (ts - _ordZoneSince > dwell) {                // passou a espera: rola (acelera perto da borda)
+      window.scrollBy(0, dir * maxSpeed * (0.3 + 0.7 * intensity));
+    }
+  } else {
+    _ordZoneSince = 0;                               // saiu da zona: zera a espera
+  }
   _ordScrollRAF = requestAnimationFrame(_ordAutoScrollTick);
 }
 function _ordStartAutoScroll() {
@@ -1643,11 +1653,13 @@ function _ordStartAutoScroll() {
   // confiável que 'dragover', que não cobre áreas fora da grade)
   document.addEventListener('drag', _ordTrackPointer);
   document.addEventListener('dragover', _ordTrackPointer);
+  _ordZoneSince = 0;
   if (!_ordScrollRAF) _ordScrollRAF = requestAnimationFrame(_ordAutoScrollTick);
 }
 function _ordStopAutoScroll() {
   document.removeEventListener('drag', _ordTrackPointer);
   document.removeEventListener('dragover', _ordTrackPointer);
+  _ordZoneSince = 0;
   if (_ordScrollRAF) { cancelAnimationFrame(_ordScrollRAF); _ordScrollRAF = null; }
 }
 
