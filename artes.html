@@ -84,8 +84,10 @@ function layout() {
   const sh = wrap.clientHeight;
   const scale = sh / 100;
   stage.style.height = sh + 'px';
-  const right = Math.max(0, ..._obras.map(o => (o.layout_x || 0) + (o.layout_w || 0)));
-  const trail = Math.max(80, sh * 0.35);   // espaço preto no final, pra última obra não colar na borda
+  // folga final = o suficiente pra ÚLTIMA obra ficar centralizada quando rola até o fim
+  let right = 0, lastW = 0;
+  _obras.forEach(o => { const r = (o.layout_x || 0) + (o.layout_w || 0); if (r > right) { right = r; lastW = (o.layout_w || 0); } });
+  const trail = Math.max(40, (wrap.clientWidth - lastW * scale) / 2);
   stage.style.width = (right * scale + trail) + 'px';
   stage.innerHTML = _obras.slice().sort((a, b) => (a.layout_z || 1) - (b.layout_z || 1)).map(o => {
     const x = (o.layout_x ?? 5) * scale, y = (o.layout_y ?? 5) * scale;
@@ -117,10 +119,10 @@ function layout() {
 // expande o palco para o extremo direito de qualquer peça (após o fit ajustar larguras)
 function fitStage() {
   const stage = document.getElementById('stage');
-  const sh = document.getElementById('stage-wrap').clientHeight;
-  let right = 0;
-  stage.querySelectorAll('.art-wrap').forEach(el => { right = Math.max(right, el.offsetLeft + el.offsetWidth); });
-  if (right) stage.style.width = (right + Math.max(80, sh * 0.35)) + 'px';   // mesma folga final do layout()
+  const vw = document.getElementById('stage-wrap').clientWidth;
+  let right = 0, lastW = 0;
+  stage.querySelectorAll('.art-wrap').forEach(el => { const r = el.offsetLeft + el.offsetWidth; if (r > right) { right = r; lastW = el.offsetWidth; } });
+  if (right) stage.style.width = (right + Math.max(40, (vw - lastW) / 2)) + 'px';   // folga = última obra centralizada no fim
 }
 
 function openLB(o) {
