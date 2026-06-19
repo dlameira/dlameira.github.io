@@ -96,17 +96,6 @@ body {
 .filter-menu button:hover { background: #f3f3f3; }
 .filter-menu button.active { font-weight: 700; }
 .filter-menu .sep { height: 1px; background: #e6e6e6; margin: 7px 0; }
-
-/* caixinha de check (direção de arte) */
-.da-box {
-  width: 13px; height: 13px; border: 1.5px solid #c2c2c2; border-radius: 3px;
-  display: inline-block; position: relative; transition: all 0.15s ease; flex: none;
-}
-.filter-menu button[aria-pressed="true"] .da-box { background: #111; border-color: #111; }
-.filter-menu button[aria-pressed="true"] .da-box::after {
-  content: ''; position: absolute; left: 3.5px; top: 0.5px;
-  width: 3px; height: 7px; border: solid #fff; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg);
-}
 @media (max-width: 600px) { .filter { margin-left: 0; } }
 
 /* GRID */
@@ -282,11 +271,10 @@ function buildFilter() {
   menu.appendChild(group('direção de arte'));
   const daBtn = document.createElement('button');
   daBtn.type = 'button';
-  daBtn.setAttribute('aria-pressed', 'false');
-  daBtn.innerHTML = '<span class="da-box"></span><span>com a minha direção de arte</span>';
+  daBtn.innerHTML = '<span>com a minha direção de arte</span>';
   daBtn.addEventListener('click', () => {
     onlyDA = !onlyDA;
-    daBtn.setAttribute('aria-pressed', onlyDA ? 'true' : 'false');
+    daBtn.classList.toggle('active', onlyDA);
     syncBtn();
     applyFilter();   // toggle: mantém o menu aberto
   });
