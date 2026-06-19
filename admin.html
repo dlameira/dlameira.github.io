@@ -2013,7 +2013,8 @@ function diagRender() {
       <div id="diag-stage" style="position:relative;margin:0 auto;background:#fff"></div>
     </div>`;
   const wrap = document.getElementById('diag-stage-wrap');
-  const stageW = Math.min(wrap.clientWidth - 2, DIAG_MAXW);
+  let stageW = Math.min(wrap.clientWidth - 2, DIAG_MAXW);
+  if (!(stageW > 200)) stageW = Math.min(DIAG_MAXW, (document.documentElement.clientWidth || 1000) - 240);
   diagScale = stageW / 100;
   const stage = document.getElementById('diag-stage');
   stage.style.width = stageW + 'px';
