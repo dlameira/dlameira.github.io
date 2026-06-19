@@ -1568,20 +1568,20 @@ function renderOrdenarGrid() {
       <button class="btn btn-ghost" onclick="livrosOrdenar()">↺ DESCARTAR</button>
       <span style="font-size:11px;color:var(--fg2)">Arraste as capas para reordenar — a posição 1 aparece primeiro na galeria. ${ordenarData.length} livros publicados.</span>
     </div>
-    <div id="ord-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px"></div>`;
+    <div id="ord-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:0;border-top:1px solid rgba(17,17,17,0.12);border-left:1px solid rgba(17,17,17,0.12)"></div>`;
   const grid = document.getElementById('ord-grid');
   ordenarData.forEach((l, i) => {
     const card = document.createElement('div');
     card.className = 'ord-card';
     card.draggable = true;
     card.dataset.id = l.id;
-    card.style.cssText = 'position:relative;cursor:grab;border:1px solid rgba(17,17,17,0.1);background:var(--bg2);border-radius:2px;overflow:hidden';
+    card.title = l.title || '';
+    card.style.cssText = 'position:relative;cursor:grab;border-right:1px solid rgba(17,17,17,0.12);border-bottom:1px solid rgba(17,17,17,0.12);background:#fff;overflow:hidden;aspect-ratio:1/1.04;display:flex;align-items:center;justify-content:center;padding:6px';
     card.innerHTML = `
-      <div style="position:absolute;top:3px;left:3px;background:rgba(10,10,8,0.82);color:var(--yellow);font-size:10px;padding:1px 5px;border-radius:2px;z-index:2;pointer-events:none">${i + 1}</div>
+      <div style="position:absolute;top:4px;left:4px;background:rgba(10,10,8,0.82);color:var(--yellow);font-size:10px;padding:1px 5px;border-radius:2px;z-index:2;pointer-events:none">${i + 1}</div>
       ${l.Cover
-        ? `<img src="${directusImg(l.Cover, 200)}" style="width:100%;aspect-ratio:2/3;object-fit:cover;display:block;pointer-events:none" alt="">`
-        : `<div style="aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;color:var(--fg2);font-size:9px">sem capa</div>`}
-      <div style="padding:5px 6px;font-size:9px;line-height:1.3;color:var(--fg2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none">${esc(l.title || '')}</div>`;
+        ? `<img src="${directusImg(l.Cover, 240)}" style="max-width:84%;max-height:76%;object-fit:contain;display:block;pointer-events:none" alt="">`
+        : `<div style="color:var(--fg2);font-size:9px;pointer-events:none">sem capa</div>`}`;
     grid.appendChild(card);
   });
   grid.addEventListener('dragstart', onOrdDragStart);
