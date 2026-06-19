@@ -1068,6 +1068,7 @@ async function renderLivros() {
       <div class="tab active" id="tab-livros-lista" onclick="livrosTab('lista')">LISTA</div>
       <div class="tab" id="tab-livros-ordenar" onclick="livrosTab('ordenar')">↕ ORDENAR</div>
       <div class="tab" id="tab-livros-tamanhos" onclick="livrosTab('tamanhos')">📐 TAMANHOS</div>
+      <div class="tab" id="tab-livros-direcao" onclick="livrosTab('direcao')">✓ DIREÇÃO DE ARTE</div>
       <div class="tab" id="tab-livros-novo" onclick="livrosTab('novo')">+ NOVO</div>
       <div class="tab" id="tab-livros-importar" onclick="livrosTab('importar')">⇩ IMPORTAR</div>
       <div class="tab" id="tab-livros-bulk" onclick="livrosTab('bulk')">⬆ BULK</div>
@@ -1082,6 +1083,7 @@ function livrosTab(tab) {
   if (tab === 'lista') livrosCarregarLista();
   else if (tab === 'ordenar') livrosOrdenar();
   else if (tab === 'tamanhos') livrosFormatos();
+  else if (tab === 'direcao') livrosDirecaoArte();
   else if (tab === 'novo') livrosFormNovo();
   else if (tab === 'importar') livrosImportar();
   else if (tab === 'bulk') livrosBulk();
@@ -1130,6 +1132,100 @@ async function livrosCarregarLista() {
       </table>`;
   } catch(e) {
     panel.innerHTML = `<div class="empty"><div class="empty-icon">⚠</div><h3>Erro</h3><p>${e.message}</p></div>`;
+  }
+}
+
+// ── DIREÇÃO DE ARTE (marcação em massa) ─────────────────────────────────────────
+let daData = [];
+let daQuery = '';
+let daMode = 'todos';
+
+async function livrosDirecaoArte() {
+  const panel = document.getElementById('livros-panel');
+  panel.innerHTML = '<div class="loading"><span class="spinner"></span>CARREGANDO…</div>';
+  try {
+    const res = await api('GET', '/items/livros?limit=-1&fields=id,title,autor,ano,Cover,direcao_arte');
+    daData = (res.data || []).sort((a, b) => (a.title || '').localeCompare(b.title || '', 'pt', { sensitivity: 'base' }));
+    daQuery = ''; daMode = 'todos';
+    renderDaPanel();
+  } catch (e) {
+    panel.innerHTML = `<div class="empty"><div class="empty-icon">⚠</div><h3>Erro</h3><p>${e.message}</p></div>`;
+  }
+}
+
+function renderDaPanel() {
+  const panel = document.getElementById('livros-panel');
+  panel.innerHTML = `
+    <p style="font-size:11px;color:var(--fg2);margin-bottom:14px">Marque os livros cuja <strong>capa / direção de arte</strong> foi sua. Salva automaticamente a cada clique.</p>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+      <input type="text" id="da-search" placeholder="buscar por título ou autor…" oninput="daFilter()" style="flex:1;min-width:220px">
+      <button class="btn btn-sm btn-primary da-mode" data-mode="todos" onclick="daSetMode('todos')">TODOS</button>
+      <button class="btn btn-sm btn-ghost da-mode" data-mode="sim" onclick="daSetMode('sim')">✓ DIRIGI</button>
+      <button class="btn btn-sm btn-ghost da-mode" data-mode="nao" onclick="daSetMode('nao')">NÃO DIRIGI</button>
+      <span id="da-counter" style="font-size:11px;color:var(--fg2)"></span>
+    </div>
+    <table class="items-table">
+      <thead><tr>
+        <th style="width:80px">DIRIGI?</th>
+        <th style="width:50px">CAPA</th>
+        <th>TÍTULO</th>
+        <th>AUTOR</th>
+        <th style="width:60px">ANO</th>
+      </tr></thead>
+      <tbody id="da-tbody"></tbody>
+    </table>`;
+  daRenderRows();
+  daUpdateCounter();
+}
+
+function daRenderRows() {
+  const q = daQuery.trim().toLowerCase();
+  const rows = daData.filter(l => {
+    if (daMode === 'sim' && l.direcao_arte !== true) return false;
+    if (daMode === 'nao' && l.direcao_arte === true) return false;
+    if (q && !((l.title || '') + ' ' + (l.autor || '')).toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const tb = document.getElementById('da-tbody');
+  tb.innerHTML = rows.map(l => `
+    <tr>
+      <td><div class="toggle ${l.direcao_arte === true ? 'on' : ''}" onclick="daToggle(${l.id}, this)" title="marcar/desmarcar"></div></td>
+      <td>${l.Cover ? `<img class="item-thumb" src="${directusImg(l.Cover, 80)}" alt="">` : `<div class="item-thumb" style="background:var(--bg3)"></div>`}</td>
+      <td>${esc(l.title || '—')}</td>
+      <td style="color:var(--fg2)">${esc(l.autor || '—')}</td>
+      <td style="color:var(--fg2)">${l.ano || '—'}</td>
+    </tr>`).join('') || `<tr><td colspan="5" style="padding:24px;text-align:center;color:var(--fg2)">nada encontrado</td></tr>`;
+}
+
+function daFilter() { daQuery = document.getElementById('da-search').value; daRenderRows(); }
+
+function daSetMode(m) {
+  daMode = m;
+  document.querySelectorAll('.da-mode').forEach(b => {
+    b.className = 'btn btn-sm da-mode ' + (b.dataset.mode === m ? 'btn-primary' : 'btn-ghost');
+  });
+  daRenderRows();
+}
+
+function daUpdateCounter() {
+  const sim = daData.filter(l => l.direcao_arte === true).length;
+  const c = document.getElementById('da-counter');
+  if (c) c.textContent = `${sim} de ${daData.length} com a sua direção de arte`;
+}
+
+async function daToggle(id, el) {
+  const novo = !el.classList.contains('on');
+  const item = daData.find(x => x.id === id);
+  el.classList.toggle('on', novo);          // otimista
+  if (item) item.direcao_arte = novo;
+  daUpdateCounter();
+  try {
+    await api('PATCH', `/items/livros/${id}`, { direcao_arte: novo });
+  } catch (e) {
+    el.classList.toggle('on', !novo);       // reverte em caso de erro
+    if (item) item.direcao_arte = !novo;
+    daUpdateCounter();
+    toast('Erro ao salvar: ' + e.message, true);
   }
 }
 
