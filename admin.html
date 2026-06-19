@@ -2051,9 +2051,13 @@ function diagRender() {
     </div>`;
   const wrap = document.getElementById('diag-stage-wrap');
   // ocupa toda a altura restante do navegador — sem scroll vertical
-  const top = wrap.getBoundingClientRect().top;
-  const stageH = Math.max(240, Math.round((window.innerHeight || 800) - top - 12));
+  const rect = wrap.getBoundingClientRect();
+  const stageH = Math.max(240, Math.round((window.innerHeight || 800) - rect.top - 12));
   wrap.style.height = stageH + 'px';
+  // trava a LARGURA visível à área da viewport — senão o flex (#content) estica p/ caber o palco
+  // largo e o overflow-x:hidden do body engole o scroll. assim o overflow-x:auto interno funciona.
+  const availW = Math.max(320, Math.floor((document.documentElement.clientWidth || 1200) - rect.left - 16));
+  wrap.style.width = availW + 'px';
   diagScale = stageH / 100;
   const stage = document.getElementById('diag-stage');
   stage.style.width = (diagRightUnits() * diagScale) + 'px';
@@ -2130,35 +2134,56 @@ function diagPointerDown(e) {
   if (id !== diagSel) { diagSel = id; diagCrop = false; diagRender(); }
   const o = diagObras.find(x => x.id === diagSel);
   const mode = handle ? 'resize' : 'move';
-  _diagDrag = { mode, id, sx: e.clientX, sy: e.clientY, ox: o.layout_x, oy: o.layout_y, ow: o.layout_w, oh: o.layout_h };
+  const wrap = document.getElementById('diag-stage-wrap');
+  _diagDrag = { mode, id, sx: e.clientX, sy: e.clientY, ox: o.layout_x, oy: o.layout_y, ow: o.layout_w, oh: o.layout_h,
+                wrap, sl: wrap ? wrap.scrollLeft : 0, lx: e.clientX, ly: e.clientY, raf: 0 };
   window.addEventListener('pointermove', diagPointerMove);
   window.addEventListener('pointerup', diagPointerUp, { once: true });
+  _diagDrag.raf = requestAnimationFrame(diagDragTick);   // loop: auto-scroll nas bordas + aplica
   e.preventDefault();
 }
 
 function diagPointerMove(e) {
   if (!_diagDrag) return;
-  const o = diagObras.find(x => x.id === _diagDrag.id);
-  const du = (e.clientX - _diagDrag.sx) / diagScale;
-  const dv = (e.clientY - _diagDrag.sy) / diagScale;
-  if (_diagDrag.mode === 'move') {
-    o.layout_x = Math.max(0, _diagDrag.ox + du);                       // livre pra direita (cresce o palco)
-    o.layout_y = Math.max(0, Math.min(100 - o.layout_h, _diagDrag.oy + dv));
-  } else if (_diagDrag.mode === 'resize') {                            // proporcional: largura puxa, altura segue a proporção da imagem
+  _diagDrag.lx = e.clientX; _diagDrag.ly = e.clientY;
+  diagDragApply();
+}
+
+// loop por frame: enquanto arrasta perto da borda, rola o palco; e reaplica a posição
+function diagDragTick() {
+  const d = _diagDrag; if (!d) return;
+  if (d.wrap && d.mode === 'move') {
+    const r = d.wrap.getBoundingClientRect(), edge = 80, speed = 20;
+    if (d.lx > r.right - edge) d.wrap.scrollLeft += speed;            // arrastando pra direita → canvas acompanha
+    else if (d.lx < r.left + edge) d.wrap.scrollLeft = Math.max(0, d.wrap.scrollLeft - speed);
+  }
+  diagDragApply();
+  d.raf = requestAnimationFrame(diagDragTick);
+}
+
+function diagDragApply() {
+  const d = _diagDrag; if (!d) return;
+  const o = diagObras.find(x => x.id === d.id);
+  const scrollDelta = d.wrap ? (d.wrap.scrollLeft - d.sl) : 0;        // peça segue o conteúdo quando o canvas rola
+  if (d.mode === 'move') {
+    const du = ((d.lx - d.sx) + scrollDelta) / diagScale;
+    const dv = (d.ly - d.sy) / diagScale;
+    o.layout_x = Math.max(0, d.ox + du);                             // livre pra direita (cresce o palco)
+    o.layout_y = Math.max(0, Math.min(100 - o.layout_h, d.oy + dv));
+  } else if (d.mode === 'resize') {                                  // proporcional: largura puxa, altura segue a proporção
     let ar = o._ar;
     if (!ar) {
       const m = document.querySelector(`.diag-piece[data-id="${o.id}"] img, .diag-piece[data-id="${o.id}"] video`);
-      const W = (m && (m.naturalWidth || m.videoWidth)) || _diagDrag.ow;
-      const H = (m && (m.naturalHeight || m.videoHeight)) || _diagDrag.oh;
+      const W = (m && (m.naturalWidth || m.videoWidth)) || d.ow;
+      const H = (m && (m.naturalHeight || m.videoHeight)) || d.oh;
       ar = W / H;
     }
-    const nw = Math.max(5, _diagDrag.ow + du);
+    const nw = Math.max(5, d.ow + (d.lx - d.sx) / diagScale);
     o.layout_w = nw; o.layout_h = nw / ar;
   }
   diagApplyPiece(o);
   diagDirty = true; diagUpdateStatus();
-  const stage = document.getElementById('diag-stage');
-  if (stage) stage.style.width = (diagRightUnits() * diagScale) + 'px';
+  diagUpdateStageWidth();
 }
 
 function diagApplyPiece(o) {
@@ -2173,6 +2198,7 @@ function diagApplyPiece(o) {
 }
 
 function diagPointerUp() {
+  if (_diagDrag && _diagDrag.raf) cancelAnimationFrame(_diagDrag.raf);
   _diagDrag = null;
   window.removeEventListener('pointermove', diagPointerMove);
 }
