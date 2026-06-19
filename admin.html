@@ -1937,6 +1937,7 @@ async function renderObras() {
   content.innerHTML = `
     <div class="tabs">
       <div class="tab active" id="tab-obras-lista" onclick="obrasTab('lista')">LISTA</div>
+      <div class="tab" id="tab-obras-diagramar" onclick="obrasTab('diagramar')">🎨 DIAGRAMAR</div>
       <div class="tab" id="tab-obras-novo" onclick="obrasTab('novo')">+ NOVO</div>
       <div class="tab" id="tab-obras-bulk" onclick="obrasTab('bulk')">⬆ BULK</div>
     </div>
@@ -1948,9 +1949,204 @@ function obrasTab(tab) {
   document.querySelectorAll('[id^="tab-obras-"]').forEach(t => t.classList.remove('active'));
   document.getElementById(`tab-obras-${tab}`).classList.add('active');
   if (tab === 'lista') obrasCarregarLista();
+  else if (tab === 'diagramar') obrasDiagramar();
   else if (tab === 'novo') obrasFormNovo();
   else if (tab === 'bulk') obrasBulk();
 }
+
+// ── DIAGRAMAR (canvas livre de artes) ───────────────────────────────────────────
+// coordenadas em "unidades" = % da largura da tela (x,y,w,h); object-position em %.
+let diagObras = [];
+let diagSel = null;
+let diagCrop = false;     // modo enquadrar: arrastar a imagem dentro do quadro
+let diagDirty = false;
+let diagScale = 1;        // px por unidade
+let _diagDrag = null;
+const DIAG_MAXW = 980;
+
+async function obrasDiagramar() {
+  const panel = document.getElementById('obras-panel');
+  panel.innerHTML = '<div class="loading"><span class="spinner"></span>CARREGANDO…</div>';
+  try {
+    const res = await api('GET', '/items/obras?limit=-1&fields=id,title,type,year,image,video,layout_x,layout_y,layout_w,layout_h,layout_z,layout_posx,layout_posy');
+    diagObras = (res.data || []).filter(o => o.image || o.video).map(o => ({
+      id: o.id, title: o.title, type: o.type, image: o.image, video: o.video,
+      layout_x: o.layout_x ?? 5, layout_y: o.layout_y ?? 5,
+      layout_w: o.layout_w ?? 30, layout_h: o.layout_h ?? 30,
+      layout_z: o.layout_z ?? 1,
+      layout_posx: o.layout_posx ?? 50, layout_posy: o.layout_posy ?? 50,
+    }));
+    diagSel = null; diagCrop = false; diagDirty = false;
+    if (diagObras.length && diagObras.every(o => o.layout_x === 5 && o.layout_y === 5)) diagAutoArrange();
+    diagRender();
+  } catch (e) {
+    panel.innerHTML = `<div class="empty"><div class="empty-icon">⚠</div><h3>Erro</h3><p>${e.message}</p></div>`;
+  }
+}
+
+function diagAutoArrange() {
+  const cols = 3, gap = 4, colW = (100 - gap * (cols + 1)) / cols;
+  diagObras.forEach((o, i) => {
+    const c = i % cols, r = Math.floor(i / cols);
+    o.layout_w = colW; o.layout_h = colW;
+    o.layout_x = gap + c * (colW + gap);
+    o.layout_y = gap + r * (colW + gap);
+    o.layout_z = 1; o.layout_posx = 50; o.layout_posy = 50;
+  });
+  diagDirty = true;
+}
+
+function diagBottomUnits() {
+  return Math.max(120, ...diagObras.map(o => o.layout_y + o.layout_h)) + 12;
+}
+
+function diagRender() {
+  const panel = document.getElementById('obras-panel');
+  panel.innerHTML = `
+    <div style="position:sticky;top:60px;background:var(--bg);z-index:20;padding:8px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid rgba(17,17,17,0.06);margin-bottom:12px">
+      <button class="btn btn-yellow btn-sm" id="diag-save" onclick="diagSalvar()">SALVAR LAYOUT</button>
+      <button class="btn btn-ghost btn-sm" onclick="obrasDiagramar()">↺ DESCARTAR</button>
+      <span style="font-size:11px;color:var(--fg2)">Arraste pra mover · alça ↘ redimensiona · selecione e use os botões.<span id="diag-status" style="color:var(--yellow)"></span></span>
+    </div>
+    <div id="diag-toolbar" style="min-height:30px;margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap"></div>
+    <div id="diag-stage-wrap" style="overflow:auto;background:#fafafa;border:1px solid rgba(17,17,17,0.12);max-height:72vh">
+      <div id="diag-stage" style="position:relative;margin:0 auto;background:#fff"></div>
+    </div>`;
+  const wrap = document.getElementById('diag-stage-wrap');
+  const stageW = Math.min(wrap.clientWidth - 2, DIAG_MAXW);
+  diagScale = stageW / 100;
+  const stage = document.getElementById('diag-stage');
+  stage.style.width = stageW + 'px';
+  stage.style.height = (diagBottomUnits() * diagScale) + 'px';
+  stage.innerHTML = diagObras.slice().sort((a, b) => a.layout_z - b.layout_z).map(diagPieceHTML).join('');
+  stage.onpointerdown = diagPointerDown;
+  diagRenderToolbar();
+  diagUpdateStatus();
+}
+
+function diagMediaHTML(o) {
+  const st = `width:100%;height:100%;object-fit:cover;object-position:${o.layout_posx}% ${o.layout_posy}%;display:block;pointer-events:none;user-select:none`;
+  if (o.image) return `<img src="${directusImg(o.image, 600)}" style="${st}" draggable="false" alt="">`;
+  if (o.video) return `<video src="${DIRECTUS}/assets/${o.video}" style="${st}" muted playsinline preload="metadata"></video>`;
+  return '';
+}
+
+function diagPieceHTML(o) {
+  const sel = o.id === diagSel;
+  const x = o.layout_x * diagScale, y = o.layout_y * diagScale, w = o.layout_w * diagScale, h = o.layout_h * diagScale;
+  return `
+    <div class="diag-piece" data-id="${o.id}" style="position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;z-index:${o.layout_z};outline:${sel ? '2px solid var(--red)' : '1px solid rgba(17,17,17,0.10)'};cursor:${sel && diagCrop ? 'move' : 'grab'};box-sizing:border-box;overflow:hidden;background:#f4f4f2;touch-action:none">
+      ${diagMediaHTML(o)}
+      ${sel ? `<div class="diag-handle" data-handle="se" style="position:absolute;right:-7px;bottom:-7px;width:14px;height:14px;background:var(--red);border:2px solid #fff;border-radius:50%;cursor:nwse-resize;z-index:9999"></div>` : ''}
+    </div>`;
+}
+
+function diagRenderToolbar() {
+  const tb = document.getElementById('diag-toolbar');
+  if (!tb) return;
+  if (!diagSel) { tb.innerHTML = `<span style="font-size:11px;color:var(--fg2)">nenhuma obra selecionada — clique numa</span>`; return; }
+  const o = diagObras.find(x => x.id === diagSel);
+  tb.innerHTML = `
+    <span style="font-size:12px;margin-right:4px;font-weight:600">${esc(o.title || '(sem título)')}</span>
+    <button class="btn btn-ghost btn-sm" onclick="diagZ(1)">↥ frente</button>
+    <button class="btn btn-ghost btn-sm" onclick="diagZ(-1)">↧ trás</button>
+    <button class="btn btn-sm ${diagCrop ? 'btn-primary' : 'btn-ghost'}" onclick="diagToggleCrop()">✛ enquadrar${diagCrop ? ' (ON)' : ''}</button>
+    <button class="btn btn-ghost btn-sm" onclick="diagResetFrame()">↺ proporção original</button>`;
+}
+
+function diagPointerDown(e) {
+  const handle = e.target.closest('.diag-handle');
+  const piece = e.target.closest('.diag-piece');
+  if (!piece) { if (diagSel !== null) { diagSel = null; diagRender(); } return; }
+  const id = +piece.dataset.id;
+  if (id !== diagSel) { diagSel = id; diagCrop = false; diagRender(); }
+  const o = diagObras.find(x => x.id === diagSel);
+  const mode = handle ? 'resize' : (diagCrop ? 'crop' : 'move');
+  _diagDrag = { mode, id, sx: e.clientX, sy: e.clientY, ox: o.layout_x, oy: o.layout_y, ow: o.layout_w, oh: o.layout_h, opx: o.layout_posx, opy: o.layout_posy };
+  window.addEventListener('pointermove', diagPointerMove);
+  window.addEventListener('pointerup', diagPointerUp, { once: true });
+  e.preventDefault();
+}
+
+function diagPointerMove(e) {
+  if (!_diagDrag) return;
+  const o = diagObras.find(x => x.id === _diagDrag.id);
+  const du = (e.clientX - _diagDrag.sx) / diagScale;
+  const dv = (e.clientY - _diagDrag.sy) / diagScale;
+  if (_diagDrag.mode === 'move') {
+    o.layout_x = Math.max(0, Math.min(100 - o.layout_w, _diagDrag.ox + du));
+    o.layout_y = Math.max(0, _diagDrag.oy + dv);
+  } else if (_diagDrag.mode === 'resize') {
+    o.layout_w = Math.max(5, Math.min(100 - o.layout_x, _diagDrag.ow + du));
+    o.layout_h = Math.max(5, _diagDrag.oh + dv);
+  } else if (_diagDrag.mode === 'crop') {
+    const fw = o.layout_w * diagScale, fh = o.layout_h * diagScale;
+    o.layout_posx = Math.max(0, Math.min(100, _diagDrag.opx - (e.clientX - _diagDrag.sx) / fw * 100));
+    o.layout_posy = Math.max(0, Math.min(100, _diagDrag.opy - (e.clientY - _diagDrag.sy) / fh * 100));
+  }
+  diagApplyPiece(o);
+  diagDirty = true; diagUpdateStatus();
+  const stage = document.getElementById('diag-stage');
+  if (stage) stage.style.height = (diagBottomUnits() * diagScale) + 'px';
+}
+
+function diagApplyPiece(o) {
+  const el = document.querySelector(`.diag-piece[data-id="${o.id}"]`);
+  if (!el) return;
+  el.style.left = (o.layout_x * diagScale) + 'px';
+  el.style.top = (o.layout_y * diagScale) + 'px';
+  el.style.width = (o.layout_w * diagScale) + 'px';
+  el.style.height = (o.layout_h * diagScale) + 'px';
+  const m = el.querySelector('img,video');
+  if (m) m.style.objectPosition = `${o.layout_posx}% ${o.layout_posy}%`;
+}
+
+function diagPointerUp() {
+  _diagDrag = null;
+  window.removeEventListener('pointermove', diagPointerMove);
+}
+
+function diagZ(dir) {
+  const o = diagObras.find(x => x.id === diagSel); if (!o) return;
+  const zs = diagObras.map(x => x.layout_z);
+  o.layout_z = dir > 0 ? Math.max(...zs) + 1 : Math.min(...zs) - 1;
+  diagDirty = true; diagRender();
+}
+
+function diagToggleCrop() { diagCrop = !diagCrop; diagRender(); }
+
+function diagResetFrame() {
+  const o = diagObras.find(x => x.id === diagSel); if (!o) return;
+  const m = document.querySelector(`.diag-piece[data-id="${o.id}"] img, .diag-piece[data-id="${o.id}"] video`);
+  let ar = 1;
+  if (m && m.naturalWidth) ar = m.naturalHeight / m.naturalWidth;
+  else if (m && m.videoWidth) ar = m.videoHeight / m.videoWidth;
+  o.layout_h = o.layout_w * ar; o.layout_posx = 50; o.layout_posy = 50;
+  diagDirty = true; diagRender();
+}
+
+function diagUpdateStatus() {
+  const s = document.getElementById('diag-status');
+  if (s) s.textContent = diagDirty ? ' — alterações não salvas' : '';
+  const b = document.getElementById('diag-save');
+  if (b && !b.disabled) b.textContent = diagDirty ? 'SALVAR LAYOUT *' : 'SALVAR LAYOUT';
+}
+
+async function diagSalvar() {
+  const btn = document.getElementById('diag-save');
+  btn.disabled = true; btn.textContent = 'SALVANDO…';
+  const r = n => Math.round(n * 100) / 100;
+  try {
+    await Promise.all(diagObras.map(o => api('PATCH', `/items/obras/${o.id}`, {
+      layout_x: r(o.layout_x), layout_y: r(o.layout_y), layout_w: r(o.layout_w), layout_h: r(o.layout_h),
+      layout_z: Math.round(o.layout_z), layout_posx: r(o.layout_posx), layout_posy: r(o.layout_posy)
+    })));
+    diagDirty = false; toast('Layout salvo');
+  } catch (e) { toast('Erro ao salvar: ' + e.message, true); }
+  btn.disabled = false; diagUpdateStatus();
+}
+
+
 
 async function obrasCarregarLista() {
   const panel = document.getElementById('obras-panel');
