@@ -2020,7 +2020,7 @@ function diagAutoArrange() {
   // tira inicial: uma linha horizontal, todas com a mesma altura.
   // a LARGURA de cada peça vem da proporção real da imagem (= como a página renderiza),
   // e o x avança pela largura real → fileira limpa, sem sobreposição.
-  const gap = 4, h = 60, y = 18;
+  const gap = 4, h = 60, y = (100 - h) / 2;   // y centraliza verticalmente no palco
   let x = gap;
   diagObras.forEach((o) => {
     o.layout_h = h; o.layout_y = y; o.layout_z = 1;
@@ -2071,6 +2071,20 @@ function diagRender() {
   });
   // roda do mouse vertical → rola na horizontal (igual à página)
   wrap.onwheel = (ev) => { if (Math.abs(ev.deltaY) > Math.abs(ev.deltaX)) { wrap.scrollLeft += ev.deltaY; ev.preventDefault(); } };
+  // pan com o botão do meio (mouse3): arrasta o canvas. anexado aqui pq o wrap é recriado a cada render.
+  let _pan = null;
+  wrap.addEventListener('pointerdown', (ev) => {
+    if (ev.button !== 1) return;
+    ev.preventDefault();
+    _pan = { x: ev.clientX, sl: wrap.scrollLeft };
+    wrap.style.cursor = 'grabbing';
+    try { wrap.setPointerCapture(ev.pointerId); } catch (_) {}
+  });
+  wrap.addEventListener('pointermove', (ev) => { if (_pan) wrap.scrollLeft = _pan.sl - (ev.clientX - _pan.x); });
+  const _endPan = (ev) => { if (_pan) { _pan = null; wrap.style.cursor = ''; try { wrap.releasePointerCapture(ev.pointerId); } catch (_) {} } };
+  wrap.addEventListener('pointerup', _endPan);
+  wrap.addEventListener('pointercancel', _endPan);
+  wrap.addEventListener('auxclick', (ev) => { if (ev.button === 1) ev.preventDefault(); });   // evita o autoscroll nativo
   diagRenderToolbar();
   diagUpdateStatus();
 }
@@ -2127,6 +2141,7 @@ function diagRenderToolbar() {
 }
 
 function diagPointerDown(e) {
+  if (e.button !== 0) return;                         // só botão esquerdo move/seleciona; o meio é pan (no wrap)
   const handle = e.target.closest('.diag-handle');
   const piece = e.target.closest('.diag-piece');
   if (!piece) { if (diagSel !== null) { diagSel = null; diagRender(); } return; }
@@ -2161,6 +2176,25 @@ function diagDragTick() {
   d.raf = requestAnimationFrame(diagDragTick);
 }
 
+// magnet: centro vertical do palco + centralizar entre dois vizinhos + gap fixo com o vizinho
+function diagSnap(o, x, y) {
+  const TH = 2.2, GAP = 4;                                           // proximidade p/ "grudar" (em unidades) e gap padrão
+  const others = diagObras.filter(p => p.id !== o.id);
+  let gx = false;
+  const cy = (100 - o.layout_h) / 2;                                // centro vertical
+  if (Math.abs(y - cy) < TH) y = cy;
+  const cx = x + o.layout_w / 2;
+  const left  = others.filter(p => (p.layout_x + p.layout_w) <= cx).sort((a, b) => (b.layout_x + b.layout_w) - (a.layout_x + a.layout_w))[0];
+  const right = others.filter(p => p.layout_x >= cx).sort((a, b) => a.layout_x - b.layout_x)[0];
+  if (left && right) {                                              // centralizado no vão entre os dois
+    const centeredX = (left.layout_x + left.layout_w) + ((right.layout_x - (left.layout_x + left.layout_w)) - o.layout_w) / 2;
+    if (Math.abs(x - centeredX) < TH) { x = centeredX; gx = true; }
+  }
+  if (!gx && left)  { const t = (left.layout_x + left.layout_w) + GAP; if (Math.abs(x - t) < TH) { x = t; gx = true; } }
+  if (!gx && right) { const t = right.layout_x - GAP - o.layout_w;     if (Math.abs(x - t) < TH) { x = t; gx = true; } }
+  return { x: Math.max(0, x), y };
+}
+
 function diagDragApply() {
   const d = _diagDrag; if (!d) return;
   const o = diagObras.find(x => x.id === d.id);
@@ -2168,8 +2202,10 @@ function diagDragApply() {
   if (d.mode === 'move') {
     const du = ((d.lx - d.sx) + scrollDelta) / diagScale;
     const dv = (d.ly - d.sy) / diagScale;
-    o.layout_x = Math.max(0, d.ox + du);                             // livre pra direita (cresce o palco)
-    o.layout_y = Math.max(0, Math.min(100 - o.layout_h, d.oy + dv));
+    let nx = Math.max(0, d.ox + du);                                 // livre pra direita (cresce o palco)
+    let ny = Math.max(0, Math.min(100 - o.layout_h, d.oy + dv));
+    const s = diagSnap(o, nx, ny);                                   // magnet
+    o.layout_x = s.x; o.layout_y = s.y;
   } else if (d.mode === 'resize') {                                  // proporcional: largura puxa, altura segue a proporção
     let ar = o._ar;
     if (!ar) {
