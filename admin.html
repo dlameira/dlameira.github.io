@@ -1976,6 +1976,7 @@ async function obrasDiagramar() {
       layout_posx: o.layout_posx ?? 50, layout_posy: o.layout_posy ?? 50,
     }));
     diagSel = null; diagCrop = false; diagDirty = false;
+    window.addEventListener('resize', diagOnResize);   // mantém altura cheia (dedup por ref)
     diagRender();
   } catch (e) {
     panel.innerHTML = `<div class="empty"><div class="empty-icon">⚠</div><h3>Erro</h3><p>${e.message}</p></div>`;
@@ -2008,20 +2009,26 @@ function diagRender() {
       <span style="font-size:11px;color:var(--fg2)">Arraste pra mover (livre) · alça ↘ redimensiona proporcional · role pro lado →<span id="diag-status" style="color:var(--yellow)"></span></span>
     </div>
     <div id="diag-toolbar" style="min-height:30px;margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap"></div>
-    <div id="diag-stage-wrap" style="overflow-x:auto;overflow-y:hidden;background:#000;border:1px solid rgba(17,17,17,0.2);height:66vh">
+    <div id="diag-stage-wrap" style="overflow-x:auto;overflow-y:hidden;background:#000;border:1px solid rgba(17,17,17,0.2)">
       <div id="diag-stage" style="position:relative;height:100%;background:#000"></div>
     </div>`;
   const wrap = document.getElementById('diag-stage-wrap');
-  let stageH = wrap.clientHeight;
-  if (!(stageH > 120)) stageH = Math.round((window.innerHeight || 800) * 0.6);
+  // ocupa toda a altura restante do navegador — sem scroll vertical
+  const top = wrap.getBoundingClientRect().top;
+  const stageH = Math.max(240, Math.round((window.innerHeight || 800) - top - 12));
+  wrap.style.height = stageH + 'px';
   diagScale = stageH / 100;
   const stage = document.getElementById('diag-stage');
   stage.style.width = (diagRightUnits() * diagScale) + 'px';
   stage.innerHTML = diagObras.slice().sort((a, b) => a.layout_z - b.layout_z).map(diagPieceHTML).join('');
   stage.onpointerdown = diagPointerDown;
+  // roda do mouse vertical → rola na horizontal (igual à página)
+  wrap.onwheel = (ev) => { if (Math.abs(ev.deltaY) > Math.abs(ev.deltaX)) { wrap.scrollLeft += ev.deltaY; ev.preventDefault(); } };
   diagRenderToolbar();
   diagUpdateStatus();
 }
+
+function diagOnResize() { if (document.getElementById('diag-stage')) diagRender(); }
 
 function diagMediaHTML(o) {
   const st = `width:100%;height:100%;object-fit:cover;object-position:${o.layout_posx}% ${o.layout_posy}%;display:block;pointer-events:none;user-select:none`;
