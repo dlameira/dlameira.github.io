@@ -14,78 +14,92 @@
 @font-face { font-family: 'Neue Haas Grotesk'; font-weight: 700; font-style: normal; font-display: block; src: url('fonts/NeueHaasDisplay-Bold.ttf') format('truetype'); }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root { --f: 'Neue Haas Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-html, body { background: #fff; }
-body { color: #111; font-family: var(--f); -webkit-font-smoothing: antialiased; }
+html, body { height: 100%; }
+body {
+  background: #000; color: #fff; font-family: var(--f); -webkit-font-smoothing: antialiased;
+  display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+}
 
-.top { display: flex; align-items: center; gap: 16px; padding: 20px 28px 14px; flex-wrap: wrap; }
-.back { display: inline-flex; text-decoration: none; color: #111; line-height: 1; }
+.top { flex: none; display: flex; align-items: center; gap: 16px; padding: 18px 28px 14px; flex-wrap: wrap; }
+.back { display: inline-flex; text-decoration: none; line-height: 1; }
 .back svg { display: block; width: 24px; height: 19px; }
-.brand { font-weight: 500; font-size: 16px; letter-spacing: 0.04em; color: #111; text-decoration: none; white-space: nowrap; }
-.topnav { font-weight: 500; font-size: 15px; color: #111; }
-.topnav a { color: #111; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
-.topnav a:hover { color: #0000EE; }
+.brand { font-weight: 500; font-size: 16px; letter-spacing: 0.04em; color: #fff; text-decoration: none; white-space: nowrap; }
+.topnav { font-weight: 500; font-size: 15px; color: #fff; }
+.topnav a { color: #fff; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.topnav a:hover { color: #9a9a9a; }
 
-.stage-wrap { width: 100%; padding: 10px 0 120px; }
-#stage { position: relative; margin: 0 auto; }
-.art { position: absolute; display: block; overflow: hidden; text-decoration: none; background: #f4f4f2; }
+#stage-wrap { flex: 1; overflow-x: auto; overflow-y: hidden; }
+#stage { position: relative; height: 100%; }
+.art { position: absolute; display: block; overflow: hidden; text-decoration: none; }
 .art img, .art video { width: 100%; height: 100%; object-fit: cover; display: block; }
 .art .cap {
-  position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 12px;
-  background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0));
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 12px 10px;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0));
   color: #fff; font-size: 12px; letter-spacing: 0.02em; opacity: 0; transition: opacity 0.2s;
 }
 .art:hover .cap { opacity: 1; }
-.loading { padding: 80px 0; text-align: center; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #aaa; }
+.loading { padding: 80px 28px; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #777; }
+
+/* barra de rolagem horizontal discreta no escuro */
+#stage-wrap::-webkit-scrollbar { height: 9px; }
+#stage-wrap::-webkit-scrollbar-thumb { background: #333; border-radius: 5px; }
+#stage-wrap::-webkit-scrollbar-track { background: #0a0a0a; }
 </style>
 </head>
 <body>
 
 <header class="top">
   <a class="back" href="index.html" aria-label="início">
-    <svg viewBox="0 0 34 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 4 L3 14 L13 24 M3 14 H32" stroke="#111" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg viewBox="0 0 34 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 4 L3 14 L13 24 M3 14 H32" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </a>
   <a class="brand" href="index.html">DANIEL LAMEIRA</a>
   <nav class="topnav"><a href="livros.html">livros</a>, <a href="textos.html">textos</a>, <a href="artes.html">artes</a> e <a href="sobre.html">sobre</a></nav>
 </header>
 
-<div class="stage-wrap"><div id="stage"><div class="loading">carregando…</div></div></div>
+<div id="stage-wrap"><div id="stage"><div class="loading">carregando…</div></div></div>
 
 <script>
 const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
-const MAXW = 1400;            // largura máxima da tela (px); acima disso, centraliza
 function img(id, w) { return `${DIRECTUS}/assets/${id}?width=${w}&quality=85&format=webp`; }
 function esc(s) { return (s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
 
 let _obras = [];
 
+// horizontal: a unidade é % da ALTURA da tela; x cresce pra direita (scroll)
 function layout() {
+  const wrap = document.getElementById('stage-wrap');
   const stage = document.getElementById('stage');
-  const vw = Math.min(document.documentElement.clientWidth, MAXW);
-  const scale = vw / 100;     // 1 unidade = 1% da largura
-  stage.style.width = vw + 'px';
-  const bottom = Math.max(0, ..._obras.map(o => (o.layout_y || 0) + (o.layout_h || 0)));
-  stage.style.height = (bottom * scale) + 'px';
+  const h = wrap.clientHeight;
+  const scale = h / 100;
+  const right = Math.max(0, ..._obras.map(o => (o.layout_x || 0) + (o.layout_w || 0)));
+  stage.style.height = h + 'px';
+  stage.style.width = (right * scale) + 'px';
   stage.innerHTML = _obras.slice().sort((a, b) => (a.layout_z || 1) - (b.layout_z || 1)).map(o => {
     const x = (o.layout_x ?? 5) * scale, y = (o.layout_y ?? 5) * scale;
-    const w = (o.layout_w ?? 30) * scale, h = (o.layout_h ?? 30) * scale;
+    const w = (o.layout_w ?? 30) * scale, hh = (o.layout_h ?? 30) * scale;
     const op = `object-position:${o.layout_posx ?? 50}% ${o.layout_posy ?? 50}%`;
     const media = o.image
       ? `<img src="${img(o.image, 900)}" alt="${esc(o.title)}" loading="lazy" style="${op}">`
       : `<video src="${DIRECTUS}/assets/${o.video}" autoplay muted loop playsinline preload="metadata" style="${op}"></video>`;
     const meta = [o.type, o.year].filter(Boolean).join(' · ');
     const cap = (o.title || meta) ? `<div class="cap"><strong>${esc(o.title)}</strong>${meta ? ' · ' + esc(meta) : ''}</div>` : '';
-    return `<a class="art" href="obra.html?id=${o.id}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;z-index:${o.layout_z || 1}">${media}${cap}</a>`;
+    return `<a class="art" href="obra.html?id=${o.id}" style="left:${x}px;top:${y}px;width:${w}px;height:${hh}px;z-index:${o.layout_z || 1}">${media}${cap}</a>`;
   }).join('');
 }
 
 async function init() {
   const stage = document.getElementById('stage');
+  const wrap = document.getElementById('stage-wrap');
   try {
     const r = await fetch(`${DIRECTUS}/items/obras?filter[status][_eq]=published&limit=-1&fields=id,title,type,year,image,video,layout_x,layout_y,layout_w,layout_h,layout_z,layout_posx,layout_posy`);
     _obras = ((await r.json()).data || []).filter(o => o.image || o.video);
     if (!_obras.length) { stage.innerHTML = '<div class="loading">nada por aqui ainda</div>'; return; }
     layout();
     window.addEventListener('resize', layout);
+    // roda do mouse vertical → rola na horizontal (desktop)
+    wrap.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { wrap.scrollLeft += e.deltaY; e.preventDefault(); }
+    }, { passive: false });
   } catch (e) { stage.innerHTML = '<div class="loading">erro ao carregar</div>'; }
 }
 init();
