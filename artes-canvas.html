@@ -106,10 +106,19 @@ function layout() {
     const fit = () => {
       const W = m.naturalWidth || m.videoWidth, H = m.naturalHeight || m.videoHeight;
       if (W && H) wrapEl.style.width = (artEl.offsetHeight * (W / H)) + 'px';
+      fitStage();   // largura mudou → garante que o palco cobre tudo e dá pra rolar até o fim
     };
     if (m.tagName === 'IMG') { m.complete ? fit() : (m.onload = fit); }
     else { m.readyState >= 1 ? fit() : (m.onloadedmetadata = fit); }
   });
+}
+
+// expande o palco para o extremo direito de qualquer peça (após o fit ajustar larguras)
+function fitStage() {
+  const stage = document.getElementById('stage');
+  let right = 0;
+  stage.querySelectorAll('.art-wrap').forEach(el => { right = Math.max(right, el.offsetLeft + el.offsetWidth); });
+  if (right) stage.style.width = (right + 40) + 'px';
 }
 
 function openLB(o) {

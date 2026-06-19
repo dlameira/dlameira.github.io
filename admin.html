@@ -1975,6 +1975,7 @@ async function obrasDiagramar() {
       layout_z: o.layout_z ?? 1,
       layout_posx: o.layout_posx ?? 50, layout_posy: o.layout_posy ?? 50,
     }));
+    await diagLoadAspects();   // proporção real de cada imagem ANTES de diagramar (sem race)
     diagSel = null; diagCrop = false; diagDirty = false;
     window.addEventListener('resize', diagOnResize);   // mantém altura cheia (dedup por ref)
     diagRender();
@@ -1983,14 +1984,50 @@ async function obrasDiagramar() {
   }
 }
 
+// proporção real (W/H) de cada mídia, guardada em o._ar — determinístico, antes de diagramar.
+// imagens: vem do /files. vídeos: o Directus não guarda dimensão, então medimos carregando a mídia fora da tela.
+async function diagLoadAspects() {
+  const ids = [...new Set(diagObras.map(o => o.image || o.video).filter(Boolean))];
+  if (ids.length) {
+    try {
+      const res = await api('GET', `/files?filter[id][_in]=${ids.join(',')}&fields=id,width,height&limit=-1`);
+      const ar = {};
+      (res.data || []).forEach(f => { if (f.width && f.height) ar[f.id] = f.width / f.height; });
+      diagObras.forEach(o => { const r = ar[o.image || o.video]; if (r) o._ar = r; });
+    } catch (e) { /* mede pela mídia abaixo */ }
+  }
+  // o que ficou sem dimensão (vídeos): mede carregando o elemento fora da tela
+  await Promise.all(diagObras.filter(o => !o._ar && (o.image || o.video)).map(o => new Promise(resolve => {
+    let done = false;
+    const finish = (W, H) => { if (done) return; done = true; if (W && H) o._ar = W / H; resolve(); };
+    if (o.video) {
+      const v = document.createElement('video');
+      v.preload = 'metadata'; v.muted = true;
+      v.onloadedmetadata = () => finish(v.videoWidth, v.videoHeight);
+      v.onerror = () => finish();
+      v.src = `${DIRECTUS}/assets/${o.video}`;
+    } else {
+      const im = new Image();
+      im.onload = () => finish(im.naturalWidth, im.naturalHeight);
+      im.onerror = () => finish();
+      im.src = directusImg(o.image, 300);
+    }
+    setTimeout(() => finish(), 5000);   // não trava o editor se a mídia demorar
+  })));
+}
+
 function diagAutoArrange() {
-  // tira inicial: uma linha horizontal, alturas ~60% da tela
-  const gap = 4, h = 60, w = 42, y = 18;
+  // tira inicial: uma linha horizontal, todas com a mesma altura.
+  // a LARGURA de cada peça vem da proporção real da imagem (= como a página renderiza),
+  // e o x avança pela largura real → fileira limpa, sem sobreposição.
+  const gap = 4, h = 60, y = 18;
   let x = gap;
   diagObras.forEach((o) => {
-    o.layout_h = h; o.layout_w = w; o.layout_y = y; o.layout_x = x;
-    o.layout_z = 1; o.layout_posx = 50; o.layout_posy = 50;
-    x += w + gap;
+    o.layout_h = h; o.layout_y = y; o.layout_z = 1;
+    o.layout_posx = 50; o.layout_posy = 50;
+    o.layout_w = o._ar ? h * o._ar : (o.layout_w || 42);   // proporção real (pré-carregada); fallback se faltar
+    o.layout_x = x;
+    x += o.layout_w + gap;
   });
   diagDirty = true; diagRender();
 }
@@ -2057,11 +2094,21 @@ function diagPieceHTML(o) {
 // ajusta a largura do quadro à proporção real da mídia (imagem nunca cortada)
 function diagFit(id) {
   const o = diagObras.find(x => x.id === id); if (!o) return;
-  const m = document.querySelector(`.diag-piece[data-id="${id}"] img, .diag-piece[data-id="${id}"] video`);
-  const W = m && (m.naturalWidth || m.videoWidth), H = m && (m.naturalHeight || m.videoHeight);
-  if (!W || !H) return;
-  o.layout_w = o.layout_h * (W / H);
+  let ar = o._ar;
+  if (!ar) {
+    const m = document.querySelector(`.diag-piece[data-id="${id}"] img, .diag-piece[data-id="${id}"] video`);
+    const W = m && (m.naturalWidth || m.videoWidth), H = m && (m.naturalHeight || m.videoHeight);
+    if (!W || !H) return;
+    ar = o._ar = W / H;
+  }
+  o.layout_w = o.layout_h * ar;
   diagApplyPiece(o);
+  diagUpdateStageWidth();   // largura mudou → re-expande o palco p/ caber e poder rolar até o fim
+}
+
+function diagUpdateStageWidth() {
+  const stage = document.getElementById('diag-stage');
+  if (stage) stage.style.width = (diagRightUnits() * diagScale) + 'px';
 }
 
 function diagRenderToolbar() {
@@ -2098,11 +2145,15 @@ function diagPointerMove(e) {
     o.layout_x = Math.max(0, _diagDrag.ox + du);                       // livre pra direita (cresce o palco)
     o.layout_y = Math.max(0, Math.min(100 - o.layout_h, _diagDrag.oy + dv));
   } else if (_diagDrag.mode === 'resize') {                            // proporcional: largura puxa, altura segue a proporção da imagem
-    const m = document.querySelector(`.diag-piece[data-id="${o.id}"] img, .diag-piece[data-id="${o.id}"] video`);
-    const W = (m && (m.naturalWidth || m.videoWidth)) || _diagDrag.ow;
-    const H = (m && (m.naturalHeight || m.videoHeight)) || _diagDrag.oh;
+    let ar = o._ar;
+    if (!ar) {
+      const m = document.querySelector(`.diag-piece[data-id="${o.id}"] img, .diag-piece[data-id="${o.id}"] video`);
+      const W = (m && (m.naturalWidth || m.videoWidth)) || _diagDrag.ow;
+      const H = (m && (m.naturalHeight || m.videoHeight)) || _diagDrag.oh;
+      ar = W / H;
+    }
     const nw = Math.max(5, _diagDrag.ow + du);
-    o.layout_w = nw; o.layout_h = nw * (H / W);
+    o.layout_w = nw; o.layout_h = nw / ar;
   }
   diagApplyPiece(o);
   diagDirty = true; diagUpdateStatus();
