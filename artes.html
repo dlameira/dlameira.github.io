@@ -6,7 +6,6 @@
 <link rel="preload" href="fonts/NeueHaasDisplay-Roman.ttf" as="font" type="font/ttf" crossorigin>
 <link rel="preload" href="fonts/NeueHaasDisplay-Medium.ttf" as="font" type="font/ttf" crossorigin>
 <link rel="preload" href="fonts/NeueHaasDisplay-Bold.ttf" as="font" type="font/ttf" crossorigin>
-
 <title>Artes — Daniel Lameira</title>
 <link rel="preconnect" href="https://directus-production-afdd.up.railway.app" crossorigin>
 <style>
@@ -15,70 +14,150 @@
 @font-face { font-family: 'Neue Haas Grotesk'; font-weight: 700; font-style: normal; font-display: block; src: url('fonts/NeueHaasDisplay-Bold.ttf') format('truetype'); }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root { --f: 'Neue Haas Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-html, body { background: #fff; }
-body { color: #111; font-family: var(--f); -webkit-font-smoothing: antialiased; }
+html, body { height: 100%; }
+body {
+  background: #000; color: #fff; font-family: var(--f); -webkit-font-smoothing: antialiased;
+  display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+}
 
-.top { display: flex; align-items: center; gap: 16px; padding: 20px 28px 14px; flex-wrap: wrap; }
-.back { display: inline-flex; text-decoration: none; color: #111; line-height: 1; }
+.top { flex: none; display: flex; align-items: center; gap: 16px; padding: 18px 28px 14px; flex-wrap: wrap; transition: opacity 0.3s; }
+.back { display: inline-flex; text-decoration: none; line-height: 1; }
 .back svg { display: block; width: 24px; height: 19px; }
-.brand { font-weight: 500; font-size: 16px; letter-spacing: 0.04em; color: #111; text-decoration: none; white-space: nowrap; }
-.topnav { font-weight: 500; font-size: 15px; color: #111; }
-.topnav a { color: #111; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
-.topnav a:hover { color: #0000EE; }
+.brand { font-weight: 500; font-size: 16px; letter-spacing: 0.04em; color: #fff; text-decoration: none; white-space: nowrap; }
+.topnav { font-weight: 500; font-size: 15px; color: #fff; }
+.topnav a { color: #fff; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.topnav a:hover { color: #9a9a9a; }
 
-.wrap { max-width: 880px; margin: 0 auto; padding: 30px 28px 120px; }
-.h1 { font-weight: 700; font-size: clamp(30px, 5vw, 48px); letter-spacing: 0.01em; margin-bottom: 56px; }
-.loading { padding: 60px 0; text-align: center; font-size: 13px; letter-spacing: 0.1em; color: #aaa; }
+#stage-wrap { flex: 1; overflow-x: auto; overflow-y: hidden; }
+#stage { position: relative; height: 100%; }
 
-/* uma obra por vez, grande e centralizada — apresentação editorial */
-.gal { display: flex; flex-direction: column; gap: 100px; }
-.item { text-decoration: none; color: #111; display: block; }
-.media { text-align: center; line-height: 0; }
-.media img, .media video { max-width: 100%; max-height: 80vh; display: inline-block; transition: opacity 0.2s; }
-.item:hover .media img, .item:hover .media video { opacity: 0.88; }
-.cap { margin-top: 22px; text-align: center; }
-.cap .t { font-weight: 700; font-size: clamp(20px, 2.6vw, 28px); line-height: 1.15; letter-spacing: 0.01em; }
-.cap .m { font-size: 13px; color: #888; margin-top: 7px; letter-spacing: 0.04em; }
-@media (max-width: 600px) { .gal { gap: 72px; } }
+.art-wrap { position: absolute; transition: opacity 0.4s ease; }
+.art { display: block; width: 100%; overflow: hidden; cursor: pointer; }
+.art img, .art video { width: 100%; height: 100%; object-fit: contain; display: block; }
+.cap { padding-top: 9px; text-align: center; color: #fff; font-size: 12px; letter-spacing: 0.02em; line-height: 1.35; }
+.cap strong { font-weight: 600; }
+/* foco: tudo que não é o selecionado quase some */
+#stage.focusing .art-wrap { opacity: 0.04; pointer-events: none; }
+.loading { padding: 80px 28px; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #777; }
+
+#stage-wrap::-webkit-scrollbar { height: 9px; }
+#stage-wrap::-webkit-scrollbar-thumb { background: #333; border-radius: 5px; }
+#stage-wrap::-webkit-scrollbar-track { background: #0a0a0a; }
+
+/* lightbox: obra centralizada na tela */
+#lb { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.93); opacity: 0; transition: opacity 0.3s; cursor: zoom-out; }
+#lb.open { opacity: 1; }
+#lb.hidden { display: none; }
+#lb .lb-inner { text-align: center; cursor: default; transform: scale(0.96); transition: transform 0.3s cubic-bezier(.2,.7,.2,1); }
+#lb.open .lb-inner { transform: scale(1); }
+#lb img, #lb video { max-width: 92vw; max-height: 84vh; object-fit: contain; display: block; margin: 0 auto; }
+#lb .lb-cap { margin-top: 14px; color: #fff; font-size: 13px; letter-spacing: 0.02em; }
+#lb .lb-cap strong { font-weight: 600; }
 </style>
 </head>
 <body>
 
 <header class="top">
   <a class="back" href="index.html" aria-label="início">
-    <svg viewBox="0 0 34 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 4 L3 14 L13 24 M3 14 H32" stroke="#111" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg viewBox="0 0 34 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 4 L3 14 L13 24 M3 14 H32" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </a>
   <a class="brand" href="index.html">DANIEL LAMEIRA</a>
   <nav class="topnav"><a href="livros.html">livros</a>, <a href="textos.html">textos</a>, <a href="artes.html">artes</a> e <a href="sobre.html">sobre</a></nav>
 </header>
 
-<div class="wrap">
-  <h1 class="h1">Artes</h1>
-  <div id="grid"><div class="loading">carregando…</div></div>
-</div>
+<div id="stage-wrap"><div id="stage"><div class="loading">carregando…</div></div></div>
+<div id="lb" class="hidden"><div class="lb-inner"></div></div>
 
 <script>
 const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
-function img(id, w) { return `${DIRECTUS}/assets/${id}?${w ? 'width=' + w + '&' : ''}quality=85&format=webp`; }
+function img(id, w) { return `${DIRECTUS}/assets/${id}?width=${w}&quality=85&format=webp`; }
+function esc(s) { return (s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+function metaDe(o) { return [o.type, o.year].filter(Boolean).join(' · '); }
+
+let _obras = [];
+
+// horizontal: unidade = % da ALTURA da tela; a altura manda, a largura vem da proporção da imagem
+function layout() {
+  const wrap = document.getElementById('stage-wrap');
+  const stage = document.getElementById('stage');
+  const sh = wrap.clientHeight;
+  const scale = sh / 100;
+  stage.style.height = sh + 'px';
+  const right = Math.max(0, ..._obras.map(o => (o.layout_x || 0) + (o.layout_w || 0)));
+  stage.style.width = (right * scale + 40) + 'px';
+  stage.innerHTML = _obras.slice().sort((a, b) => (a.layout_z || 1) - (b.layout_z || 1)).map(o => {
+    const x = (o.layout_x ?? 5) * scale, y = (o.layout_y ?? 5) * scale;
+    const w = (o.layout_w ?? 30) * scale, h = (o.layout_h ?? 30) * scale;
+    const media = o.image
+      ? `<img src="${img(o.image, 1000)}" alt="${esc(o.title)}" loading="lazy">`
+      : `<video src="${DIRECTUS}/assets/${o.video}" autoplay muted loop playsinline preload="metadata"></video>`;
+    const meta = metaDe(o);
+    const cap = (o.title || meta) ? `<div class="cap"><strong>${esc(o.title)}</strong>${meta ? ' · ' + esc(meta) : ''}</div>` : '';
+    return `<div class="art-wrap" data-id="${o.id}" style="left:${x}px;top:${y}px;width:${w}px;z-index:${o.layout_z || 1}">
+      <div class="art" style="height:${h}px">${media}</div>${cap}</div>`;
+  }).join('');
+  // largura justa à imagem (sem corte, sem sobra) assim que a mídia carrega
+  stage.querySelectorAll('.art-wrap').forEach(wrapEl => {
+    const o = _obras.find(z => String(z.id) === wrapEl.dataset.id);
+    const m = wrapEl.querySelector('img,video');
+    const artEl = wrapEl.querySelector('.art');
+    artEl.onclick = () => openLB(o);
+    const fit = () => {
+      const W = m.naturalWidth || m.videoWidth, H = m.naturalHeight || m.videoHeight;
+      if (W && H) wrapEl.style.width = (artEl.offsetHeight * (W / H)) + 'px';
+      fitStage();   // largura mudou → garante que o palco cobre tudo e dá pra rolar até o fim
+    };
+    if (m.tagName === 'IMG') { m.complete ? fit() : (m.onload = fit); }
+    else { m.readyState >= 1 ? fit() : (m.onloadedmetadata = fit); }
+  });
+}
+
+// expande o palco para o extremo direito de qualquer peça (após o fit ajustar larguras)
+function fitStage() {
+  const stage = document.getElementById('stage');
+  let right = 0;
+  stage.querySelectorAll('.art-wrap').forEach(el => { right = Math.max(right, el.offsetLeft + el.offsetWidth); });
+  if (right) stage.style.width = (right + 40) + 'px';
+}
+
+function openLB(o) {
+  const lb = document.getElementById('lb');
+  const inner = lb.querySelector('.lb-inner');
+  const media = o.image
+    ? `<img src="${img(o.image, 1800)}" alt="${esc(o.title)}">`
+    : `<video src="${DIRECTUS}/assets/${o.video}" autoplay muted loop controls playsinline></video>`;
+  const meta = metaDe(o);
+  inner.innerHTML = `${media}${(o.title || meta) ? `<div class="lb-cap"><strong>${esc(o.title)}</strong>${meta ? ' · ' + esc(meta) : ''}</div>` : ''}`;
+  document.getElementById('stage').classList.add('focusing');
+  lb.classList.remove('hidden');
+  requestAnimationFrame(() => lb.classList.add('open'));
+}
+function closeLB() {
+  const lb = document.getElementById('lb');
+  if (lb.classList.contains('hidden')) return;
+  lb.classList.remove('open');
+  document.getElementById('stage').classList.remove('focusing');
+  setTimeout(() => { lb.classList.add('hidden'); lb.querySelector('.lb-inner').innerHTML = ''; }, 300);
+}
+
 async function init() {
-  const box = document.getElementById('grid');
+  const stage = document.getElementById('stage');
+  const wrap = document.getElementById('stage-wrap');
+  const lb = document.getElementById('lb');
+  // fechar o foco: clique fora da obra (no fundo) ou Esc
+  lb.addEventListener('click', (e) => { if (!e.target.closest('img, video')) closeLB(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLB(); });
   try {
-    const r = await fetch(`${DIRECTUS}/items/obras?filter[status][_eq]=published&sort[]=order&limit=200&fields=id,title,type,year,image,video`);
-    const obras = (await r.json()).data || [];
-    if (!obras.length) { box.innerHTML = '<div class="loading">nada por aqui ainda</div>'; return; }
-    box.className = 'gal';
-    box.innerHTML = obras.map(o => {
-      let media;
-      if (o.image) media = `<img src="${img(o.image, 1200)}" alt="${o.title || ''}" loading="lazy">`;
-      else if (o.video) media = `<video src="${DIRECTUS}/assets/${o.video}" controls playsinline preload="metadata"></video>`;
-      else media = '';
-      const meta = [o.type, o.year].filter(Boolean).join(' · ');
-      return `<a class="item" href="obra.html?id=${o.id}">
-        <div class="media">${media}</div>
-        <div class="cap"><div class="t">${o.title || ''}</div>${meta ? `<div class="m">${meta}</div>` : ''}</div>
-      </a>`;
-    }).join('');
-  } catch(e) { box.innerHTML = '<div class="loading">erro ao carregar</div>'; }
+    const r = await fetch(`${DIRECTUS}/items/obras?filter[status][_eq]=published&limit=-1&fields=id,title,type,year,image,video,layout_x,layout_y,layout_w,layout_h,layout_z,layout_posx,layout_posy`);
+    _obras = ((await r.json()).data || []).filter(o => o.image || o.video);
+    if (!_obras.length) { stage.innerHTML = '<div class="loading">nada por aqui ainda</div>'; return; }
+    layout();
+    window.addEventListener('resize', layout);
+    wrap.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { wrap.scrollLeft += e.deltaY; e.preventDefault(); }
+    }, { passive: false });
+  } catch (e) { stage.innerHTML = '<div class="loading">erro ao carregar</div>'; }
 }
 init();
 </script>

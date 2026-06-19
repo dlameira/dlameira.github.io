@@ -2038,6 +2038,7 @@ function diagRightUnits() {
 
 function diagRender() {
   const panel = document.getElementById('obras-panel');
+  const prevScroll = (document.getElementById('diag-stage-wrap') || {}).scrollLeft || 0;   // preserva o scroll entre renders (clique não volta ao início)
   panel.innerHTML = `
     <div style="position:sticky;top:60px;background:var(--bg);z-index:20;padding:8px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid rgba(17,17,17,0.06);margin-bottom:12px">
       <button class="btn btn-yellow btn-sm" id="diag-save" onclick="diagSalvar()">SALVAR LAYOUT</button>
@@ -2061,6 +2062,7 @@ function diagRender() {
   diagScale = stageH / 100;
   const stage = document.getElementById('diag-stage');
   stage.style.width = (diagRightUnits() * diagScale) + 'px';
+  wrap.scrollLeft = prevScroll;                               // restaura o scroll após reconstruir o palco
   stage.innerHTML = diagObras.slice().sort((a, b) => a.layout_z - b.layout_z).map(diagPieceHTML).join('');
   stage.onpointerdown = diagPointerDown;
   stage.querySelectorAll('.diag-piece').forEach(el => {
