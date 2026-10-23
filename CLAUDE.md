@@ -14,7 +14,7 @@ Blog pessoal de Daniel Lameira sobre arte, criatividade, tecnologia, livros e co
                     │ fetch (API REST)
 ┌───────────────────▼─────────────────────────────────────┐
 │  Railway — Directus CMS                                 │
-│  directus-production-afdd.up.railway.app                │
+│  dados.seiva.com.br                │
 │  ← todo o conteúdo (posts, drops, livros, obras...)     │
 └─────────────────────────────────────────────────────────┘
 

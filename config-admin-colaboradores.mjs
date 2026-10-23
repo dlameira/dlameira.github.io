@@ -5,7 +5,7 @@
 // - Campo papel como dropdown com opções predefinidas
 // - Campo website com interface de URL
 
-const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
+const DIRECTUS = 'https://dados.seiva.com.br';
 const TOKEN = 'ynOx8xSSe-PVHMUBIlz0nG9YetXgAxU5';
 const h = { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' };
 

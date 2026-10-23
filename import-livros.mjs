@@ -14,7 +14,7 @@ import { createReadStream, readFileSync, existsSync } from 'fs';
 import { join, extname } from 'path';
 import { parse } from 'csv-parse';
 
-const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
+const DIRECTUS = 'https://dados.seiva.com.br';
 const TOKEN    = 'KCcBJTqLUEu3fzD9IRUDg5AgUY_8pPUO';
 
 const authHeaders = { 'Authorization': `Bearer ${TOKEN}` };

@@ -8,7 +8,7 @@
 <link rel="preload" href="fonts/NeueHaasDisplay-Bold.ttf" as="font" type="font/ttf" crossorigin>
 
 <title>Livro — Daniel Lameira</title>
-<link rel="preconnect" href="https://directus-production-afdd.up.railway.app" crossorigin>
+<link rel="preconnect" href="https://dados.seiva.com.br" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
@@ -92,7 +92,7 @@ body { color: #111; font-family: var(--f); -webkit-font-smoothing: antialiased; 
 </div>
 
 <script>
-const DIRECTUS = 'https://directus-production-afdd.up.railway.app';
+const DIRECTUS = 'https://dados.seiva.com.br';
 function directusImg(id, w) {
   if (!id) return null;
   return `${DIRECTUS}/assets/${id}?${w ? 'width=' + w + '&' : ''}quality=90&format=webp`;
